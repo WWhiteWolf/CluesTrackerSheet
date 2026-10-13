@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs>
+<radialGradient id="bgg" cx="50%" cy="40%" r="80%">
+<stop offset="0%" stop-color="#242018"/><stop offset="100%" stop-color="#100c08"/>
+</radialGradient>
+<linearGradient id="cardg" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#3a3020"/><stop offset="100%" stop-color="#2c2416"/>
+</linearGradient>
+</defs>
+<rect width="1024" height="1024" fill="url(#bgg)"/>
+<!-- left card: check, fanned wide -->
+<g transform="rotate(-24 512 760)">
+<rect x="232" y="270" width="310" height="460" rx="30" fill="#2a2218" stroke="#8b6a38" stroke-width="12"/>
+<path d="M 317 440 L 369.5 489.0 L 457 391.0" stroke="#2a8a48" stroke-width="34" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<!-- right card: X, fanned wide -->
+<g transform="rotate(24 512 760)">
+<rect x="482" y="270" width="310" height="460" rx="30" fill="#2a2218" stroke="#8b6a38" stroke-width="12"/>
+<g stroke="#c04040" stroke-width="34" stroke-linecap="round"><line x1="577" y1="380" x2="697" y2="500"/><line x1="697" y1="380" x2="577" y2="500"/></g>
+</g>
+<!-- center card: gold ? -->
+<g>
+<rect x="352" y="222" width="320" height="470" rx="30" fill="url(#cardg)" stroke="#c8903a" stroke-width="16"/>
+<rect x="376" y="246" width="272" height="422" rx="18" fill="none" stroke="#c8903a" stroke-width="4" opacity="0.5"/>
+<text x="512" y="548" font-family="DejaVu Serif, Georgia, serif" font-size="300" font-weight="bold" fill="#e8b060" text-anchor="middle">?</text>
+</g>
+</svg>

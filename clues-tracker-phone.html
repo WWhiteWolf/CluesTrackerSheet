@@ -1,0 +1,2892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="screen-orientation" content="portrait">
+<meta name="color-scheme" content="dark light">
+<title>Clues Tracker Sheet</title>
+
+<style>
+/* Portrait lock — the page plays upright only */
+@media screen and (orientation: landscape) {
+  body::before {
+    content: 'Please rotate your device to portrait mode';
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--page-ground); color: var(--hint);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1rem; text-align: center;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+  }
+  body > * { display: none !important; }
+}
+</style>
+
+<style>
+/* Bundled fonts — no network needed */
+@font-face { font-family:'Lora'; font-style:normal; font-weight:400; font-display:swap;
+  src:url('static/fonts/lora-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family:'Lora'; font-style:italic; font-weight:400; font-display:swap;
+  src:url('static/fonts/lora-latin-400-italic.woff2') format('woff2'); }
+@font-face { font-family:'Lora'; font-style:normal; font-weight:500; font-display:swap;
+  src:url('static/fonts/lora-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family:'Playfair Display'; font-style:normal; font-weight:600; font-display:swap;
+  src:url('static/fonts/playfair-display-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family:'Playfair Display'; font-style:italic; font-weight:600; font-display:swap;
+  src:url('static/fonts/playfair-display-latin-600-italic.woff2') format('woff2'); }
+@font-face { font-family:'Playfair Display'; font-style:normal; font-weight:700; font-display:swap;
+  src:url('static/fonts/playfair-display-latin-700-normal.woff2') format('woff2'); }
+</style>
+
+<style>
+/* Palettes — copied from docs/palettes-tuned.css, the ruling record.
+   Every color on this page is a named variable from these two blocks;
+   nothing is hard-coded outside them (the area law, Y-6). */
+.theme-dark {
+  --footer: #1a1410;
+  --page-ground: #1a1410;
+  --text: #f0e8d8;
+  --guide-button: #e8b060;
+  --footer-lines: #8b6a38;
+  --footer-faded: #a89878;
+  --header: #e8b060;
+  --header-text: #1a1410;
+  --turn-bar: #2a8a48;
+  --turn-bar-text: #e8f5ec;
+  --winner: #ffffff;
+  --i-won-glow: #fff4c8;
+  --stage-bar: #242018;
+  --stage-hint: #e8b060;
+  --undo-button: #c04040;
+  --next-button: #2a8a48;
+  --button-text: #ffffff;
+  --col-header: #e8b060;
+  --col-header-text: #1a1410;
+  --me-header: #2a8a48;
+  --me-header-text: #e8f5ec;
+  --asker-header: #3a5a9b;
+  --asker-header-text: #e8f0ff;
+  --quit-header: #957240;
+  --quit-header-text: #564e2a;
+  --empty-header: #433320;
+  --empty-header-text: #6a5c44;
+  --band-1: #c04040;
+  --band-2: #4a6aab;
+  --band-3: #278546;
+  --band-4: #7b642a;
+  --band-text: #ffffff;
+  --band-4-text: #f5c878;
+  --grid: #1e1a14;
+  --card-col: #2a2218;
+  --me-col: #0f2018;
+  --dead-col: #1a1614;
+  --picked-cell: #1e2a4a;
+  --focus-outline: #3a5a9b;
+  --tally-col: #1e1a14;
+  --sum-star: #e8b060;
+  --check-wash: rgba(0,155,50,0.3);
+  --cross-wash: rgba(215,30,30,0.32);
+  --grid-lines: #8b6a38;
+  --grid-text: #f0e8d8;
+  --grid-faded: #a89878;
+  --check: #60e090;
+  --cross: #e51c2a;
+  --asked: #8aaaf0;
+  --asked-plate: #1a2a50;
+  --showed: #e0a060;
+  --showed-plate: #3a2010;
+  --me-mark: #c8903a;
+  --me-mark-plate: #2a1e08;
+  --setup-ground: #1a1410;
+  --setup-label: #e8b060;
+  --seat-label: #a89878;
+  --slot: #2a2218;
+  --named-slot: #c8903a;
+  --me-slot: #0f2e18;
+  --me-badge: #2a8a48;
+  --setup-band-1: #801217;
+  --setup-band-2: #204485;
+  --setup-band-3: #1c6132;
+  --setup-band-4: #5a481e;
+  --chip: #2a2218;
+  --picked-chip: #2a8a48;
+  --picked-chip-text: #e8f5e8;
+  --add-button: #c8903a;
+  --setup-lines: #8b6a38;
+  --setup-text: #f0e8d8;
+  --setup-faded: #a89878;
+  --hint: #e8b060;
+  --modal: #2a2218;
+  --modal-head: #e8b060;
+  --modal-head-text: #1a1410;
+  --input: #1a1410;
+  --me-toggle: #edf7f0;
+  --chosen: #2a8a48;
+  --chosen-text: #e8f5ec;
+  --save-button: #e8b060;
+  --save-button-text: #1a1410;
+  --skip-button-text: #e8b060;
+  --delete-button: #c04040;
+  --delete-button-text: #ffffff;
+  --warn: #ffffff;
+  --backdrop: rgba(44,26,8,0.75);
+  --modal-lines: #8b6a38;
+  --modal-text: #f0e8d8;
+  --modal-faded: #a89878;
+  --panel-bar: #242018;
+  --panel-title: #e8b060;
+  --panel-status: #e8b060;
+  --foot-status-ground: #e8b060;
+  --log-ground: #1a1410;
+  --log-title: #e8b060;
+  --log-summary: #a89878;
+  --log-now: #e8b060;
+  --log-notice: #ffffff;
+  --guide-ground: #1a1410;
+  --guide-head: #e8b060;
+  --guide-sub: #e8b060;
+  --guide-intro: #a89878;
+  --notes-ground: #1a1410;
+  --notes-hint: #a89878;
+  --panel-lines: #8b6a38;
+  --panel-text: #f0e8d8;
+  --panel-faded: #a89878;
+  --feedback-question: #e8b060;
+  --feedback-invite: #a89878;
+  --rating-slider: #c8903a;
+  --feedback-thanks: #c8903a;
+  --feedback-appreciation: #f0e8d8;
+}
+.theme-light {
+  --footer: #d7ae88;
+  --page-ground: #d7ae88;
+  --text: #110d07;
+  --guide-button: #a87018;
+  --footer-lines: #8b6a38;
+  --footer-faded: #382f21;
+  --header: #edbb5d;
+  --header-text: #2a1c08;
+  --turn-bar: #299e54;
+  --turn-bar-text: #eef8f0;
+  --winner: #ffffff;
+  --i-won-glow: #fff4c8;
+  --stage-bar: #ebc188;
+  --stage-hint: #a87018;
+  --undo-button: #df4b6c;
+  --next-button: #278b4b;
+  --button-text: #ffffff;
+  --col-header: #f0cd5a;
+  --col-header-text: #2a1c08;
+  --me-header: #5acd82;
+  --me-header-text: #eef8f0;
+  --asker-header: #5d95ff;
+  --asker-header-text: #e6efff;
+  --quit-header: #fbd58f;
+  --quit-header-text: #7e663e;
+  --empty-header: #c2b398;
+  --empty-header-text: #a89b81;
+  --band-1: #d26755;
+  --band-2: #6593c8;
+  --band-3: #54a473;
+  --band-4: #d49433;
+  --band-text: #ffffff;
+  --band-4-text: #f5c878;
+  --grid: #eccc9d;
+  --card-col: #dbbd92;
+  --me-col: #eccc9d;
+  --dead-col: #d1c2a6;
+  --picked-cell: #f0cc5a;
+  --focus-outline: #5d95ff;
+  --tally-col: #eccc9d;
+  --sum-star: #a87018;
+  --check-wash: rgba(0,194,0,0.35);
+  --cross-wash: rgba(255,0,0,0.25);
+  --grid-lines: #8b6a38;
+  --grid-text: #110d07;
+  --grid-faded: #382f21;
+  --check: #1a7a34;
+  --cross: #d7002e;
+  --asked: #2a4a9b;
+  --asked-plate: #fff2ed;
+  --showed: #9a5a20;
+  --showed-plate: #f0d8b8;
+  --me-mark: #a87018;
+  --me-mark-plate: #f0e0b0;
+  --setup-ground: #ebca9d;
+  --setup-label: #4d330e;
+  --seat-label: #382f21;
+  --slot: #e9a859;
+  --named-slot: #a87018;
+  --me-slot: #54a473;
+  --me-badge: #278b4b;
+  --setup-band-1: #d26755;
+  --setup-band-2: #6593c8;
+  --setup-band-3: #54a473;
+  --setup-band-4: #d49433;
+  --chip: #f5d9a8;
+  --picked-chip: #2bb761;
+  --picked-chip-text: #ecf4ef;
+  --add-button: #2b1d08;
+  --setup-lines: #8b6a38;
+  --setup-text: #110d07;
+  --setup-faded: #382f21;
+  --hint: #a87018;
+  --modal: #f2d1a2;
+  --modal-head: #fbbc59;
+  --modal-head-text: #2a1c08;
+  --input: #ffd9ac;
+  --me-toggle: #edf7f0;
+  --chosen: #2dc267;
+  --chosen-text: #ecf4ef;
+  --save-button: #f3b556;
+  --save-button-text: #2a1c08;
+  --skip-button-text: #7a5610;
+  --delete-button: #e50033;
+  --delete-button-text: #ffffff;
+  --warn: #ff0000;
+  --backdrop: rgba(44,26,8,0.14);
+  --modal-lines: #8b6a38;
+  --modal-text: #110d07;
+  --modal-faded: #382f21;
+  --panel-bar: #f7d9b9;
+  --panel-title: #a87018;
+  --panel-status: #a87018;
+  --foot-status-ground: #f7d9b9;
+  --log-ground: #eecca1;
+  --log-title: #a87018;
+  --log-summary: #382f21;
+  --log-now: #a87018;
+  --log-notice: #ff0000;
+  --guide-ground: #eecca1;
+  --guide-head: #a87018;
+  --guide-sub: #a87018;
+  --guide-intro: #382f21;
+  --notes-ground: #eccc9c;
+  --notes-hint: #382f21;
+  --panel-lines: #8b6a38;
+  --panel-text: #110d07;
+  --panel-faded: #382f21;
+  --feedback-question: #9b6718;
+  --feedback-invite: #382f21;
+  --rating-slider: #a87018;
+  --feedback-thanks: #a87018;
+  --feedback-appreciation: #110d07;
+}
+</style>
+
+<style>
+/* ═══ BASE ═══ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Lora',Georgia,serif;background:var(--page-ground);color:var(--text);max-width:430px;margin:0 auto;display:flex;flex-direction:column;height:100dvh;overflow:hidden;user-select:none;-webkit-user-select:none;}
+input,textarea{user-select:text;-webkit-user-select:text;}
+
+/* ═══ HEADER — one flat color, var(--header) ═══ */
+.app-header{background:var(--header);color:var(--header-text);padding:8px 12px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.app-header h1{font-family:'Playfair Display',serif;font-size:1.1rem;letter-spacing:0.03em;flex:1;text-align:center;color:var(--header-text);}
+.title-icon{height:1.05em;vertical-align:-0.18em;margin-right:2px;}
+.hbtn{font-family:'Lora',serif;font-size:0.8rem;background:none;border:1.5px solid var(--header-text);color:var(--header-text);border-radius:4px;padding:6px 12px;cursor:pointer;white-space:nowrap;font-weight:600;}
+.hbtn:active{opacity:0.7;}
+.hbtn.dim{opacity:0.35;}
+
+/* ═══ SCREENS ═══ */
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* ═══ THEME BUTTON — square, at home in the turn bar and on the
+   STEP 1 - PLAYERS line (Patrick, Y-6) ═══ */
+.theme-btn{font-size:0.85rem;width:28px;height:28px;border-radius:4px;background:none;border:1.5px solid currentColor;color:inherit;cursor:pointer;line-height:1;padding:0;flex-shrink:0;}
+.theme-btn:active{opacity:0.7;}
+
+/* ═══ SETUP — ground var(--setup-ground) ═══ */
+.setup-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;background:var(--setup-ground);}
+.sec-label{font-family:'Playfair Display',serif;font-size:0.85rem;color:var(--setup-label);text-transform:uppercase;letter-spacing:0.1em;border-bottom:1px solid var(--setup-lines);padding-bottom:4px;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;}
+.sec-label .theme-btn{color:var(--setup-label);}
+.placeholder{font-size:0.82rem;color:var(--setup-faded);font-style:italic;}
+.player-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.player-slot{background:var(--slot);border:1.5px solid var(--setup-lines);border-radius:6px;padding:5px 8px;cursor:pointer;min-height:40px;display:flex;flex-direction:column;gap:2px;}
+.player-slot.has-name{border-color:var(--named-slot);}
+.player-slot.is-me{border-color:var(--me-badge);background:var(--me-slot);}
+.slot-lbl{font-size:0.6rem;color:var(--seat-label);text-transform:uppercase;letter-spacing:0.08em;}
+.slot-name{font-size:0.85rem;color:var(--setup-text);font-weight:500;min-height:1em;}
+.setup-btn-row{display:flex;align-items:center;gap:8px;margin-top:10px;margin-bottom:8px;}
+.setup-btn{font-family:'Lora',serif;font-size:0.78rem;padding:6px 10px;border-radius:14px;border:1.5px solid var(--add-button);background:none;color:var(--add-button);cursor:pointer;white-space:nowrap;}
+.setup-btn:active{opacity:0.7;}
+/* Counts already given: the button borrows the card chips' picked
+   colors, so a set answer looks the same everywhere (Patrick, Y-22) */
+.setup-btn.is-set{background:var(--picked-chip);border-color:var(--picked-chip);color:var(--picked-chip-text);font-weight:500;}
+.deck-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;}
+.deck-chip{font-family:'Lora',serif;font-size:0.75rem;padding:5px 0;border-radius:14px;border:1.5px solid var(--setup-lines);background:var(--chip);color:var(--setup-text);cursor:pointer;flex:1;min-width:0;max-width:calc(25% - 4px);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.deck-chip:active{opacity:0.7;}
+.card-section{margin-bottom:6px;}
+.cat-hdr{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;padding:0 10px;line-height:1.8;border-radius:3px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;color:var(--band-text);}
+.cat-hdr.c0{background:var(--setup-band-1);}
+.cat-hdr.c1{background:var(--setup-band-2);}
+.cat-hdr.c2{background:var(--setup-band-3);}
+.cat-hdr.c3{background:var(--setup-band-4);color:var(--band-4-text);}
+.cat-edit-btn{font-size:0.65rem;padding:3px 8px;border-radius:3px;border:1px solid var(--band-text);background:none;cursor:pointer;font-family:'Lora',serif;color:var(--band-text);}
+.cat-hdr.c3 .cat-edit-btn{border-color:var(--band-4-text);color:var(--band-4-text);}
+.add-cat-btn{width:100%;padding:8px;margin-top:2px;margin-bottom:6px;border:1.5px dashed var(--add-button);border-radius:4px;background:none;color:var(--add-button);font-family:'Lora',serif;font-size:0.8rem;cursor:pointer;}
+.card-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.card-chip{font-size:0.85rem;padding:6px 12px;border-radius:16px;border:1.5px solid var(--setup-lines);background:var(--chip);color:var(--setup-text);cursor:pointer;transition:all 0.12s;}
+.card-chip:active{transform:scale(0.95);}
+.card-chip.selected{background:var(--picked-chip);border-color:var(--picked-chip);color:var(--picked-chip-text);font-weight:500;}
+
+/* ═══ GAME — the bars, each one flat color ═══ */
+/* The two bars share one block so Next can stand across both of
+   them (Patrick, Y-23). Next is lifted out of the stage bar's own
+   row and pinned down the right of the block, top to bottom, at
+   the same small inset from the screen edge it always had. Both
+   bars keep their full width and their flat color underneath it;
+   what they give up is room at the right end, so nothing of
+   theirs slides beneath the button. That right-hand clearance is
+   the button's own width plus its gap, which is exactly what the
+   stage bar already spent on Next — so the hint line keeps the
+   room it has always had, and only the turn bar's two buttons
+   actually move. */
+.bars-block{position:relative;flex-shrink:0;}
+.turn-bar{background:var(--turn-bar);color:var(--turn-bar-text);padding:6px 84px 6px 14px;font-size:0.85rem;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.turn-bar-right{display:flex;gap:8px;align-items:center;}
+.accuse-btn{font-family:'Lora',serif;font-size:0.78rem;background:none;border:1px solid var(--turn-bar-text);color:var(--turn-bar-text);border-radius:3px;padding:3px 9px;cursor:pointer;font-weight:600;white-space:nowrap;}
+.accuse-btn:active{opacity:0.7;}
+/* The win moment — bigger, brighter letters in the same-size bar; the
+   glow breathes like a lamp turned up. An opponent's win wears
+   .win-text alone — same letters, no glow. Both looks are drawn from
+   the two named win colors, per the color law. */
+.win-text{font-size:1.06rem;font-weight:600;color:var(--winner);letter-spacing:0.04em;}
+.win-glow{animation:winGlow 2.6s ease-in-out infinite;}
+@keyframes winGlow{
+  0%,100%{text-shadow:0 0 3px color-mix(in srgb,var(--i-won-glow) 35%,transparent);}
+  50%{text-shadow:0 0 10px color-mix(in srgb,var(--i-won-glow) 95%,transparent), 0 0 22px color-mix(in srgb,var(--i-won-glow) 70%,transparent);}
+}
+.stage-bar{background:var(--stage-bar);border-bottom:1px solid var(--grid-lines);padding:5px 84px 5px 10px;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px;}
+.stage-hint{text-align:center;font-style:italic;color:var(--stage-hint);font-size:0.78rem;overflow:hidden;white-space:nowrap;min-width:0;}
+.undo-btn{font-size:0.82rem;padding:4px 11px;border-radius:3px;background:var(--undo-button);color:var(--button-text);border:none;cursor:pointer;font-family:'Lora',serif;font-weight:600;}
+.next-btn{position:absolute;top:0;right:10px;bottom:1px;width:68px;font-size:0.95rem;padding:0;border-radius:3px;background:var(--next-button);color:var(--button-text);border:1.5px solid var(--turn-bar-text);cursor:pointer;font-family:'Lora',serif;font-weight:600;white-space:nowrap;}
+.grid-wrap{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--grid);}
+
+/* ═══ GAME GRID — the look Patrick tuned in theme-tuner.html ═══
+   Fixed cell and row sizes: the grid scrolls, never squeezes.
+   Each header cell belongs to its column — one unit, so the
+   coming column drag moves the name and its cells together;
+   position:sticky pins the name row during up-and-down scroll. */
+.tracker-table{border-collapse:separate;border-spacing:0;width:100%;}
+.corner-th{position:sticky;left:0;top:0;z-index:10;background:var(--col-header);color:var(--col-header-text);padding:5px 6px;font-size:9px;text-align:left;border-left:1px solid var(--grid-lines);border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:82px;min-width:82px;}
+.player-th{position:sticky;top:0;z-index:9;background:var(--col-header);color:var(--col-header-text);text-align:center;padding:5px 3px;font-size:9.5px;border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:47px;min-width:47px;max-width:47px;overflow:hidden;white-space:nowrap;}
+.player-th.me-th{background:var(--me-header);color:var(--me-header-text);}
+.player-th.active-asker{background:var(--asker-header);color:var(--asker-header-text);}
+.player-th.inactive-th{background:var(--empty-header);color:var(--empty-header-text);}
+.player-th.quit-th{background:var(--quit-header);color:var(--quit-header-text);}
+.summary-th,.house-th{position:sticky;top:0;z-index:9;background:var(--col-header);color:var(--col-header-text);text-align:center;padding:4px 1px;font-size:9px;border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:33px;min-width:33px;}
+.house-th{font-size:10px;}
+/* Category banners — one color apiece */
+.cat-row td{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;padding:2px 6px;color:var(--band-text);line-height:1.8;border-bottom:1px solid var(--grid-lines);}
+.cat-c0{background:var(--band-1);}
+.cat-c1{background:var(--band-2);}
+.cat-c2{background:var(--band-3);}
+.cat-c3{background:var(--band-4);color:var(--band-4-text);}
+/* The grid ground and its solid overlays */
+.card-th{position:sticky;left:0;z-index:8;text-align:left;padding:3px 5px;font-size:12px;font-weight:400;color:var(--grid-text);background:var(--card-col);border-left:1px solid var(--grid-lines);border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);white-space:nowrap;width:82px;min-width:82px;}
+.sum-cell,.house-cell{border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:33px;min-width:33px;text-align:center;vertical-align:middle;padding:1px;background:var(--tally-col);font-size:11px;}
+.data-cell{border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:47px;min-width:47px;vertical-align:top;padding:2px 3px;background:var(--grid);word-wrap:break-word;position:relative;}
+.data-cell.me-cell{background:var(--me-col);}
+.data-cell.inactive-cell{background:var(--dead-col);}
+.data-cell.picked{background:var(--picked-cell)!important;outline:1px solid var(--focus-outline);outline-offset:-1px;}
+/* The washes rest on the grid ground alone — see-through on purpose */
+td.cell-check{background:linear-gradient(var(--check-wash),var(--check-wash)) var(--grid)!important;}
+td.cell-cross{background:linear-gradient(var(--cross-wash),var(--cross-wash)) var(--grid)!important;}
+/* The marks */
+.cell-inner{display:flex;flex-wrap:wrap;gap:2px;align-items:flex-start;min-height:24px;}
+.sym{font-size:10px;line-height:1.2;display:inline-flex;white-space:nowrap;}
+.sym-check{color:var(--check);font-weight:700;font-size:9px;}
+.sym-cross{color:var(--cross);font-weight:700;font-size:8px;}
+.sym-asked{color:var(--asked);font-weight:700;background:var(--asked-plate);border-radius:2px;padding:0 2px;}
+.sym-showed{color:var(--showed);font-weight:700;background:var(--showed-plate);border-radius:2px;padding:0 2px;}
+.sym-ishowed{color:var(--me-mark);font-weight:700;background:var(--me-mark-plate);border-radius:2px;padding:0 2px;}
+.cell-note{position:absolute;bottom:1px;right:2px;font-size:8px;color:var(--grid-faded);font-style:italic;line-height:1;}
+/* The held column while a hard press drags it — the focus
+   outline marks it; the bumped z-index keeps it painting
+   above the columns it slides across. Headers keep their sticky
+   pinning; only the cells take position:relative. */
+.drag-col{outline:2px solid var(--focus-outline);outline-offset:-2px;}
+th.drag-col{z-index:11;}
+td.drag-col{position:relative;z-index:5;}
+/* A hard press on a header must not pop the system callout */
+.tracker-table th{-webkit-touch-callout:none;}
+
+/* ═══ SIDE PAGES — each page's ground and lettering wear their
+   own names (Y-19) ═══ */
+.panel-head{background:var(--panel-bar);border-bottom:1px solid var(--panel-lines);padding:6px 14px;text-align:center;flex-shrink:0;font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--panel-title);}
+.panel-body{flex:1;overflow-y:auto;padding:14px;}
+#logList{background:var(--log-ground);}
+#guideContent{background:var(--guide-ground);}
+/* The Log page — one styled block per entry kind; the ∑ and 🏠
+   entries speak more quietly; a highlighted line calls out the
+   return of a hidden ! after an undo */
+.log-entry{padding:8px 0;border-bottom:1px solid var(--panel-lines);font-size:0.78rem;line-height:1.6;}
+.log-title{font-family:'Playfair Display',serif;font-weight:600;color:var(--log-title);}
+.log-entry.kind-sum .log-title,
+.log-entry.kind-house .log-title{font-family:'Lora',serif;font-weight:400;}
+.log-entry.kind-sum .log-title{color:var(--log-summary);font-style:italic;}
+.log-line{color:var(--panel-text);}
+.log-line.hi{color:var(--log-notice);font-weight:600;}
+.log-now{color:var(--log-now);font-style:italic;}
+.log-empty{color:var(--panel-faded);font-style:italic;font-size:1rem;text-align:center;padding-top:40px;}
+/* The Notes page — the pad wears its own ground */
+.notes-area{flex:1;background:var(--notes-ground);color:var(--panel-text);font-family:'Lora',serif;font-size:0.88rem;padding:14px;border:none;outline:none;resize:none;line-height:1.6;width:100%;}
+.notes-area::placeholder{color:var(--notes-hint);font-style:italic;}
+/* The Guide page — the rebuilt Guide (Y-51).
+   Its ground and lettering wear their own names (Y-19). */
+.g-sec{font-family:'Playfair Display',serif;font-size:1rem;color:var(--guide-head);margin:8px 0 4px;}
+.g-sub{font-size:0.82rem;font-weight:600;color:var(--guide-sub);margin-bottom:4px;}
+.g-p{font-size:0.78rem;color:var(--panel-text);margin-bottom:10px;}
+.g-intro{font-size:0.78rem;color:var(--guide-intro);margin-bottom:12px;}
+.g-ul{font-size:0.78rem;color:var(--panel-text);margin-bottom:10px;padding-left:16px;}
+.g-ul li{margin-bottom:6px;}
+.g-rule{border-top:1px solid var(--panel-lines);margin-bottom:12px;}
+/* The side pages' status outlets, and the return-only-to-the-
+   active-page dimming on their footers */
+.foot-status{position:absolute;inset:0;display:none;align-items:center;padding:0 14px;background:var(--foot-status-ground);border-top:2px solid var(--footer-lines);font-size:0.9rem;color:var(--header-text);overflow:hidden;white-space:nowrap;}
+.head-status{flex:1;display:none;align-items:center;padding:0 10px;font-size:0.9rem;color:var(--panel-status);overflow:hidden;white-space:nowrap;text-align:left;}
+.foot-btn.dim{opacity:0.35;pointer-events:none;}
+
+/* ═══ FOOTER NAVIGATION ═══ */
+.foot{display:flex;align-items:center;justify-content:space-between;padding:6px 44px;gap:8px;border-top:1px solid var(--footer-lines);background:var(--footer);flex-shrink:0;}
+.foot-btn{font-family:'Lora',serif;font-size:0.78rem;background:none;border:1px solid var(--footer-lines);color:var(--footer-faded);padding:4px 14px;border-radius:4px;cursor:pointer;}
+.foot-btn.bright{border-color:var(--guide-button);color:var(--guide-button);font-weight:600;}
+
+/* ═══ MODALS — solid windows; the backdrop's see-through is on purpose ═══ */
+.modal-backdrop{display:none;position:fixed;inset:0;background:var(--backdrop);z-index:100;align-items:flex-start;justify-content:center;padding:12px 18px;overflow-y:auto;overscroll-behavior:none;}
+.modal-backdrop.open{display:flex;}
+.modal{background:var(--modal);border:2px solid var(--modal-lines);border-radius:10px;width:100%;max-width:340px;overflow:hidden;margin-top:8px;}
+.modal-head{background:var(--modal-head);color:var(--modal-head-text);font-family:'Playfair Display',serif;font-size:0.95rem;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
+.modal-close{background:none;border:1px solid var(--modal-head-text);color:var(--modal-head-text);font-size:0.75rem;cursor:pointer;padding:3px 8px;border-radius:3px;font-family:'Lora',serif;font-weight:600;}
+.modal-body{background:var(--modal);padding:14px;display:flex;flex-direction:column;gap:10px;}
+.modal-input{width:100%;font-family:'Lora',serif;font-size:1.05rem;padding:9px 11px;border:1.5px solid var(--modal-lines);border-radius:6px;background:var(--input);color:var(--modal-text);outline:none;}
+.modal-input:focus{border-color:var(--hint);}
+.me-toggle{display:flex;align-items:center;gap:10px;background:var(--me-toggle);border:1.5px solid var(--me-badge);border-radius:6px;padding:9px 14px;cursor:pointer;}
+.me-toggle input[type=checkbox]{width:22px;height:22px;accent-color:var(--me-badge);cursor:pointer;}
+.me-toggle label{font-size:0.9rem;color:var(--me-badge);font-weight:500;cursor:pointer;}
+.modal-btn-row{display:flex;gap:8px;}
+.modal-msg{display:flex;justify-content:center;text-align:center;font-size:0.8rem;font-weight:600;color:var(--hint);min-height:20px;overflow:hidden;white-space:nowrap;}
+.modal-btn{flex:1;font-family:'Lora',serif;font-size:0.9rem;padding:10px;border-radius:6px;cursor:pointer;border:1px solid var(--modal-lines);}
+.modal-btn.primary{background:var(--save-button);color:var(--save-button-text);border-color:var(--save-button);}
+.modal-btn.secondary{background:none;color:var(--skip-button-text);}
+.modal-btn.danger{background:var(--delete-button);color:var(--delete-button-text);border-color:var(--delete-button);}
+.card-edit-list{display:flex;flex-direction:column;gap:7px;max-height:310px;overflow-y:auto;}
+.card-edit-row{display:flex;gap:6px;align-items:center;}
+.card-del-btn{flex-shrink:0;width:28px;height:28px;border-radius:4px;border:1px solid var(--delete-button);background:none;color:var(--delete-button);font-size:0.8rem;cursor:pointer;line-height:1;font-family:'Lora',serif;}
+.card-edit-input{flex:1;font-family:'Lora',serif;font-size:0.92rem;padding:7px 9px;border:1.5px solid var(--modal-lines);border-radius:6px;background:var(--input);color:var(--modal-text);outline:none;}
+.card-edit-input:focus{border-color:var(--hint);}
+.card-edit-input::placeholder{color:var(--modal-faded);font-style:italic;}
+.card-edit-input:focus::placeholder{color:transparent;}
+.two-tap-active{background:var(--delete-button)!important;color:var(--delete-button-text)!important;border-color:var(--delete-button)!important;}
+.pick-list{display:flex;flex-direction:column;gap:8px;max-height:310px;overflow-y:auto;}
+.pick-opt{font-family:'Lora',serif;padding:9px 14px;border:1.5px solid var(--modal-lines);border-radius:6px;background:var(--input);font-size:0.92rem;color:var(--modal-text);cursor:pointer;text-align:left;}
+.pick-opt.selected{background:var(--chosen);border-color:var(--chosen);color:var(--chosen-text);font-weight:500;}
+.modal-sec{font-size:0.72rem;color:var(--hint);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;}
+
+/* ═══ COUNTS WINDOW — numbers by tap alone, no keyboard ═══ */
+.count-row{display:flex;align-items:center;gap:10px;}
+.count-lbl{flex:1;font-size:0.9rem;color:var(--modal-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.count-step{width:40px;height:40px;border-radius:6px;border:1.5px solid var(--modal-lines);background:var(--input);color:var(--modal-text);font-size:1.3rem;cursor:pointer;font-family:'Lora',serif;line-height:1;flex-shrink:0;}
+.count-step:active{opacity:0.7;}
+.count-val{width:34px;text-align:center;font-size:1.05rem;font-weight:600;color:var(--modal-text);flex-shrink:0;}
+
+/* ═══ STATUS — long messages scroll across their slot ═══ */
+.status-inner{display:inline-block;will-change:transform;}
+.status-inner.marquee{animation-name:statusMarquee;animation-timing-function:linear;animation-fill-mode:forwards;}
+@keyframes statusMarquee{
+  0%   {transform:translateX(0);}
+  10%  {transform:translateX(0);}
+  90%  {transform:translateX(var(--status-shift,0));}
+  100% {transform:translateX(var(--status-shift,0));}
+}
+</style>
+</head>
+<body class="theme-dark">
+
+<!-- HEADER -->
+<div class="app-header">
+  <div style="display:flex;gap:6px;align-items:center">
+    <button class="hbtn" id="btnNew" style="display:none" onclick="openNewGame()">New</button>
+  </div>
+  <!-- The ✓ is drawn inline — neither bundled font has the glyph -->
+  <h1 id="appTitle"><img src="static/icon-cards.svg" class="title-icon" alt=""> Clues Tracker Sheet</h1>
+  <div style="display:flex;gap:6px;align-items:center">
+    <button class="hbtn" id="btnOut" style="display:none" onclick="openPlayerOut()">Out</button>
+    <button class="hbtn" id="btnPlay" style="display:none" onclick="tryPlay()">▶ Play</button>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div class="screen active" id="screenSetup">
+  <div class="setup-body">
+    <div>
+      <div class="sec-label"><span>STEP 1 - PLAYERS</span><button class="theme-btn" id="btnThemeSetup" onclick="toggleTheme()">☀</button></div>
+      <div class="player-grid" id="playerGrid"></div>
+    </div>
+    <div>
+      <div class="sec-label"><span>STEP 2 - CARDS</span></div>
+      <div class="setup-btn-row">
+        <button class="setup-btn" onclick="openSaveDeck()">💾 Save Card Deck</button>
+        <button class="setup-btn" id="btnCounts" onclick="openCounts()">Where are the cards?</button>
+      </div>
+      <div class="deck-bar" id="deckBar"></div>
+      <div id="cardPicker"></div>
+    </div>
+  </div>
+  <div style="position:relative;flex-shrink:0;">
+    <div class="foot" style="border-top:1px solid var(--footer-lines);">
+      <button class="foot-btn" onclick="showScreen('screenLog')">← Log</button>
+      <button class="foot-btn bright" onclick="showScreen('screenGuide')">📖 Guide</button>
+      <button class="foot-btn" onclick="showScreen('screenNotes')">Notes →</button>
+    </div>
+    <div id="statusBarSetup" style="position:absolute;inset:0;display:none;align-items:center;padding:0 14px;background:var(--foot-status-ground);border-top:2px solid var(--footer-lines);font-size:0.9rem;color:var(--header-text);overflow:hidden;white-space:nowrap;"></div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen" id="screenGame">
+  <div class="bars-block">
+    <div class="turn-bar">
+      <span id="turnLabel">Turn 1</span>
+      <div class="turn-bar-right">
+        <button class="accuse-btn" id="btnAccuse" onclick="openAccuse()">⭐ Accuse</button>
+        <button class="theme-btn" id="btnThemeGame" onclick="toggleTheme()">☀</button>
+      </div>
+    </div>
+    <div class="stage-bar">
+      <button class="undo-btn" id="undoBtn" style="opacity:0.3;pointer-events:none">↩ Undo</button>
+      <span class="stage-hint" id="stageHint">—</span>
+    </div>
+    <button class="next-btn" id="nextBtn">Next ▶</button>
+  </div>
+  <div class="grid-wrap" id="gridWrap"></div>
+  <div class="foot">
+    <button class="foot-btn" onclick="showScreen('screenLog')">← Log</button>
+    <button class="foot-btn bright" onclick="showScreen('screenGuide')">📖 Guide</button>
+    <button class="foot-btn" onclick="showScreen('screenNotes')">Notes →</button>
+  </div>
+</div>
+
+<!-- LOG PAGE -->
+<div class="screen" id="screenLog">
+  <div class="panel-head">📋 Turn Log <button class="foot-btn" onclick="copyLog()">Copy</button></div>
+  <div class="panel-body" id="logList"></div>
+  <div style="position:relative;flex-shrink:0;">
+    <div class="foot">
+      <button class="foot-btn nav-setup" onclick="showScreen('screenSetup')">← Setup</button>
+      <button class="foot-btn nav-game" onclick="showScreen('screenGame')">Game →</button>
+    </div>
+    <div id="statusBarLog" class="foot-status"></div>
+  </div>
+</div>
+
+<!-- NOTES PAGE -->
+<div class="screen" id="screenNotes">
+  <div class="panel-head" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>📝 Notepad</span>
+    <div id="statusBarNotes" class="head-status"></div>
+    <button class="foot-btn" id="clearNotesBtn" onclick="twoTap('clearNotes',this,()=>clearNotes(),'Clear?')">Clear</button>
+  </div>
+  <textarea id="notesArea" class="notes-area" placeholder="Tap here to type your notes…" oninput="saveNotes()"></textarea>
+  <div class="foot">
+    <button class="foot-btn nav-setup" onclick="showScreen('screenSetup')">← Setup</button>
+    <button class="foot-btn nav-game" onclick="showScreen('screenGame')">Game →</button>
+  </div>
+</div>
+
+<!-- GUIDE PAGE — the rebuilt Guide (Y-51). House, the Turn Log
+     and the Notepad keep their earlier words. -->
+<div class="screen" id="screenGuide">
+  <div class="panel-head">📖 Player Guide</div>
+  <div class="panel-body" id="guideContent">
+
+    <p class="g-intro">This app is here to help you enjoy and win the classic deduction board games you already play.</p>
+    <p class="g-intro">It is a companion for the real board on the real table. You tell it what to write, and it keeps the notes, freeing you to devote your mind to the clues and the facts.</p>
+    <p class="g-intro">This Guide leads you through the game itself as it develops — getting you set up, and showing you the turns.</p>
+    <p class="g-intro">The app arrives dark. If you would rather read it light, one tap of ☀ or 🌙 changes it.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Setting up</div>
+    <p class="g-intro">Setup asks about ten minutes of you the first game, and then never asks again. Nothing here is hard — you just step your way down the screen.</p>
+    <ol class="g-ul">
+    <li><strong>Players.</strong> Tap a seat, type a name, and tap Confirm. Fill them in the order people will play. When you come to your own seat, check "This is Me" before you tap Confirm — and don't worry about a name for yourself.</li>
+    <li><strong>Cards.</strong> This is the part that takes the time. Tap Rename → Edit in a category banner and give the categories and cards the names that match your game. Then tap Save — nothing is kept until you do.</li>
+    <li><strong>Save Card Deck.</strong> Tap it and give the deck a name. That is your ten minutes done for good. Later, with a tap you can load the deck you want.</li>
+    <li><strong>Where are the cards?</strong> Tap it and tell the app how many cards each player was dealt. Then tap Done.</li>
+    <li><strong>Your hand.</strong> Tap the chips for the cards you are holding, and they turn green as you do.</li>
+    </ol>
+    <p class="g-intro">And that is all of it. ▶ Play brightens at the top right, tap it and you are playing. If it is still dim, tap it anyway and it will tell you, at the bottom of the screen, what is missing.</p>
+    <p class="g-intro"><em>Each of these is explained in full in Setup, below, whenever you want it.</em></p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Playing the game</div>
+    <div class="g-sec">How the Game page is laid out</div>
+    <p class="g-p">A few things sit around the sheet, in the same place all game. Each is explained in full further down.</p>
+    <ul class="g-ul">
+    <li><strong>The header</strong> runs across the top. New at the left starts a fresh game, and Out at the right is for a player who leaves the table. Both have their own sub-section later.</li>
+    <li><strong>The turn bar</strong> sits above the sheet and says whose turn it is. At its right are ⭐ Accuse, for when someone names their solution, and the ☀ / 🌙 button that swaps the dark screen for the light one.</li>
+    <li><strong>The hint bar</strong> below it says what to do next. ↩ Undo waits at its left, and clears the whole turn so you can run it again.</li>
+    <li><strong>Next ▶</strong> stands tall at the right of both bars, and ends the turn.</li>
+    <li><strong>The footer</strong> runs across the bottom, holding ← Log, 📖 Guide and Notes →.</li>
+    </ul>
+    <p class="g-intro">Tap ▶ Play and the sheet appears — the cards down the left, the players across the top, and a box wherever the two meet. You have seen it before. What has changed is that you no longer hold the pencil: you say what happened at the table, and the app does the writing. The marks fill themselves in as you go, and there is nothing to memorise.</p>
+    <p class="g-intro">Two bars sit above the sheet. The upper one says whose turn it is. The lower one says what to do next. Look up from the table having lost your place, and those two lines give it back.</p>
+    <p class="g-intro">Every turn then goes the same way.</p>
+    <ol class="g-ul">
+    <li><strong>Asking.</strong> Tap the three cards the player asked for, in their own column. The app counts them as you go, and moves on by itself when you tap the third.</li>
+    <li><strong>When someone shows.</strong> Tap the name at the top of that player's column. If you were the one who showed, or the one who asked, a pop-up asks which card — tap it and tap Confirm.</li>
+    <li><strong>When nobody shows.</strong> Tap Next ▶, and every player but the asker is crossed off all three cards at once.</li>
+    <li><strong>Ending the turn.</strong> Tap Next ▶ and the next player is up.</li>
+    </ol>
+    <p class="g-intro">And that is the turn. Every one after it runs the same way.</p>
+    <p class="g-intro">Tapped something wrong? ↩ Undo takes two taps and clears the whole turn, so you can run it again.</p>
+    <p class="g-intro"><em>Each of these is explained in full in The Game screen and Playing a turn, below, whenever you want it.</em></p>
+    <div class="g-rule"></div>
+    <div class="g-sec">SETUP</div>
+    <p class="g-intro">You shape the deck to match the game on your table, and you can save it — the app keeps up to four decks, ready to load next time.</p>
+    <p class="g-intro">It all happens on one screen, and you work your way down it. The screen marks its own two steps as you go.</p>
+    <p class="g-p" style="padding-left:14px;">STEP 1 - PLAYERS is the six seats at the top, one for each person at the table.</p>
+    <p class="g-p" style="padding-left:14px;">STEP 2 - CARDS is your deck below it — the categories and their cards — with two buttons sitting above them, one for saving the deck you build, and one for telling the app how the cards were dealt. In each category banner sits a Rename → Edit button that lets you rename the categories and cards.</p>
+    <p class="g-intro">Along the bottom are ← Log, 📖 Guide and Notes →. The Log and the Notepad each have a section of their own further down, and 📖 Guide is what you are reading now.</p>
+    <p class="g-intro">That strip is also where the app speaks: a message appears across it for a few seconds, hiding those buttons, and then clears itself and gives them back. A long message slides past rather than being cut short.</p>
+    <p class="g-intro">That is the whole screen. Here is each piece of it in turn.</p>
+    <div class="g-sub">Players:</div>
+    <p class="g-p">Player seats sit at the top, and from two to six of them can be filled.</p>
+    <ul class="g-ul">
+    <li>Tap one to open it, type a name of up to six characters, and tap Confirm.</li>
+    <li>Enter every player's name this way except your own.</li>
+    <li>Fill the seats in the order people will play — the game takes turns in seat order, Seat 1 first.</li>
+    <li>On your own seat, check "This is Me" before you Confirm. Your seat shows Me, so you can always find yourself — and you don't need to fill in your name.</li>
+    </ul>
+    <div class="g-sub">Cards:</div>
+    <p class="g-p">Your deck is the cards inside the categories, and it starts out as placeholders.</p>
+    <ul class="g-ul">
+    <li>The app arrives with three categories of nine cards — Category 1 to 3, Card 1 to Card 27 — waiting to become your deck for the game.</li>
+    <li>A deck holds up to thirty cards in all.</li>
+    <li>No two cards can share a name.</li>
+    </ul>
+    <p class="g-p">This is the ten minutes. It is the one part the app cannot do for you, because only you can see the box.</p>
+    <div class="g-sub">Categories:</div>
+    <p class="g-p">A category is one group of cards, and it gets its own banner down the left of the sheet later.</p>
+    <ul class="g-ul">
+    <li>The app starts you with three, and you can have up to four.</li>
+    <li>＋ Add Category sits below the last one and disappears once you have four. A new category arrives empty, and you name it and fill it using Rename → Edit.</li>
+    <li>To remove one, open it with Rename → Edit and tap the ✕ beside its name, which takes two taps. Its cards leave your hand with it.</li>
+    <li>One category always has to stay, so the app refuses to delete the last.</li>
+    <li>A category you empty of every card removes itself when you Save.</li>
+    </ul>
+    <div class="g-sub">Rename → Edit:</div>
+    <p class="g-p">Tap Rename → Edit in a category banner to open it. Inside you can:</p>
+    <ul class="g-ul">
+    <li>give the category its real name</li>
+    <li>give each card its real name</li>
+    <li>remove a card with the ✕ beside it</li>
+    <li>add one with ＋ Add Card</li>
+    </ul>
+    <p class="g-p">Names run to thirteen characters, categories and cards alike, so a long one will need shortening.</p>
+    <p class="g-p">Nothing changes until you tap Save. Cancel leaves the category exactly as it was, and Close does the same.</p>
+    <div class="g-sub">Save Card Deck:</div>
+    <p class="g-p">When the whole deck matches your game, it can be saved and loaded back another time.</p>
+    <ul class="g-ul">
+    <li>Tap 💾 Save Card Deck and give it a short name — six characters. A chip with that name appears just above the cards.</li>
+    <li>You can keep up to four decks.</li>
+    <li>Next time, tap the chip and then Load, and the ten minutes is already saved.</li>
+    <li>Delete on the same pop-up throws a deck away. Load and Delete both take two taps.</li>
+    </ul>
+    <p class="g-p">A saved deck holds the categories and cards and nothing else, so the app will still ask where the cards are each time you play.</p>
+    <div class="g-sub">Where are the cards?:</div>
+    <p class="g-p">Before a game can start, the app needs to know how the deck was dealt — how many cards each player holds, and how many are left on the board, which the app calls the House. The House cards come from a shortened variation of the game, used to even out the deal between the players. They sit face down on the board.</p>
+    <ul class="g-ul">
+    <li>Fill the seats first, since the pop-up will not open without them.</li>
+    <li>Tap Where are the cards? and it opens with a sensible guess already made: an even share to the players, and any leftovers to the House.</li>
+    <li>Use − and ＋ to match the real deal, then tap Done.</li>
+    <li>Once you tap Done, the button itself fills in green, so a glance tells you the app has what it needs.</li>
+    <li>The Envelope row at the top is fixed — one card from each category, set aside as the solution.</li>
+    </ul>
+    <p class="g-p">How the cards are split is your own choice — you can leave the House empty and give the players uneven numbers. They have to add up exactly, though: the House and the players together holding the whole deck apart from the envelope, since every dealt card is somewhere.</p>
+    <div class="g-sub">Your hand:</div>
+    <p class="g-p">The cards themselves sit below each category banner.</p>
+    <ul class="g-ul">
+    <li>Tap every card you are holding and it turns green.</li>
+    <li>Tap it again if you tap one by mistake.</li>
+    <li>The number of green cards has to match the count you gave for your own seat.</li>
+    </ul>
+    <div class="g-sub">▶ Play:</div>
+    <p class="g-p">▶ Play waits at the top right.</p>
+    <ul class="g-ul">
+    <li>It stays dim until the app has everything it needs.</li>
+    <li>If you tap it while it is dim, it tells you what is still missing. The message appears across the bottom of the screen, over the ← Log, 📖 Guide and Notes → buttons.</li>
+    <li>When it brightens, tap it, and the game begins.</li>
+    </ul>
+    <div class="g-rule"></div>
+    <div class="g-sec">THE GAME SCREEN</div>
+    <p class="g-p">Tap ▶ Play and the sheet appears. You have seen it before — it is the paper sheet that comes in the box, now drawn on your phone.</p>
+    <p class="g-p">The cards run down the left under their category banners. The players run across the top. The boxes, where a card meets a player, are where what you learn gets written.</p>
+    <p class="g-p">None of that has changed. What has changed is who holds the pencil. You tell the app what happened at the table, and it does the writing. Say who showed a card, and every ✗ that follows is filled in for you.</p>
+    <p class="g-p">Two columns sit there that the paper never had. The Summary ∑ is yours alone, a place to set down what you have worked out. 🏠 is for the cards no player was dealt, the ones left on the board. Each is explained clearly further on.</p>
+    <p class="g-p">The sheet scrolls when there is more of it than fits. The names along the top and the cards down the left stay put while it moves, so you never lose track of which box you are in.</p>
+    <p class="g-p">If the columns are not in the order you want, press and hold a name at the top for a moment, then slide it. Only CARDS keeps its place. The app remembers how you left them.</p>
+    <div class="g-sub">The marks</div>
+    <p class="g-p">These are what appear in the boxes as the game goes on. There is nothing to memorise — you will pick them up as you play.</p>
+    <ul class="g-ul">
+    <li>✓ this player has this card</li>
+    <li>✗ this player does not have this card</li>
+    <li>? this player asked about this card</li>
+    <li>! this player showed a card, but you do not know which</li>
+    <li>Me you showed this card to this player</li>
+    </ul>
+    <p class="g-p">A box can also carry a short note of your own in the corner, which has its own section further on.</p>
+    <div class="g-sub">Above the sheet</div>
+    <p class="g-p">In the header, New sits at the left and Out at the right. Each opens a pop-up that explains itself.</p>
+    <p class="g-p">Two bars sit across the top — another part the paper never had.</p>
+    <p class="g-p">The upper bar tracks whose turn it is, and how far along it is: "Turn 3 — Sarah is thinking 🤔". ⭐ Accuse sits at the right of that bar, and has a section of its own further on.</p>
+    <p class="g-p">The lower bar hints what to do next, in the middle. Both orient you at a glance when you come back from a distraction.</p>
+    <p class="g-p">The ↩ Undo button waits at its left and takes two taps. It clears the whole turn and starts it over, so it undoes a wrong move.</p>
+    <p class="g-p">The Next ▶ button stands tall at the right of both bars.</p>
+    <p class="g-p">The next section, Taking a turn, explains those three — the hint, Undo and Next.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">PLAYING A TURN</div>
+    <div class="g-sub">The turn bar:</div>
+    <p class="g-p">The upper bar names whose turn it is and how far along the turn is. When the turn is yours it says You rather than a name.</p>
+    <ul class="g-ul">
+    <li>"Turn 3 — Sarah is thinking 🤔" while she is choosing what to ask.</li>
+    <li>"Sarah is waiting ⏳" once the three cards are in and the app is waiting to hear who showed.</li>
+    <li>"showed ✓" once a name has been given.</li>
+    </ul>
+    <p class="g-p">⭐ Accuse sits at the right of this bar, and has a section of its own further on.</p>
+    <div class="g-sub">The hint bar:</div>
+    <p class="g-p">The lower bar says what the app is waiting for, between the ↩ Undo and Next ▶ buttons. Three of them stand there, one for each stage of a turn, and each stays until the stage changes.</p>
+    <ul class="g-ul">
+    <li>"Select 3 cards in Sarah's column" — the ask has not been entered yet.</li>
+    <li>"Tap the name of who showed — or Next ▶" — the ask is in, and the app wants to know what happened.</li>
+    <li>"Tap Next ▶ to continue" — the turn is done and only needs closing.</li>
+    </ul>
+    <p class="g-p">That same line is where the app speaks to you. A message takes the bar for about five seconds — a warning in its own color — and then the standing hint comes back on its own. A message too long for the width slides across rather than being cut short.</p>
+    <p class="g-p">Coming back from a distraction, those two bars together tell you where the table is.</p>
+    <p class="g-p">↩ Undo and Next ▶ each have a section of their own further on.</p>
+    <div class="g-sub">Asking:</div>
+    <ul class="g-ul">
+    <li>When a player asks, tap the three cards they named, in their own column — one from each category. A ? appears in each box as you tap it.</li>
+    <li>The app counts as you go and says how far along you are: "2/3 — need: Rooms".</li>
+    <li>When you tap the third card, the turn moves on by itself. Nothing else needs pressing.</li>
+    </ul>
+    <div class="g-sub">Changing a pick:</div>
+    <p class="g-p">Until you name who showed, all three picks stay open.</p>
+    <ul class="g-ul">
+    <li>Tap a picked card again and the ? comes off it.</li>
+    <li>Tap a different card in the same category and the pick swaps across to it.</li>
+    <li>It does not have to be the one you tapped last — any of the three can be changed.</li>
+    </ul>
+    <p class="g-p">Once you tap a name at the top of a column, the ask is closed, and at that point ↩ Undo is the only way back, in case you need it.</p>
+    <div class="g-sub">When a player asks nothing:</div>
+    <ul class="g-ul">
+    <li>A player who asks nothing simply passes. Tap Next ▶ with no cards picked at all, and the turn goes to the next player.</li>
+    <li>The Log records the pass.</li>
+    </ul>
+    <div class="g-sub">Half an ask:</div>
+    <ul class="g-ul">
+    <li>The app will not take one card, or two. Tap Next ▶ partway through and it refuses the tap and says "Select all or none of the cards in Sarah's column first".</li>
+    <li>Either finish the three, or take the picks back off and pass the turn.</li>
+    </ul>
+    <div class="g-sub">Naming who showed:</div>
+    <p class="g-p">With the ask in, the app waits to be told what happened. Tap the name at the top of the column of the player who showed a card. That one tap is the whole of it. What gets written depends on who was involved.</p>
+    <div class="g-sub">A show between two other players:</div>
+    <ul class="g-ul">
+    <li>The card was not shown to you, so you know only that something was shown. The app writes down what is actually known.</li>
+    <li>A ! goes in that player's box for each of the three cards asked — they showed one of these, and you do not know which. Every player sitting between the asker and the shower is ✗-ed on all three, since the ask passed them and they could not show.</li>
+    <li>A box already holding a ✓ or a ✗ is never overwritten.</li>
+    </ul>
+    <div class="g-sub">Someone shows you:</div>
+    <ul class="g-ul">
+    <li>When you are the one who asked, you know exactly which card is shown. A pop-up opens — "Sarah shows you…" — listing the asked cards you are not already holding, since those are the only ones she could have shown. Tap the card you were shown, then Confirm. A ✓ goes into Sarah's box.</li>
+    <li>Being shown is the only way a ✓ is ever written. You never mark one yourself.</li>
+    <li>A ✓ settles that card for the whole table: every other player still in the game is ✗-ed on it at once, because only one of them can be holding it.</li>
+    </ul>
+    <div class="g-sub">You show someone:</div>
+    <ul class="g-ul">
+    <li>When the card that has to be shown is yours, the pop-up says "You show Sarah…" and lists the cards among the three that are in your hand. Pick the card you want to show — if only one of them is yours it arrives already picked — then tap Confirm. Me goes into the asker's box, a record of what you gave away, and to whom.</li>
+    </ul>
+    <div class="g-sub">Cancel and Close:</div>
+    <ul class="g-ul">
+    <li>Either button shuts the pop-up and writes nothing. The turn stays where it was, still waiting to be told who showed.</li>
+    </ul>
+    <div class="g-sub">When nobody shows:</div>
+    <ul class="g-ul">
+    <li>If the ask went all the way round and no one could show, tap Next ▶. Every player but the asker is ✗-ed on all three cards, and the app says "No player showed — those cards are ❌-ed out for them".</li>
+    <li>If someone did in fact have to show, the app refuses the tap. The next section says why.</li>
+    </ul>
+    <div class="g-sub">When the app refuses a tap on the name at the top of a column:</div>
+    <p class="g-p">Tap a name the app cannot accept and it refuses the tap, and says why on the hint line. There are four.</p>
+    <ul class="g-ul">
+    <li>The asker cannot also show. A player does not show a card to themselves.</li>
+    <li>A player already ✗-ed on all three cards has nothing to show.</li>
+    <li>A player who has quit cannot show. Their cards left the game with them.</li>
+    <li>A player earlier in the ring has to show first. If someone between the asker and the name you tapped is already known to hold one of the three, they would have had to show it, and the app names them: "Sarah must show first — they have a confirmed card".</li>
+    </ul>
+    <div class="g-sub">Taking back a wrong name:</div>
+    <ul class="g-ul">
+    <li>Tapped the wrong name for a show between two other players? Tap that same name again and confirm. Everything the app wrote when you tapped that name comes off — the ! marks, the</li>
+    </ul>
+    <ul class="g-ul">
+    <li>✗ marks of the players passed over, and its line in the Log —</li>
+    </ul>
+    <p class="g-p">and the turn goes back to waiting for the right name.</p>
+    <ul class="g-ul">
+    <li>You can do this until Next ▶ is tapped. It does not work when you were the one who showed, or the one who asked — those go through a pop-up, and ↩ Undo is the way back from them.</li>
+    </ul>
+    <div class="g-sub">↩ Undo:</div>
+    <p class="g-p">↩ Undo sits at the left of the hint bar and takes two taps. It does not step back one tap: it clears the whole turn and starts it over.</p>
+    <ul class="g-ul">
+    <li>Everything the app wrote that turn on the sheet comes off — the ? marks from the ask, and any ✓, ✗, ! or Me a show put down. A board mark you made with 🏠 during that turn goes with them.</li>
+    <li>A ! can appear where you had not seen one. A ! sitting under a ✓ or a ✗ is held out of sight while that mark is there, so when the mark comes off the ! shows again.</li>
+    <li>The Turn Log keeps its lines and gains one saying the turn was undone.</li>
+    <li>On a turn you have not touched yet, it steps back into the turn before and clears that one instead.</li>
+    <li>Marks the app made when a player quit are left alone, and so are the marks that came from your own hand when the game began. Your notes in the Summary ∑ column stay as well.</li>
+    </ul>
+    <div class="g-sub">Ending the turn:</div>
+    <p class="g-p">Tap Next ▶ and the next player is up. Play goes in seat order, around the table as the seats were filled.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">SUMMARY COLUMN (∑)</div>
+    <p class="g-p">The Summary ∑ column is your own place to keep the conclusion you have reached about each card. The app never fills it in or uses it to make decisions.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">HOUSE COLUMN (🏠)</div>
+    <p class="g-p">For game versions where undealt cards sit on the board (common with 2 players). When a card from the board is peeked at privately by you, as some versions allow, tap its 🏠 cell — a ✅ appears and the card is crossed off with ❌ in every player's column, since nobody can hold it. Tap the ✅ again to clear it; the ❌s it placed are removed too (any ❌ that was already there stays). Each board mark is noted in the Turn Log.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">CELL NOTE</div>
+    <p class="g-intro">Tap any player column cell — except the column of the player whose turn it is while it's highlighted — to add a short personal note. A popup opens showing the card and player name.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">MAKING AN ACCUSATION (⭐)</div>
+    <p class="g-p">When any player announces their accusation, tap <em>⭐ Accuse</em> on the Turn Bar.</p>
+    <div class="g-sub">What the verdict does:</div>
+    <ul class="g-ul">
+    <li><strong>You are right:</strong> You won. The Turn Bar celebrates, and the game is over.</li>
+    <li><strong>You are wrong:</strong> You take no more turns and no longer need the app, but do not turn in your cards. Stay involved and show a card when asked.</li>
+    <li><strong>They are right:</strong> The game is over, and the Turn Bar names the winner.</li>
+    <li><strong>They are wrong:</strong> They take no more turns, but stay at the table to show cards. Their header fades and shows 😢. If it was their turn, the next turn begins immediately. If no other opponent can take a turn, the game is over and you win; otherwise, play continues.</li>
+    </ul>
+    <p class="g-p">Every accusation writes a permanent Turn Log entry naming the accuser, the cards and the verdict. No verdict can be undone.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">PLAYER OUT</div>
+    <p class="g-p">When a player walks away from the game, they must turn over their cards for everyone to see. Tap <em>Out</em>, then fill in the pop-up.</p>
+    <p class="g-p">Marks placed by a Player Out are permanent — <em>Undo</em> never removes them — and the Turn Log gets a permanent entry. There is no way back from <em>Out</em>. If a player who is out on a wrong accusation (😢 — see MAKING AN ACCUSATION above) later walks away too, tap <em>Out</em> and mark them <em>👋 Quits</em>.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">New</div>
+    <p class="g-p">Tap New to start a new game. A popup appears — choose your players, choose your deck, then start:</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">TURN LOG</div>
+    <p class="g-p">Tap ← Log from the Game screen to view a record of every turn — who asked, which cards, and who showed or if nobody showed. The log clears when a new game is started.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">NOTEPAD</div>
+    <p class="g-p">Tap Notes → from the Game or Setup screen to open a free-text notepad. Type anything you want to remember. Notes are saved automatically and persist across games and also after closing and opening the app again. Tap Clear (two taps) to erase all notes.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Seat</div>
+    <p class="g-p">Every one of the six player seats on the Setup page opens the same pop-up. It is where a player gets their name, and where you mark which seat is yours.</p>
+    <div class="g-sub">Opening it:</div>
+    <ul class="g-ul">
+    <li>Tap any of the six slots at the top of the Setup page. The title bar names the one you tapped, Seat 1 through Seat 6.</li>
+    <li>A seat that already has a name opens with that name waiting, ready to be changed.</li>
+    </ul>
+    <div class="g-sub">Naming a player:</div>
+    <ul class="g-ul">
+    <li>Type the name, up to six characters.</li>
+    <li>The slot shows the name once you Confirm.</li>
+    </ul>
+    <div class="g-sub">Marking your own seat:</div>
+    <ul class="g-ul">
+    <li>Tap "This is Me". The name box empties as you tap it — you do not type your own name at all.</li>
+    <li>The slot reads Me from then on.</li>
+    <li>Only one seat can be yours. Marking a different seat as Me moves it there and leaves the old one empty.</li>
+    </ul>
+    <div class="g-sub">Emptying a seat:</div>
+    <ul class="g-ul">
+    <li>Confirm with the name box empty and "This is Me" unchecked, and the slot goes back to a dash.</li>
+    </ul>
+    <div class="g-sub">Confirm:</div>
+    <ul class="g-ul">
+    <li>Confirm applies what the pop-up is showing and closes it.</li>
+    <li>Nothing reaches the Setup page until you tap it.</li>
+    </ul>
+    <div class="g-sub">Clear:</div>
+    <ul class="g-ul">
+    <li>Clear empties the name box and unchecks "This is Me" in one tap.</li>
+    </ul>
+    <div class="g-rule"></div>
+    <div class="g-sec">＋ Add Category</div>
+    <p class="g-p">The app arrives with three categories, and some games are played with four. <em>＋ Add Category</em> is how you add the one you are missing.</p>
+    <div class="g-sub">Adding one:</div>
+    <p class="g-p">Look below the last category on the Setup page, underneath its row of cards.</p>
+    <ul class="g-ul">
+    <li>The button reads <em>＋ Add Category (up to 4)</em>, and a single tap adds the category.</li>
+    <li>Four is as many as the app will hold. Once you have four the button is no longer there, so there is nothing to tap by mistake.</li>
+    </ul>
+    <div class="g-sub">The new category:</div>
+    <p class="g-p">A new category appears at the end of the list, and it holds no cards.</p>
+    <ul class="g-ul">
+    <li>It arrives under a name the app supplies, <em>Category 4</em>, with a zero beside it until you put cards in.</li>
+    <li><em>Edit</em>, beside that name, is where you give it the name your game uses and add its cards.</li>
+    </ul>
+    <div class="g-sub">The card counts:</div>
+    <p class="g-p">Adding a category unsettles the counts, even though it brings no cards with it.</p>
+    <ul class="g-ul">
+    <li>The green comes off <em>Where are the cards?</em> the moment the category is added.</li>
+    <li>You will need to confirm the counts again, and you may need to re-enter the card counts themselves — <em>▶ Play</em> will not wake until you have.</li>
+    </ul>
+    <div class="g-rule"></div>
+    <div class="g-sec">Edit</div>
+    <p class="g-p"><em>Edit</em> sits at the right of each category's line on the Setup page, and it opens as a pop-up carrying that category's name in its title bar. This is where a category and its cards get their real names, and where cards are added and taken out.</p>
+    <div class="g-sub">Naming:</div>
+    <ul class="g-ul">
+    <li>The top box names the category, and each box below names one card. They cannot be more than thirteen characters each.</li>
+    <li>A name showing in grey is a starting name the app supplied. You can type over it, or leave it as is.</li>
+    <li>A box you leave alone keeps the name it is showing, so you can rename one card and leave the rest.</li>
+    </ul>
+    <div class="g-sub">Deleting the category:</div>
+    <ul class="g-ul">
+    <li>The <em>✕</em> beside the category name deletes the category and every card in it.</li>
+    <li>It takes two taps. The first turns the <em>✕</em> into <em>Delete?</em> and the pop-up's line reads "Tap again to confirm"; the second does it and the pop-up closes.</li>
+    <li>Leave <em>Delete</em> alone for about three seconds and it goes back to <em>✕</em>, as though the first tap had never happened.</li>
+    <li>One category always has to stay, so the app refuses to delete the last one.</li>
+    </ul>
+    <div class="g-sub">Adding and removing cards:</div>
+    <p class="g-p">Nothing here reaches your deck until you tap <em>Save</em>, so you can shape the list freely first.</p>
+    <ul class="g-ul">
+    <li><em>＋ Add Card</em> puts an empty box at the foot of the list with the cursor already in it. A new box left empty is ignored.</li>
+    <li>The <em>✕</em> beside a card takes its row off the list straight away. The card leaves the deck when you <em>Save</em>.</li>
+    <li>A card you rename stays in the deck under its new name.</li>
+    </ul>
+    <div class="g-sub">Save:</div>
+    <p class="g-p"><em>Save</em> applies the whole pop-up at once — the category's name, every card name, and every card you added or took out.</p>
+    <ul class="g-ul">
+    <li>Two things stop it, and when either does, nothing at all is saved: more than thirty cards in the deck, or a card name already used somewhere in it.</li>
+    <li>Over thirty, and the app says "Maximum 30 cards total — the deck is full".</li>
+    <li>A clash, and it says <em>Duplicate card name</em> with the one it found. Capitals make no difference — a name is taken however it was typed.</li>
+    <li>The message lands on the pop-up's own line and the pop-up stays open, so you can put it right and save again.</li>
+    <li>A category you have emptied of every card removes itself when you <em>Save</em>, as long as another category remains.</li>
+    </ul>
+    <p class="g-p">Every <em>Save</em> clears the card counts — even a <em>Save</em> with nothing typed in. The <em>Where are the cards?</em> button loses its green, and the counts have to be filled in again before the app will let you play. If you opened the pop-up only to look, leave it without tapping <em>Save</em>.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">💾 Save Card Deck</div>
+    <p class="g-p"><em>💾 Save Card Deck</em> sits under STEP 2 - CARDS on the Setup page, with <em>Where are the cards?</em> beside it. It opens as a pop-up that files a copy of the deck you have shaped, so you can keep it and load it back another time.</p>
+    <div class="g-sub">Saving a deck:</div>
+    <p class="g-p">There is one box in the pop-up, and naming the deck is the whole of the work.</p>
+    <ul class="g-ul">
+    <li>Type a name of up to six characters and tap <em>Save</em>.</li>
+    <li>A chip carrying that name appears just above the cards.</li>
+    <li><em>Clear</em> empties the box if you want to start the name again. It changes nothing else.</li>
+    </ul>
+    <div class="g-sub">What a saved deck keeps:</div>
+    <p class="g-p">A saved deck is a copy taken at the moment you tap <em>Save</em>, and what that means is worth knowing before you need it.</p>
+    <ul class="g-ul">
+    <li>It holds the categories and their cards and nothing else. The card counts are not in it, so the app still asks where the cards are each time you play.</li>
+    <li>The copy does not change when your deck does. Rename a card after saving and the saved deck still carries the old name.</li>
+    <li>There is no way to bring a saved deck up to date, because a name already in use is refused. To replace one, delete it first and save again under the same name.</li>
+    </ul>
+    <div class="g-sub">When it will not save:</div>
+    <p class="g-p">Three things stop a save, and each says so on the pop-up's own line, between the box and the buttons.</p>
+    <ul class="g-ul">
+    <li>An empty box. The app says "Enter a deck name first".</li>
+    <li>Four decks already saved. The app says "Maximum 4 saved decks — delete one first", and deleting one is the only way past it.</li>
+    <li>A name already in use. The app says "That name is already used", and capitals make no difference — a name is taken however it was typed.</li>
+    </ul>
+    <p class="g-p">Nothing is saved when a save is refused, and the pop-up stays open so you can put it right.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">the saved deck chip</div>
+    <p class="g-p">Every deck you save puts a chip on the Setup page. The chips sit in a bar of their own directly beneath <em>💾 Save Card Deck</em> and <em>Where are the cards?</em>, above the cards themselves, and each one carries the name its deck was saved under. There is a chip for each saved deck, up to four of them.</p>
+    <div class="g-sub">Opening it:</div>
+    <ul class="g-ul">
+    <li>Tap the chip. It opens as a pop-up titled <em>Saved Deck</em>, with the deck's own name in quotation marks beneath the title.</li>
+    <li>It offers <em>Load</em> and <em>Delete</em>. There is no way to bring a saved deck up to date from here — to replace one, delete it and save again under the same name.</li>
+    </ul>
+    <div class="g-sub">Loading a deck:</div>
+    <p class="g-p">Loading replaces the deck's categories and cards you are working on with the saved ones, it is worth knowing what comes with it.</p>
+    <ul class="g-ul">
+    <li>Tap <em>Load</em> twice: The pop-up closes, and the saved deck is placed and the app names the deck and says it was loaded.</li>
+    <li>A saved deck is a copy taken at the moment it was saved, so it arrives as it was when it was saved.</li>
+    <li>Your own hand is unselected, and the card counts are cleared. The app will need <em>Where are the cards?</em> filled again before it lets you play.</li>
+    <li>A category that had no cards in it when the deck was saved does not come back. If that would leave no categories at all, the app puts its own starting ones in instead.</li>
+    </ul>
+    <div class="g-sub">Deleting a deck:</div>
+    <ul class="g-ul">
+    <li>Tap <em>Delete</em> twice. The pop-up closes, the chip goes with it, and the app names the deck and says it was deleted.</li>
+    <li>Only the saved copy goes. The deck you are working on is untouched, and deleting is what makes room once four decks are saved.</li>
+    </ul>
+    <div class="g-sub">The two taps:</div>
+    <p class="g-p"><em>Load</em> and <em>Delete</em> both act the moment the second tap lands, so the two taps are the confirmation and there is nothing further to agree to.</p>
+    <ul class="g-ul">
+    <li>The first tap changes the button to <em>Load?</em> or <em>Delete?</em>, and the pop-up's own line reads "Tap again to confirm".</li>
+    <li>The second tap does it.</li>
+    <li>Leave it about three seconds and the button goes back to its plain wording, as though the first tap had never happened. Closing the pop-up and opening it again clears it as well.</li>
+    </ul>
+    <div class="g-rule"></div>
+    <div class="g-sec">Where are the cards?</div>
+    <p class="g-p"><em>Where are the cards?</em> sits in Setup beside <em>💾 Save Card Deck</em>. It opens as a pop-up asking how the deck was dealt — how many cards each player holds, and how many were left on the board, which the app calls the House.</p>
+    <p class="g-p">You already know all of that. The app is the one that cannot see the deal, and it is asking for its own sake: the number you give for your own seat is what it checks your tapped hand against. Tapping cards on a phone is easy to get wrong by one and hard to notice, and once a game has started there is no going back to Setup to put it right.</p>
+    <div class="g-sub">Filling it in:</div>
+    <p class="g-p">The pop-up will not open without the seats being filled first. It opens already filled in with a sensible guess — an even share to each player, the leftovers to the House — so when that is how the cards went, have a glance and tap <em>Done</em>.</p>
+    <ul class="g-ul">
+    <li><em>Envelope</em> is fixed: one card from each category, set aside as the solution. The app states it, you never enter it.</li>
+    <li>Set the House first, then the players. Moving the House resets every player's number to an even share of what is left, so a row you had already set by hand is overwritten. Each player's own − and ＋ move that row alone.</li>
+    <li><em>Done</em> checks one thing, and it checks it exactly: the House, the players and <em>Envelope</em> together must hold the whole deck. Numbers that do not add up are refused and nothing is kept until they do.</li>
+    <li>Once <em>Done</em> takes, the pop-up closes and the button fills green, so a glance at Setup afterwards tells you the count has what the app needs.</li>
+    <li>Notice a mistake before you play and you can open it again — your numbers come back as you left them.</li>
+    </ul>
+    <p class="g-p">If honest numbers will not add up, it is worth stopping to resolve the count, finding out here is easier than finding it out from a sheet that has stopped making sense.</p>
+    <div class="g-sub">If the green goes away:</div>
+    <p class="g-p">The numbers describe one particular deal, so when the deal underneath them changes the app lets them go — the green comes off the button and <em>▶ Play</em> waits until they are entered again.</p>
+    <ul class="g-ul">
+    <li><strong>What clears them:</strong>
+    <ul>
+    <li>a seat change of any kind — a name added, changed or cleared, or Me moved</li>
+    <li><em>＋ Add Category</em>, or deleting a category</li>
+    <li>any <em>Save</em> in the <em>Edit</em> pop-up, even one where you typed nothing</li>
+    <li>loading a saved deck</li>
+    </ul></li>
+    <li><strong>What leaves them alone:</strong>
+    <ul>
+    <li>confirming a seat without having changed anything</li>
+    <li>tapping the card chips in your own hand</li>
+    </ul></li>
+    <li>Numbers you set by hand do not come back. Reopening shows the app's guess again, so an uneven deal has to be set a second time.</li>
+    </ul>
+    <p class="g-p">A New Game keeping the same players and the same deck is the one road where your numbers survive — the green still comes off, and every game gets its own <em>Done</em>.</p>
+    <p class="g-p">The House number here and the 🏠 column on the sheet are not tied together and are not meant to match — see the House column below for why.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">▶ Play</div>
+    <p class="g-p">One tap on a bright <em>▶ Play</em> starts the game. There is no confirmation, and Setup closes for that game, so this is the moment for one last look at the seats, the deck, the counts and the cards marked as yours.</p>
+    <div class="g-sub">What it puts on the sheet:</div>
+    <ul class="g-ul">
+    <li>The players and cards from Setup become the game sheet.</li>
+    <li>Your cards begin with ✓ in your column and ✗ for every other player. Every other card begins with ✗ in your column. These are the sheet’s starting marks, and <em>Undo</em> never removes them.</li>
+    <li>Turn 1 opens on the first filled seat, and play follows seat order from there.</li>
+    </ul>
+    <div class="g-rule"></div>
+    <div class="g-sec">Someone showed you</div>
+    <p class="g-p">When another player shows you a card, tap their name at the top of the column. The pop-up shows the cards they could have shown you. Tap the one card they showed you, then tap <em>Confirm</em>.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">You showed someone</div>
+    <p class="g-p">When you show a card to another player, tap <em>Me</em> at the top of your column. The pop-up shows the cards you could have shown. Tap the one card you showed, then tap <em>Confirm</em>.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Next ▶</div>
+    <p class="g-p">Next ▶ is the tall button standing at the right of both bars during game play, and it is how one turn ends and the next turn begins. Play goes in seat order, around the table as the seats were filled. One tap does whatever the turn needs at that moment, so what it does depends on where the turn stands.</p>
+    <div class="g-sub">Ending a finished turn:</div>
+    <ul class="g-ul">
+    <li>A turn ends in one of three ways — a name has been tapped, nobody could show, or nothing was able to be asked.</li>
+    <li>On the first two the current player has reached a room and asked the 3 question. The hint line reads "Tap Next ▶ to continue". Tap it, and the next player is up.</li>
+    <li>The third is a pass. The current player did not reach a room and cannot ask the 3 question. Next ▶ ends that turn too, but the hint line still reads "Select 3 cards in Sarah's column", because the app is waiting on an ask that never comes. See</li>
+    </ul>
+    <div class="g-sub">Passing a turn:</div>
+    <ul class="g-ul">
+    <li>A player who asks nothing simply passes. Tap Next ▶ with no cards picked at all.</li>
+    <li>The turn goes to the next player, and the Log records the pass.</li>
+    </ul>
+    <div class="g-sub">When nobody could show:</div>
+    <ul class="g-ul">
+    <li>The ask is in, it went all the way round the table, and no one could show a card. Tap Next ▶ without tapping any name.</li>
+    <li>Every player but the asker is ✗-ed on all three cards, and the app says "No player showed — those cards are ❌-ed out for them".</li>
+    <li>That same tap ends the turn as well. Next ▶ is not tapped again.</li>
+    </ul>
+    <div class="g-sub">When Next ▶ is refused:</div>
+    <p class="g-p">There are two times the app will not take the tap, and each says why on the hint line.</p>
+    <ul class="g-ul">
+    <li>One card, or two, picked: The app takes all three or none, and says "Select all or none of the cards in Sarah's column first". Either finish the three, or take the picks back off and pass the turn.</li>
+    <li>Someone had to show. If a player is already known to hold one of the three cards, they cannot pass — they have to show it. The app names them: "Sarah must show first — they have a confirmed card". When that player is you, it reads "You must show first — you have a confirmed card".</li>
+    </ul>
+    <div class="g-sub">When the game is over:</div>
+    <ul class="g-ul">
+    <li>Once the game has ended, nothing more can be recorded. Next ▶ is refused, and the app says "Game over — tap New to start a new game".</li>
+    <li>The hint line sits empty until a new game begins.</li>
+    <li>The side pages stay open to you. ← Log, 📖 Guide, and Notes → all still work, so the game can be read back after it ends.</li>
+    </ul>
+    <ul class="g-ul">
+    <li>A player who is out of the running takes no more turns and is stepped over, but stays in the game as someone who can still</li>
+    </ul>
+    <div class="g-rule"></div>
+    <div class="g-sec">Summary ∑</div>
+    <p class="g-p">Tap a cell in the Summary ∑ column. The pop-up names the card and gives you three choices:</p>
+    <ul class="g-ul">
+    <li><em>✕ Has card</em> means the card has been located — in your hand, another player’s hand, or the House.</li>
+    <li><em>⭐ Solution?</em> marks the card as a possible solution.</li>
+    <li><em>Clear</em> removes your mark from that Summary cell.</li>
+    </ul>
+    <p class="g-p">Each choice takes effect and closes the pop-up on one tap. There is no Confirm button. Open the cell again if you want to change it. The choice will not be logged until Next is tapped.</p>
+    <p class="g-p">If another card in the same category already has a ⭐, the first tap warns you and changes the button to <em>Sure?</em>. A second tap places the other ⭐.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Cell notes</div>
+    <p class="g-p">Type up to 4 characters that mean something to you, then tap <em>Save</em>. The note appears in the bottom-right corner of the cell. To remove it, empty the box and tap <em>Save</em>.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Accuse</div>
+    <p class="g-p">When the pop-up opens, tap the accuser — you included — then tap the accused cards, one from each category.</p>
+    <p class="g-p">The verdict question wakes when the cards are all picked: “Are you right?” for your own accusation, “Are they right?” for anyone else. <em>Yes</em> and <em>No</em> each take two taps. The first changes the button to <em>Sure?</em>; the second records the verdict and closes the pop-up. A verdict is forever, so the app makes sure.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Quit</div>
+    <p class="g-p">Tap <em>👋 Quits</em>. The pop-up opens with the card list; tap each card they held.</p>
+    <p class="g-p">A card already ✓ in another player's column is unavailable and names its holder — it cannot be in two hands.</p>
+    <p class="g-p">Tap <em>Remove Player</em> twice. The first tap changes it to <em>Sure?</em>; the second removes the player and closes the pop-up.</p>
+    <p class="g-p">Their shown cards get ✓ in their column and ✗ in every other player's column. Every other card in their column gets ✗. They are completely out of the game, and their header shows 👋.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">New</div>
+    <p class="g-p">Tap <em>New</em> to start a new game. A pop-up appears — choose your players, choose your deck, then start:</p>
+    <ul class="g-ul">
+    <li><strong>Leaving the pop-up:</strong> <em>Cancel</em> or <em>Close</em> closes it, and the current game carries on untouched.</li>
+    <li><strong>Players:</strong> <em>Same Players</em> keeps the seated names; <em>New Players</em> clears the seats.</li>
+    <li><strong>Deck:</strong> <em>Same Deck</em> keeps the deck you shaped; <em>New Deck</em> returns to the default cards.</li>
+    <li><strong>Starting:</strong> <em>Start New Game</em> wakes once both choices are made. Tap it twice to return to Setup and begin.</li>
+    </ul>
+    <div class="g-rule"></div>
+    <div class="g-sec">← Setup and Game →</div>
+    <p class="g-p">These buttons return you from the Guide to the screen in use: <em>← Setup</em> before a game starts, or <em>Game →</em> once play has begun.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Feedback</div>
+    <p class="g-p">Feedback is for comments, suggestions, or problems you want to pass on to the developer. Tap <em>💬 Suggest an improvement</em> at the bottom of the Guide, answer a few questions, and add any comment or question you care to, then tap <em>Send Feedback</em>. Mail opens a pre-addressed email to the developer; look it over and tap <em>Send</em> in Mail.</p>
+    <div class="g-rule"></div>
+    <div class="g-sec">Feedback</div>
+    <p class="g-p">When the pop-up opens, answer as much or as little as you like: whether the tracker worked, anything confusing, a feature you would like, other comments, and your rating.</p>
+    <p class="g-p">Tap <em>Send Feedback</em> to put your answers into a pre-addressed email and open it in Mail. Nothing has been sent yet; look it over, then tap <em>Send</em> in Mail.</p>
+  </div>
+  <div class="foot">
+    <button class="foot-btn nav-setup" onclick="showScreen('screenSetup')">← Setup</button>
+    <button class="foot-btn" id="btnSuggest" onclick="openFeedback()">💬 Suggest an improvement</button>
+    <button class="foot-btn nav-game" onclick="showScreen('screenGame')">Game →</button>
+  </div>
+</div>
+
+<!-- MODAL: Seat -->
+<div class="modal-backdrop" id="modalSeat">
+  <div class="modal">
+    <div class="modal-head"><span id="seatTitle">Seat</span><button class="modal-close" onclick="closeModal('modalSeat')">Close</button></div>
+    <div class="modal-body">
+      <input class="modal-input" id="seatNameInput" type="text" placeholder="Enter name…" maxlength="6">
+      <div class="me-toggle" onclick="toggleMeCheck()">
+        <input type="checkbox" id="meCheck"><label for="meCheck">This is Me</label>
+      </div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="clearSeatInput()">Clear</button>
+        <button class="modal-btn primary" onclick="confirmSeat()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Edit Cards -->
+<div class="modal-backdrop" id="modalEditCards">
+  <div class="modal">
+    <div class="modal-head"><span id="editCardsTitle">Edit Cards</span><button class="modal-close" onclick="closeModal('modalEditCards')">Close</button></div>
+    <div class="modal-body">
+      <div>
+        <div style="font-size:0.7rem;color:var(--modal-faded);margin-bottom:3px;">Category name</div>
+        <div class="card-edit-row">
+          <input class="card-edit-input" id="catNameInput" maxlength="13" autocomplete="off" autocorrect="off" autocapitalize="words">
+          <button class="card-del-btn" id="btnDeleteCategory" style="width:auto;min-width:28px;padding:0 7px;" onclick="deleteCategoryTap(this)">✕</button>
+        </div>
+      </div>
+      <div class="card-edit-list" id="cardEditList"></div>
+      <button class="add-cat-btn" onclick="addCardRow()">＋ Add Card</button>
+      <div class="modal-msg" id="editCardsMsg"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="closeModal('modalEditCards')">Cancel</button>
+        <button class="modal-btn primary" onclick="saveCategoryEdit()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Save Card Deck -->
+<div class="modal-backdrop" id="modalSaveDeck">
+  <div class="modal">
+    <div class="modal-head"><span>💾 Save Card Deck</span><button class="modal-close" onclick="closeModal('modalSaveDeck')">Close</button></div>
+    <div class="modal-body">
+      <input class="modal-input" id="deckNameInput" type="text" placeholder="Deck name…" maxlength="6">
+      <div class="modal-msg" id="saveDeckMsg"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="document.getElementById('deckNameInput').value='';document.getElementById('deckNameInput').focus();">Clear</button>
+        <button class="modal-btn primary" onclick="confirmSaveDeck()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Saved Deck action -->
+<div class="modal-backdrop" id="modalDeckAction">
+  <div class="modal">
+    <div class="modal-head"><span>Saved Deck</span><button class="modal-close" onclick="closeModal('modalDeckAction')">Close</button></div>
+    <div class="modal-body">
+      <p style="font-size:0.88rem;color:var(--modal-text)" id="deckActionName"></p>
+      <div class="modal-msg" id="deckActionMsg"></div>
+      <div class="modal-btn-row" style="margin-top:4px">
+        <button class="modal-btn secondary" onclick="closeModal('modalDeckAction')">Cancel</button>
+        <button class="modal-btn danger" id="btnDeleteDeck" onclick="twoTap('delDeck',this,()=>confirmDeleteDeck(),'Delete?')">Delete</button>
+        <button class="modal-btn primary" id="btnLoadDeck" onclick="twoTap('loadDeck',this,()=>confirmLoadDeck(),'Load?')">Load</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Where are the cards? -->
+<div class="modal-backdrop" id="modalCounts">
+  <div class="modal">
+    <div class="modal-head"><span>Where are the cards?</span><button class="modal-close" onclick="closeModal('modalCounts')">Close</button></div>
+    <div class="modal-body">
+      <div id="countRows" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div class="modal-msg" id="countsMsg"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="closeModal('modalCounts')">Cancel</button>
+        <button class="modal-btn primary" onclick="confirmCounts()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Shown to me -->
+<div class="modal-backdrop" id="modalShownMe">
+  <div class="modal">
+    <div class="modal-head"><span id="shownMeTitle">Shown to me</span><button class="modal-close" onclick="closeModal('modalShownMe')">Close</button></div>
+    <div class="modal-body">
+      <div class="pick-list" id="shownMeList"></div>
+      <div class="modal-msg" id="shownMeMsg"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="closeModal('modalShownMe')">Cancel</button>
+        <button class="modal-btn primary" onclick="confirmShownMePick()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: I showed -->
+<div class="modal-backdrop" id="modalIShowed">
+  <div class="modal">
+    <div class="modal-head"><span id="ishowedTitle">I showed</span><button class="modal-close" onclick="closeModal('modalIShowed')">Close</button></div>
+    <div class="modal-body">
+      <div class="pick-list" id="ishowedList"></div>
+      <div class="modal-msg" id="ishowedMsg"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="closeModal('modalIShowed')">Cancel</button>
+        <button class="modal-btn primary" onclick="confirmIShowedPick()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ∑ picker -->
+<div class="modal-backdrop" id="modalSum">
+  <div class="modal">
+    <div class="modal-head"><span id="sumTitle">∑</span><button class="modal-close" onclick="closeModal('modalSum')">Close</button></div>
+    <div class="modal-body">
+      <button class="pick-opt" id="btnSumHas" onclick="sumPick('check')">✕ Has card</button>
+      <button class="pick-opt" id="btnSumStar" onclick="sumStarTap(this)">⭐ Solution?</button>
+      <button class="pick-opt" onclick="sumPick(null)">Clear</button>
+      <div class="modal-msg" id="sumMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Cell note -->
+<div class="modal-backdrop" id="modalNote">
+  <div class="modal">
+    <div class="modal-head"><span>📝 Cell Note</span><button class="modal-close" onclick="closeModal('modalNote')">Close</button></div>
+    <div class="modal-body">
+      <p style="font-size:0.88rem;color:var(--modal-text)" id="noteWhere"></p>
+      <input class="modal-input" id="noteInput" type="text" maxlength="4" placeholder="Up to 4 letters…" autocomplete="off" autocorrect="off" autocapitalize="off">
+      <div class="modal-msg" id="noteMsg"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="closeModal('modalNote')">Cancel</button>
+        <button class="modal-btn primary" onclick="confirmNote()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ⭐ Accusation -->
+<div class="modal-backdrop" id="modalAccuse">
+  <div class="modal">
+    <div class="modal-head"><span>⭐ Accusation</span><button class="modal-close" onclick="closeModal('modalAccuse')">Close</button></div>
+    <div class="modal-body">
+      <div class="modal-sec">Select Who Is Accusing</div>
+      <div class="pick-list" id="accusePlayerList" style="max-height:26dvh;"></div>
+      <div id="accuseCardArea" style="display:none;">
+        <div class="modal-sec" id="accuseDirection" style="margin-bottom:6px;">Select the cards accused</div>
+        <div class="pick-list" id="accuseCardList" style="max-height:34dvh;"></div>
+      </div>
+      <div id="accuseVerdictArea" style="display:none;">
+        <div id="accuseVerdictQ" style="font-size:0.78rem;color:var(--hint);font-weight:600;">Are they right?</div>
+        <div class="modal-btn-row" style="margin-top:4px">
+          <button class="modal-btn primary" id="accVerdictYes" style="opacity:0.5" onclick="accuseVerdict('right', this)">Yes</button>
+          <button class="modal-btn danger" id="accVerdictNo" style="opacity:0.5" onclick="accuseVerdict('wrong', this)">No</button>
+        </div>
+      </div>
+      <div class="modal-msg" id="accuseMsg"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="closeModal('modalAccuse')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Player Out -->
+<div class="modal-backdrop" id="modalPlayerOut">
+  <div class="modal">
+    <div class="modal-head"><span>Player Out</span><button class="modal-close" onclick="closeModal('modalPlayerOut')">Close</button></div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--modal-faded);font-style:italic">Who is leaving the game?</p>
+      <div class="pick-list" id="playerOutList" style="max-height:35dvh;"></div>
+      <div id="outKindArea">
+        <button class="modal-btn danger" id="quitShowBtn" style="text-align:left;opacity:0.5" onclick="quitShowTap()">👋 Quits — cards shown to everyone</button>
+      </div>
+      <div id="outCardArea" style="display:none;">
+        <div class="modal-sec" style="margin-bottom:6px;">Tap Cards They Held</div>
+        <div class="pick-list" id="outCardList" style="max-height:40dvh;"></div>
+      </div>
+      <div class="modal-msg" id="playerOutMsg"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="closeModal('modalPlayerOut')">Cancel</button>
+        <button class="modal-btn danger" id="outRemoveBtn" style="display:none" onclick="outRemoveTap(this)">Remove Player</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: New Game -->
+<div class="modal-backdrop" id="modalNewGame">
+  <div class="modal">
+    <div class="modal-head"><span>New Game</span><button class="modal-close" onclick="closeModal('modalNewGame')">Close</button></div>
+    <div class="modal-body">
+      <p style="font-size:0.88rem;color:var(--modal-text)">Select how you want the Setup to start in the new game.</p>
+      <p style="font-size:0.88rem;color:var(--modal-text)">The results of this game will be erased and forgotten. Your notes will be kept.</p>
+      <div class="modal-msg" id="newGameMsg"></div>
+      <div style="font-size:0.78rem;color:var(--hint);font-weight:600;">Players:</div>
+      <div class="modal-btn-row">
+        <button class="modal-btn primary ng-p-btn" data-val="same" style="opacity:0.65" onclick="setNgPick('players','same')">Same Players</button>
+        <button class="modal-btn secondary ng-p-btn" data-val="new" style="opacity:0.65" onclick="setNgPick('players','new')">New Players</button>
+      </div>
+      <div style="font-size:0.78rem;color:var(--hint);font-weight:600;">Deck:</div>
+      <div class="modal-btn-row">
+        <button class="modal-btn primary ng-d-btn" data-val="same" style="opacity:0.65" onclick="setNgPick('deck','same')">Same Deck</button>
+        <button class="modal-btn secondary ng-d-btn" data-val="new" style="opacity:0.65" onclick="setNgPick('deck','new')">New Deck</button>
+      </div>
+      <div class="modal-btn-row" style="margin-top:6px">
+        <button class="modal-btn secondary" onclick="closeModal('modalNewGame')">Cancel</button>
+        <button class="modal-btn primary" id="ngStartBtn" style="opacity:0.5" onclick="ngStartTap(this)">Start New Game</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Feedback -->
+<div class="modal-backdrop" id="modalFeedback">
+  <div class="modal">
+    <div class="modal-head"><span>💬 Feedback</span><button class="modal-close" onclick="closeModal('modalFeedback')">Close</button></div>
+    <div class="modal-body">
+      <p style="font-size:0.82rem;color:var(--feedback-invite);font-style:italic;line-height:1.5">Do you have an idea, or did something not work right? I'd love to hear it.</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:0.78rem;color:var(--feedback-question);font-weight:600">Did the tracker work correctly?</div>
+        <div class="modal-btn-row">
+          <button class="modal-btn primary fb-btn" data-val="Yes" style="font-size:0.8rem;padding:7px;opacity:0.65" onclick="setFeedback('Yes')">✅ Yes</button>
+          <button class="modal-btn secondary fb-btn" data-val="Mostly" style="font-size:0.8rem;padding:7px;opacity:0.65" onclick="setFeedback('Mostly')">⚠️ Mostly</button>
+          <button class="modal-btn danger fb-btn" data-val="No" style="font-size:0.8rem;padding:7px;opacity:0.65" onclick="setFeedback('No')">❌ No</button>
+        </div>
+        <div style="font-size:0.78rem;color:var(--feedback-question);font-weight:600">Do you find anything confusing or hard to use?</div>
+        <textarea class="modal-input" id="fbq2" rows="2" style="resize:none" placeholder="Describe anything confusing…"></textarea>
+        <div style="font-size:0.78rem;color:var(--feedback-question);font-weight:600">Are there any features you would like it to have?</div>
+        <textarea class="modal-input" id="fbq3" rows="2" style="resize:none" placeholder="Your most wanted feature…"></textarea>
+        <div style="font-size:0.78rem;color:var(--feedback-question);font-weight:600">Do you have any other comments or suggestions?</div>
+        <textarea class="modal-input" id="fbq4" rows="2" style="resize:none" placeholder="Anything else…"></textarea>
+        <div style="font-size:0.78rem;color:var(--feedback-question);font-weight:600">How would you rate this app?</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:0.68rem;color:var(--feedback-invite);white-space:nowrap">I don't like it</span>
+          <input type="range" id="fbRating" min="0" max="100" value="50" style="flex:1;accent-color:var(--rating-slider);height:2px;margin:0">
+          <span style="font-size:0.68rem;color:var(--feedback-invite);white-space:nowrap">I really like it</span>
+        </div>
+        <div style="text-align:center;margin-top:4px">
+          <div style="font-size:0.85rem;color:var(--feedback-thanks);font-weight:700;letter-spacing:0.5px">THANK YOU VERY MUCH</div>
+          <div style="font-size:0.8rem;color:var(--feedback-appreciation);font-style:italic">I appreciate your feedback 😊</div>
+        </div>
+      </div>
+      <div class="modal-btn-row" style="margin-top:4px">
+        <button class="modal-btn secondary" onclick="closeModal('modalFeedback')">Cancel</button>
+        <button class="modal-btn primary" onclick="submitFeedback()">Send Feedback</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ════════════════════════════════════════════════════════════
+// NATIVE STORAGE BRIDGE (iOS wrapper only)
+// ════════════════════════════════════════════════════════════
+// Inside the iOS wrapper, the system can reclaim WKWebView's
+// localStorage under storage pressure. Every write is also posted
+// to the native side, which mirrors it into UserDefaults; at
+// launch the wrapper injects the mirror back before scripts run.
+// In a plain browser window.webkit doesn't exist and this block
+// does nothing. Loaded before the engine, so every engine write
+// is mirrored from the first.
+(function () {
+  const bridge = window.webkit && window.webkit.messageHandlers &&
+                 window.webkit.messageHandlers.storage;
+  if (!bridge) return;
+  const proto = Object.getPrototypeOf(localStorage);
+  const origSet    = proto.setItem;
+  const origRemove = proto.removeItem;
+  proto.setItem = function (key, value) {
+    origSet.call(this, key, value);
+    if (this === localStorage)
+      bridge.postMessage({ action: 'set', key: key, value: String(value) });
+  };
+  proto.removeItem = function (key) {
+    origRemove.call(this, key);
+    if (this === localStorage)
+      bridge.postMessage({ action: 'remove', key: key });
+  };
+  // Full sync at every launch — the mirror is always a complete copy
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    bridge.postMessage({ action: 'set', key: key, value: String(localStorage.getItem(key)) });
+  }
+})();
+</script>
+
+<script src="clues-tracker-engine.js"></script>
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════════
+// THEME — one name, two values; dark is the first-launch default
+// ════════════════════════════════════════════════════════════
+// The choice is packaging state, saved under its own small key.
+// The button shows the theme a tap would switch to.
+const THEME_KEY = 'mctsTheme';
+
+function applyTheme(name) {
+  document.body.classList.remove('theme-dark', 'theme-light');
+  document.body.classList.add('theme-' + name);
+  const glyph = name === 'dark' ? '☀' : '🌙';
+  ['btnThemeGame', 'btnThemeSetup'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.textContent = glyph;
+  });
+  try { localStorage.setItem(THEME_KEY, name); } catch (e) {}
+}
+
+function toggleTheme() {
+  const dark = document.body.classList.contains('theme-dark');
+  applyTheme(dark ? 'light' : 'dark');
+}
+
+// ════════════════════════════════════════════════════════════
+// SCREENS — five frames, one showing
+// ════════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // ▶ Play belongs to Setup alone; New and Out to the Game screen
+  document.getElementById('btnPlay').style.display =
+    id === 'screenSetup' ? 'inline-block' : 'none';
+  const inGame = id === 'screenGame';
+  document.getElementById('btnNew').style.display = inGame ? 'inline-block' : 'none';
+  document.getElementById('btnOut').style.display = inGame ? 'inline-block' : 'none';
+  if (id === 'screenSetup') refreshPlay();
+  // The side pages wake as they open, and their footers dim to
+  // return only to the active page
+  if (id === 'screenLog')   { renderLogPage(); refreshPanelFoot(); }
+  if (id === 'screenNotes') { loadNotes();     refreshPanelFoot(); }
+  if (id === 'screenGuide') { refreshPanelFoot(); }
+}
+
+// ════════════════════════════════════════════════════════════
+// SIDE PAGES — the Log and the Notepad
+// ════════════════════════════════════════════════════════════
+// The engine words the log; this section only paints logView()'s
+// blocks. The notepad is packaging state under its own key — the
+// storage bridge mirrors it like any other.
+
+// The feedback popup behind the Guide's Suggest button (Y-13,
+// built at Y-20). It follows the shipped page: the picked answer
+// button is shown by opacity alone, and Send builds a mailto:
+// that the wrapper's ContentView.swift already hands to iOS.
+let feedbackQ1 = '';
+function openFeedback() {
+  feedbackQ1 = '';
+  ['fbq2','fbq3','fbq4'].forEach(id => { document.getElementById(id).value = ''; });
+  document.querySelectorAll('.fb-btn').forEach(b => { b.style.opacity = '0.65'; });
+  document.getElementById('fbRating').value = 50;
+  openModal('modalFeedback');
+}
+function setFeedback(val) {
+  feedbackQ1 = val;
+  document.querySelectorAll('.fb-btn').forEach(b => {
+    b.style.opacity = b.dataset.val === val ? '1' : '0.4';
+  });
+}
+function submitFeedback() {
+  const q2 = document.getElementById('fbq2').value.trim();
+  const q3 = document.getElementById('fbq3').value.trim();
+  const q4 = document.getElementById('fbq4').value.trim();
+  const rating = document.getElementById('fbRating').value;
+  const body = encodeURIComponent(
+    `Clues Tracker Sheet Feedback\n\n1. Did the tracker work correctly?\n${feedbackQ1||'(not answered)'}\n\n2. Do you find anything confusing or hard to use?\n${q2||'(none)'}\n\n3. Are there any features you would like it to have?\n${q3||'(none)'}\n\n4. Do you have any other comments or suggestions?\n${q4||'(none)'}\n\n5. Rating: ${rating}%`
+  );
+  window.location.href = `mailto:jojoMurphy@tuta.com?subject=${encodeURIComponent('Clues Tracker Sheet Feedback')}&body=${body}`;
+  closeModal('modalFeedback');
+}
+
+// Only the return leading to the active page is live: the Game
+// screen while a game runs, Setup otherwise
+function refreshPanelFoot() {
+  const inGame = Engine.inspect().gameInProgress;
+  document.querySelectorAll('.nav-setup').forEach(b => b.classList.toggle('dim', inGame));
+  document.querySelectorAll('.nav-game').forEach(b => b.classList.toggle('dim', !inGame));
+}
+
+function renderLogPage() {
+  const list = document.getElementById('logList');
+  const view = Engine.logView();
+  list.innerHTML = '';
+  if (view.now) {
+    const now = document.createElement('div');
+    now.className = 'log-entry log-now';
+    now.textContent = view.now;
+    list.appendChild(now);
+  }
+  if (view.entries.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'log-empty';
+    empty.textContent = view.empty;
+    list.appendChild(empty);
+    return;
+  }
+  view.entries.forEach(en => {
+    const block = document.createElement('div');
+    block.className = 'log-entry kind-' + en.kind;
+    const title = document.createElement('div');
+    title.className = 'log-title';
+    title.textContent = en.title;
+    block.appendChild(title);
+    en.lines.forEach(l => {
+      const d = document.createElement('div');
+      d.className = 'log-line' + (l.highlight ? ' hi' : '');
+      d.textContent = l.text;
+      block.appendChild(d);
+    });
+    list.appendChild(block);
+  });
+}
+
+// Copy words the same view as plain text. In the wrapper the
+// native bridge takes it (navigator.clipboard needs a secure
+// context, which a file:// page is not); a plain browser uses
+// the modern way.
+function copyLog() {
+  const view = Engine.logView();
+  if (view.entries.length === 0) { showStatus('Nothing to copy', 'warning'); return; }
+  const text = view.entries.map(en =>
+    [en.title, ...en.lines.map(l => l.text)].join('\n')).join('\n\n');
+  const bridge = window.webkit && window.webkit.messageHandlers &&
+                 window.webkit.messageHandlers.clipboard;
+  if (bridge) {
+    bridge.postMessage(text);
+    showStatus('Log copied!');
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showStatus('Log copied!'));
+  }
+}
+
+const NOTES_KEY = 'mctsNotes';
+
+function saveNotes() {
+  try { localStorage.setItem(NOTES_KEY, document.getElementById('notesArea').value); } catch (e) {}
+}
+
+function loadNotes() {
+  const el = document.getElementById('notesArea');
+  try { el.value = localStorage.getItem(NOTES_KEY) || ''; } catch (e) { el.value = ''; }
+}
+
+function clearNotes() {
+  const el = document.getElementById('notesArea');
+  el.value = '';
+  try { localStorage.removeItem(NOTES_KEY); } catch (e) {}
+  // Nudge a full repaint — the web view can leave a half-drawn
+  // placeholder when the pad is emptied by code, not typing
+  el.blur();
+  el.style.display = 'none';
+  void el.offsetHeight;
+  el.style.display = '';
+}
+
+// ════════════════════════════════════════════════════════════
+// MODALS — open, close, and the two-tap confirm
+// ════════════════════════════════════════════════════════════
+// The two-tap confirm is the one mechanism for every confirming
+// button; it belongs to the button, not the engine.
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+const twoTapState = {};
+function twoTap(id, btn, action, confirmLabel = 'Sure?', resetMs = 3000) {
+  if (twoTapState[id]) {
+    clearTimeout(twoTapState[id].timer);
+    delete twoTapState[id];
+    btn.classList.remove('two-tap-active');
+    showStatus('');
+    action();
+    if (document.contains(btn)) {
+      btn.textContent = btn.dataset.origLabel || btn.textContent;
+      btn.style.minWidth = '';
+    }
+  } else {
+    // Freeze the button's size while "Sure?" shows, so the shorter
+    // label never shifts its neighbors mid-tap
+    btn.style.minWidth = btn.offsetWidth + 'px';
+    btn.dataset.origLabel = btn.textContent;
+    btn.textContent = confirmLabel;
+    btn.classList.add('two-tap-active');
+    showStatus('Tap again to confirm');
+    twoTapState[id] = { timer: setTimeout(() => {
+      btn.textContent = btn.dataset.origLabel;
+      btn.style.minWidth = '';
+      btn.classList.remove('two-tap-active');
+      showStatus('');
+      delete twoTapState[id];
+    }, resetMs) };
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// STATUS — one renderer, per-screen outlets
+// ════════════════════════════════════════════════════════════
+// The engine speaks through its status hook; the renderer routes
+// the words to the outlets. Long messages scroll across their
+// slot — hold, scroll slow, hold — and short ones sit five
+// seconds. An open modal shows the message on its own reserved
+// line as well, since a modal covers every screen strip.
+const statusTokens = { setup: 0, modal: 0, game: 0, log: 0, notes: 0 };
+function renderStatus(el, msg, key, onCleared) {
+  if (!el) return;
+  el.innerHTML = '';
+  if (!msg) { if (onCleared) onCleared(); return; }
+  const inner = document.createElement('span');
+  inner.className = 'status-inner';
+  inner.textContent = msg;
+  el.appendChild(inner);
+  const myToken = ++statusTokens[key];
+  requestAnimationFrame(() => {
+    if (myToken !== statusTokens[key]) return;
+    const overflow = inner.scrollWidth - el.clientWidth;
+    let totalMs;
+    if (overflow > 4) {
+      const scrollSec = Math.max(3, Math.min(10, overflow / 35));
+      const totalSec = scrollSec + 1 + 2;
+      inner.style.setProperty('--status-shift', `-${overflow}px`);
+      inner.style.animationDuration = `${totalSec}s`;
+      inner.classList.add('marquee');
+      totalMs = totalSec * 1000 + 200;
+    } else {
+      totalMs = 5000;
+    }
+    setTimeout(() => {
+      if (myToken !== statusTokens[key]) return;
+      el.innerHTML = '';
+      if (onCleared) onCleared();
+    }, totalMs);
+  });
+}
+
+function showStatus(msg, kind) {
+  const warn = kind === 'warning';
+  const strip = document.getElementById('statusBarSetup');
+  if (strip) {
+    strip.style.display = msg ? 'flex' : 'none';
+    renderStatus(strip, msg, 'setup', () => { strip.style.display = 'none'; });
+  }
+  // The side pages' own outlets — the Log's strip over its
+  // footer, the Notepad's slot in its head
+  const stripLog = document.getElementById('statusBarLog');
+  if (stripLog) {
+    stripLog.style.display = msg ? 'flex' : 'none';
+    renderStatus(stripLog, msg, 'log', () => { stripLog.style.display = 'none'; });
+  }
+  const stripNotes = document.getElementById('statusBarNotes');
+  if (stripNotes) {
+    stripNotes.style.display = msg ? 'flex' : 'none';
+    renderStatus(stripNotes, msg, 'notes', () => { stripNotes.style.display = 'none'; });
+  }
+  // The Game screen's outlet is the stage-bar hint line; when a
+  // message clears, the resting phase direction comes back
+  const hint = document.getElementById('stageHint');
+  if (hint) {
+    gameStatusLive = !!msg;
+    hint.style.color = warn ? 'var(--warn)' : '';
+    renderStatus(hint, msg, 'game', () => {
+      gameStatusLive = false;
+      hint.style.color = '';
+      hint.textContent = restingHint(Engine.inspect());
+    });
+  }
+  const modalMsg = document.querySelector('.modal-backdrop.open .modal-msg');
+  if (modalMsg) {
+    modalMsg.style.color = warn ? 'var(--warn)' : 'var(--hint)';
+    renderStatus(modalMsg, msg, 'modal');
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// SETUP — painting what the engine reports
+// ════════════════════════════════════════════════════════════
+function seatedSlots(s) {
+  const seats = [];
+  for (let i = 0; i < 6; i++) {
+    if (i === s.meSlot || (s.players[i] || '').trim() !== '') seats.push(i);
+  }
+  return seats;
+}
+
+function renderSetup() {
+  const s = Engine.inspect();
+  renderSeats(s);
+  renderDeckBar();
+  renderCardPicker(s);
+  document.getElementById('btnCounts')
+    .classList.toggle('is-set', s.counts.entered);
+  refreshPlay();
+}
+
+function renderSeats(s) {
+  const g = document.getElementById('playerGrid');
+  g.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'player-slot' +
+      (s.meSlot === i ? ' is-me' : s.players[i] ? ' has-name' : '');
+    slot.onclick = () => openSeat(i);
+    const lbl = document.createElement('div');
+    lbl.className = 'slot-lbl';
+    lbl.textContent = 'Seat ' + (i + 1);
+    const nm = document.createElement('div');
+    nm.className = 'slot-name';
+    nm.textContent = s.meSlot === i ? 'Me' : (s.players[i] || '—');
+    slot.append(lbl, nm);
+    g.appendChild(slot);
+  }
+}
+
+function renderCardPicker(s) {
+  const c = document.getElementById('cardPicker');
+  c.innerHTML = '';
+  s.categories.forEach((cat, ci) => {
+    const div = document.createElement('div');
+    div.className = 'card-section';
+    const hdr = document.createElement('div');
+    hdr.className = 'cat-hdr c' + ci;
+    const name = document.createElement('span');
+    name.textContent = `— ${cat.name} (${cat.cards.length}) —`;
+    const edit = document.createElement('button');
+    edit.className = 'cat-edit-btn';
+    edit.textContent = 'Rename → Edit';
+    edit.onclick = () => openEditCards(ci);
+    hdr.append(name, edit);
+    div.appendChild(hdr);
+    const chips = document.createElement('div');
+    chips.className = 'card-chips';
+    cat.cards.forEach(card => {
+      const ch = document.createElement('div');
+      ch.className = 'card-chip' + (s.myCards.includes(card) ? ' selected' : '');
+      ch.textContent = card;
+      ch.onclick = () => Engine.toggleMyCard(card);
+      chips.appendChild(ch);
+    });
+    div.appendChild(chips);
+    c.appendChild(div);
+  });
+  if (s.categories.length < 4) {
+    const add = document.createElement('button');
+    add.className = 'add-cat-btn';
+    add.textContent = '＋ Add Category (up to 4)';
+    add.onclick = () => Engine.addCategory();
+    c.appendChild(add);
+  }
+}
+
+// ── The seat window ─────────────────────────────────────────
+let editingSeat = -1;
+
+function openSeat(i) {
+  const s = Engine.inspect();
+  editingSeat = i;
+  document.getElementById('seatTitle').textContent = 'Seat ' + (i + 1);
+  document.getElementById('seatNameInput').value =
+    s.meSlot === i ? '' : (s.players[i] || '');
+  document.getElementById('meCheck').checked = s.meSlot === i;
+  openModal('modalSeat');
+  setTimeout(() => document.getElementById('seatNameInput').focus(), 100);
+}
+
+function toggleMeCheck() {
+  const cb = document.getElementById('meCheck');
+  cb.checked = !cb.checked;
+  if (cb.checked) document.getElementById('seatNameInput').value = '';
+}
+
+function confirmSeat() {
+  const isMe = document.getElementById('meCheck').checked;
+  const name = document.getElementById('seatNameInput').value;
+  Engine.setSeat(editingSeat, name, isMe);
+  closeModal('modalSeat');
+}
+
+function clearSeatInput() {
+  document.getElementById('seatNameInput').value = '';
+  document.getElementById('meCheck').checked = false;
+  document.getElementById('seatNameInput').focus();
+}
+
+// ── The deck-edit window ────────────────────────────────────
+// Default "Category N" and "Card N" names show as placeholders in
+// empty boxes; a blank box keeps its placeholder name on Save.
+let editingCat = -1;
+
+function openEditCards(ci) {
+  const s = Engine.inspect();
+  editingCat = ci;
+  const cat = s.categories[ci];
+  document.getElementById('editCardsTitle').textContent = 'Edit ' + cat.name;
+  const nameInp = document.getElementById('catNameInput');
+  const isDefaultName = /^Category \d+$/.test(cat.name);
+  nameInp.placeholder = isDefaultName ? cat.name : '';
+  nameInp.value = isDefaultName ? '' : cat.name;
+  const list = document.getElementById('cardEditList');
+  list.innerHTML = '';
+  cat.cards.forEach(card => list.appendChild(makeCardRow(card)));
+  if (twoTapState['deleteCategory']) {
+    clearTimeout(twoTapState['deleteCategory'].timer);
+    delete twoTapState['deleteCategory'];
+  }
+  const delBtn = document.getElementById('btnDeleteCategory');
+  delBtn.textContent = '✕';
+  delBtn.classList.remove('two-tap-active');
+  openModal('modalEditCards');
+}
+
+function makeCardRow(card) {
+  const row = document.createElement('div');
+  row.className = 'card-edit-row';
+  const inp = document.createElement('input');
+  inp.className = 'card-edit-input';
+  inp.maxLength = 13;
+  if (card) {
+    const isDefault = /^Card \d+$/.test(card);
+    inp.placeholder = isDefault ? card : '';
+    inp.value = isDefault ? '' : card;
+    inp.dataset.orig = card;
+  } else {
+    inp.placeholder = 'New card name';
+  }
+  inp.setAttribute('autocomplete', 'off');
+  inp.setAttribute('autocorrect', 'off');
+  inp.setAttribute('autocapitalize', 'words');
+  row.appendChild(inp);
+  const del = document.createElement('button');
+  del.className = 'card-del-btn';
+  del.textContent = '✕';
+  del.onclick = () => row.remove();
+  row.appendChild(del);
+  return row;
+}
+
+function addCardRow() {
+  const row = makeCardRow('');
+  document.getElementById('cardEditList').appendChild(row);
+  row.querySelector('input').focus();
+}
+
+function deleteCategoryTap(btn) {
+  twoTap('deleteCategory', btn, () => {
+    if (Engine.deleteCategory(editingCat)) closeModal('modalEditCards');
+  }, 'Delete?');
+}
+
+function saveCategoryEdit() {
+  const rows = [];
+  document.querySelectorAll('#cardEditList .card-edit-row').forEach(row => {
+    const inp = row.querySelector('.card-edit-input');
+    const orig = inp.dataset.orig || null;
+    const name = inp.value.trim() || (orig ? (inp.placeholder.trim() || orig) : '');
+    rows.push({ orig, name });
+  });
+  const catName = document.getElementById('catNameInput').value.trim() ||
+    document.getElementById('catNameInput').placeholder.trim();
+  if (Engine.editCategory(editingCat, catName, rows)) closeModal('modalEditCards');
+}
+
+// ── The saved decks ─────────────────────────────────────────
+let deckIdx = -1;
+
+function renderDeckBar() {
+  const bar = document.getElementById('deckBar');
+  bar.innerHTML = '';
+  Engine.savedDecks().forEach((d, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'deck-chip';
+    chip.textContent = d.name;
+    chip.onclick = () => openDeckAction(i);
+    bar.appendChild(chip);
+  });
+}
+
+function openSaveDeck() {
+  document.getElementById('deckNameInput').value = '';
+  openModal('modalSaveDeck');
+}
+
+function confirmSaveDeck() {
+  if (Engine.saveDeck(document.getElementById('deckNameInput').value))
+    closeModal('modalSaveDeck');
+}
+
+function openDeckAction(i) {
+  const d = Engine.savedDecks()[i];
+  if (!d) return;
+  deckIdx = i;
+  document.getElementById('deckActionName').textContent = `"${d.name}"`;
+  ['delDeck', 'loadDeck'].forEach(id => {
+    if (twoTapState[id]) {
+      clearTimeout(twoTapState[id].timer);
+      delete twoTapState[id];
+    }
+  });
+  const delBtn = document.getElementById('btnDeleteDeck');
+  const loadBtn = document.getElementById('btnLoadDeck');
+  delBtn.textContent = 'Delete';
+  delBtn.classList.remove('two-tap-active');
+  loadBtn.textContent = 'Load';
+  loadBtn.classList.remove('two-tap-active');
+  openModal('modalDeckAction');
+}
+
+function confirmLoadDeck()   { if (Engine.loadDeck(deckIdx))   closeModal('modalDeckAction'); }
+function confirmDeleteDeck() { if (Engine.deleteDeck(deckIdx)) closeModal('modalDeckAction'); }
+
+// ── The counts window ───────────────────────────────────────
+// The envelope's row leads — one card per category with cards
+// sits aside by rule (Y-10), stated but not steppable — then
+// House, the even-deal suggestion following it; numbers by
+// tap alone — the − and ＋ steppers, no phone keyboard (Patrick,
+// Y-7). The window always opens already filled, so Done can
+// accept it as it stands. It opens on the numbers the state is
+// carrying whenever there are any — the settled counts of a game
+// in Setup, or the numbers a New Game brought over from the last
+// one — and only a first game, with every number still at zero,
+// opens on the guess: the players take an even share and House
+// takes the leftovers. Reopening shows the entered counts, to fix
+// a mistake.
+let countHouse = 0;
+let countPlayers = [0, 0, 0, 0, 0, 0];
+
+function openCounts() {
+  const s = Engine.inspect();
+  if (seatedSlots(s).length === 0) {
+    showStatus('Fill the seats first', 'warning');
+    return;
+  }
+  const hasNumbers = s.counts.house > 0 || s.counts.players.some(n => n > 0);
+  if (hasNumbers) {
+    countHouse = s.counts.house;
+    countPlayers = [...s.counts.players];
+  } else {
+    const def = Engine.countsDefault();
+    countHouse = def ? def.house : 0;
+    countPlayers = def ? [...def.players] : Engine.countsPrefill(0);
+  }
+  renderCountRows();
+  openModal('modalCounts');
+}
+
+function stepCount(kind, slot, delta) {
+  const s = Engine.inspect();
+  const dealt = s.categories.reduce((sum, c) => sum + c.cards.length, 0)
+    - Engine.envelopeSize();
+  if (kind === 'house') {
+    countHouse = Math.max(0, Math.min(dealt, countHouse + delta));
+    countPlayers = Engine.countsPrefill(countHouse);
+  } else {
+    countPlayers[slot] =
+      Math.max(0, Math.min(dealt, (countPlayers[slot] || 0) + delta));
+  }
+  renderCountRows();
+}
+
+function renderCountRows() {
+  const s = Engine.inspect();
+  const box = document.getElementById('countRows');
+  box.innerHTML = '';
+  const makeRow = (label, val, kind, slot, fixed) => {
+    const r = document.createElement('div');
+    r.className = 'count-row';
+    const l = document.createElement('div');
+    l.className = 'count-lbl';
+    l.textContent = label;
+    const minus = document.createElement('button');
+    minus.className = 'count-step';
+    minus.textContent = '−';
+    const v = document.createElement('div');
+    v.className = 'count-val';
+    v.textContent = val;
+    const plus = document.createElement('button');
+    plus.className = 'count-step';
+    plus.textContent = '＋';
+    if (fixed) {
+      // A stated fact, not an entry: the steppers hold the
+      // row's shape unseen, so the numbers line up.
+      minus.style.visibility = 'hidden';
+      plus.style.visibility = 'hidden';
+    } else {
+      minus.onclick = () => stepCount(kind, slot, -1);
+      plus.onclick = () => stepCount(kind, slot, 1);
+    }
+    r.append(l, minus, v, plus);
+    box.appendChild(r);
+  };
+  makeRow('Envelope', Engine.envelopeSize(), '', -1, true);
+  makeRow('House', countHouse, 'house', -1);
+  seatedSlots(s).forEach(slot => {
+    makeRow(slot === s.meSlot ? 'Me' : s.players[slot],
+      countPlayers[slot] || 0, 'player', slot);
+  });
+}
+
+function confirmCounts() {
+  if (Engine.setCounts(countHouse, countPlayers)) closeModal('modalCounts');
+}
+
+// ── The Play gate ───────────────────────────────────────────
+// The engine's gate speaks; the button only dims and brightens.
+function refreshPlay() {
+  const btn = document.getElementById('btnPlay');
+  btn.classList.toggle('dim',
+    Engine.inspect().gameInProgress || Engine.setupUnmet() !== null);
+}
+
+function tryPlay() {
+  if (Engine.play()) showScreen('screenGame');
+}
+
+// ════════════════════════════════════════════════════════════
+// GAME GRID — painting what the engine reports
+// ════════════════════════════════════════════════════════════
+// The table is built once per game shape; after that the hooks
+// repaint single cells. The engine decides everything — this
+// section only reads and draws.
+const SYM = { check: ['✓', 'sym-check'], cross: ['✗', 'sym-cross'],
+              asked: ['?', 'sym-asked'], showed: ['!', 'sym-showed'],
+              ishowed: ['Me', 'sym-ishowed'] };
+
+let grid = null;   // built element maps; null until a game shows
+
+// Whose column wears the asker color right now — no one, once the
+// game has ended
+function askerColNow(s) {
+  if (!s.gameInProgress || s.activePlayers.length === 0 || gameIsOver(s)) return -1;
+  return s.pendingAskerCol >= 0
+    ? s.pendingAskerCol
+    : s.activePlayers[s.turnStep % s.activePlayers.length];
+}
+
+// The painting's own reading of "the game has ended" — a verdict
+// landed, or no live opponent remains (😢 players are not alive,
+// and 👋 quits already left the ring). The engine guards its own
+// doors; this mirror only steers what gets drawn.
+function gameIsOver(s) {
+  return s.gameInProgress && (s.accusationResult !== null ||
+    s.activePlayers.filter(c => c !== s.meSlot &&
+      s.playerOutKind[c] !== 'wrongacc').length === 0);
+}
+
+// One line naming the game's shape; when it changes, rebuild
+function gridSignature(s) {
+  return JSON.stringify([s.categories, s.activePlayers, s.players, s.meSlot]);
+}
+
+// ════════════════════════════════════════════════════════════
+// COLUMN DRAG — a hard press on a header picks its column up
+// ════════════════════════════════════════════════════════════
+// The six player columns and the ∑ and 🏠 columns reorder by a
+// hard press and drag on their header; only the Card column
+// keeps its place. The order is packaging state, saved under its
+// own small key — the storage bridge mirrors it like any other.
+// A fresh install opens on the default: ∑ and 🏠 in close beside
+// the cards, the players following them (Patrick, Y-23). Once a
+// column has been dragged the saved order wins, and nothing ever
+// puts it back — it is the player's own arrangement from then on.
+const COL_ORDER_KEY = 'mctsColOrder';
+const COL_ORDER_DEFAULT = ['sum', 'house', 0, 1, 2, 3, 4, 5];
+const PRESS_HOLD_MS = 450;   // how long the hard press holds
+const PRESS_SLACK_PX = 8;    // finger drift allowed before the press cancels
+
+let colOrder = (function () {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COL_ORDER_KEY));
+    if (Array.isArray(saved) && saved.length === COL_ORDER_DEFAULT.length &&
+        COL_ORDER_DEFAULT.every(tok => saved.includes(tok)))
+      return saved;
+  } catch (e) {}
+  return COL_ORDER_DEFAULT.slice();
+})();
+
+function saveColOrder() {
+  try { localStorage.setItem(COL_ORDER_KEY, JSON.stringify(colOrder)); } catch (e) {}
+}
+
+// Every cell of one column, header first
+function columnCells(tok) {
+  if (tok === 'sum')   return [grid.sumTh,   ...grid.cards.map(c => grid.sums[c])];
+  if (tok === 'house') return [grid.houseTh, ...grid.cards.map(c => grid.houses[c])];
+  return [grid.headers[tok], ...grid.cards.map(c => grid.cells[c + '_' + tok])];
+}
+
+// Re-seat every movable cell to match colOrder. appendChild moves
+// a live node, so appending column by column, left to right,
+// seats every row — the fixed Card cell stays first on its own.
+function applyColOrder() {
+  colOrder.forEach(tok => columnCells(tok).forEach(cell =>
+    cell.parentNode.appendChild(cell)));
+}
+
+// Which seat in colOrder the finger sits over, judged by the
+// headers' live places; -1 over the Card corner or off the table
+function seatUnderFinger(x, dragTok) {
+  for (let i = 0; i < colOrder.length; i++) {
+    const tok = colOrder[i];
+    if (tok === dragTok) continue;
+    const th = tok === 'sum' ? grid.sumTh
+             : tok === 'house' ? grid.houseTh : grid.headers[tok];
+    const r = th.getBoundingClientRect();
+    if (x >= r.left && x < r.right) return i;
+  }
+  return -1;
+}
+
+// Eats the click a finished drag would otherwise leave behind
+let dragTapSwallow = false;
+
+// The press-and-drag wiring, one header at a time. A quick tap
+// passes through untouched; a hold of PRESS_HOLD_MS lifts the
+// column; moving before the hold lands is a scroll and cancels.
+function wireColumnDrag(th, tok) {
+  let hold = null, anchorX = 0, startY = 0, dragging = false, cells = null;
+
+  th.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || !grid) return;
+    const t = e.touches[0];
+    anchorX = t.clientX;
+    startY = t.clientY;
+    dragging = false;
+    hold = setTimeout(() => {
+      hold = null;
+      dragging = true;
+      cells = columnCells(tok);
+      cells.forEach(c => c.classList.add('drag-col'));
+    }, PRESS_HOLD_MS);
+  }, { passive: true });
+
+  th.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (!dragging) {
+      if (hold && (Math.abs(t.clientX - anchorX) > PRESS_SLACK_PX ||
+                   Math.abs(t.clientY - startY) > PRESS_SLACK_PX)) {
+        clearTimeout(hold);
+        hold = null;
+      }
+      return;
+    }
+    e.preventDefault();   // the drag owns the finger; no scrolling
+    const dx = t.clientX - anchorX;
+    cells.forEach(c => c.style.transform = 'translateX(' + dx + 'px)');
+    // Crossing onto a neighbor trades seats with it, and the
+    // anchor resets so the column rests where the finger is
+    const idx = colOrder.indexOf(tok);
+    const seat = seatUnderFinger(t.clientX, tok);
+    if (seat >= 0 && seat !== idx) {
+      colOrder.splice(idx, 1);
+      colOrder.splice(seat, 0, tok);
+      cells.forEach(c => c.style.transform = '');
+      anchorX = t.clientX;
+      applyColOrder();
+    }
+  }, { passive: false });
+
+  const done = () => {
+    if (hold) { clearTimeout(hold); hold = null; }
+    if (!dragging) return;
+    dragging = false;
+    cells.forEach(c => { c.style.transform = ''; c.classList.remove('drag-col'); });
+    cells = null;
+    saveColOrder();
+    dragTapSwallow = true;
+    setTimeout(() => { dragTapSwallow = false; }, 400);
+  };
+  th.addEventListener('touchend', done);
+  th.addEventListener('touchcancel', done);
+}
+
+function buildGrid() {
+  const s = Engine.inspect();
+  const table = document.createElement('table');
+  table.className = 'tracker-table';
+  grid = { headers: [], cells: {}, sums: {}, houses: {},
+           sumTh: null, houseTh: null, cards: [], sig: gridSignature(s) };
+  // The pinned name row — each header cell is its column's own,
+  // seated in the saved display order; only the Card corner is
+  // fixed. Every movable header is also its column's drag handle.
+  const hr = document.createElement('tr');
+  const corner = document.createElement('th');
+  corner.className = 'corner-th';
+  corner.textContent = 'CARDS';
+  hr.appendChild(corner);
+  colOrder.forEach(tok => {
+    const th = document.createElement('th');
+    if (tok === 'sum') {
+      th.className = 'summary-th';
+      th.textContent = '∑';
+      grid.sumTh = th;
+    } else if (tok === 'house') {
+      th.className = 'house-th';
+      th.textContent = '🏠';
+      grid.houseTh = th;
+    } else {
+      th.onclick = () => { if (!dragTapSwallow) onHeaderTap(tok); };
+      grid.headers[tok] = th;
+    }
+    wireColumnDrag(th, tok);
+    hr.appendChild(th);
+  });
+  table.appendChild(hr);
+  // A banner row per category, then a row per card
+  s.categories.forEach((cat, ci) => {
+    const br = document.createElement('tr');
+    br.className = 'cat-row';
+    const bd = document.createElement('td');
+    bd.className = 'cat-c' + ci;
+    bd.colSpan = 9;
+    bd.textContent = cat.name;
+    br.appendChild(bd);
+    table.appendChild(br);
+    cat.cards.forEach(card => {
+      grid.cards.push(card);
+      const row = document.createElement('tr');
+      const th = document.createElement('th');
+      th.className = 'card-th';
+      th.textContent = card;
+      row.appendChild(th);
+      colOrder.forEach(tok => {
+        const cell = document.createElement('td');
+        if (tok === 'sum') {
+          cell.className = 'sum-cell';
+          cell.onclick = () => openSum(card);
+          grid.sums[card] = cell;
+        } else if (tok === 'house') {
+          cell.className = 'house-cell';
+          cell.onclick = () => Engine.houseTap(card);
+          grid.houses[card] = cell;
+        } else {
+          cell.onclick = () => onCellTap(card, tok);
+          grid.cells[card + '_' + tok] = cell;
+        }
+        row.appendChild(cell);
+      });
+      table.appendChild(row);
+    });
+  });
+  const wrap = document.getElementById('gridWrap');
+  wrap.innerHTML = '';
+  wrap.appendChild(table);
+  paintHeaders(s);
+  s.categories.forEach(cat => cat.cards.forEach(card => {
+    for (let c = 0; c < 6; c++) paintCell(card, c, s);
+    paintSum(card);
+    paintHouse(card);
+  }));
+  paintTurnBar(s);
+  paintStage(s);
+}
+
+// The six name headers: Me green, the asker blue, a quit player
+// gold with 👋, a wrong accuser the same with 😢, an empty seat
+// faded with a dash. Being out outranks being the asker: a player
+// sidelined while still the recorded asker wears the 😢, never
+// the asker color.
+function paintHeaders(s) {
+  const asker = askerColNow(s);
+  for (let c = 0; c < 6; c++) {
+    const th = grid.headers[c];
+    let cls = 'player-th', label = s.players[c];
+    if (c === s.meSlot) { cls += ' me-th'; label = 'Me'; }
+    else if (s.playerOutKind[c] === 'quit') { cls += ' quit-th'; label = '👋 ' + label; }
+    else if (s.playerOutKind[c] === 'wrongacc') { cls += ' quit-th'; label = '😢 ' + label; }
+    else if (c === asker) { cls += ' active-asker'; }
+    else if (!label) { cls += ' inactive-th'; label = '—'; }
+    th.className = cls;
+    th.textContent = label;
+  }
+}
+
+// One cell: ground, wash, marks, note — all from the engine
+function paintCell(card, col, sOpt) {
+  if (!grid) return;
+  const td = grid.cells[card + '_' + col];
+  if (!td) return;
+  const s = sOpt || Engine.inspect();
+  const marks = Engine.visibleMarks(card, col);
+  let cls = 'data-cell';
+  if (col === s.meSlot) cls += ' me-cell';
+  else if (!s.players[col] && s.playerOutKind[col] !== 'quit') cls += ' inactive-cell';
+  if (askerColNow(s) === col && s.pendingCards.includes(card)) cls += ' picked';
+  if (marks.some(m => m.type === 'check')) cls += ' cell-check';
+  if (marks.some(m => m.type === 'cross')) cls += ' cell-cross';
+  td.className = cls;
+  const inner = document.createElement('div');
+  inner.className = 'cell-inner';
+  marks.forEach(m => {
+    const sp = document.createElement('span');
+    sp.className = 'sym ' + SYM[m.type][1];
+    sp.textContent = SYM[m.type][0];
+    inner.appendChild(sp);
+  });
+  td.innerHTML = '';
+  td.appendChild(inner);
+  const note = Engine.cellNote(card, col);
+  if (note) {
+    const n = document.createElement('span');
+    n.className = 'cell-note';
+    n.textContent = note;
+    td.appendChild(n);
+  }
+}
+
+function paintSum(card) {
+  if (!grid || !grid.sums[card]) return;
+  const v = Engine.inspect().sumOverrides[card];
+  grid.sums[card].innerHTML = v === 'star'
+    ? '<span style="color:var(--sum-star)">⭐</span>'
+    : v === 'check'
+      ? '<span style="color:var(--cross);font-weight:700">✕</span>'
+      : '';
+}
+
+function paintHouse(card) {
+  if (!grid || !grid.houses[card]) return;
+  grid.houses[card].innerHTML =
+    Engine.inspect().houseChecked[card] !== undefined
+      ? '<span class="sym sym-check">✓</span>' : '';
+}
+
+// The turn bar's line: whose turn and their stage, the shipped
+// page's words carried over (Y-10) — "is thinking 🤔" while the
+// asker picks, "is waiting ⏳" while a shower is sought, and
+// "[shower] showed ✓" once one is named. The bar speaks to you
+// as You, never Me.
+function paintTurnBar(s) {
+  const label = document.getElementById('turnLabel');
+  if (!s.gameInProgress || s.activePlayers.length === 0) {
+    label.textContent = '';
+    return;
+  }
+  // Game over — the bar says so in the turn text's place, the theme
+  // and ⭐ Accuse buttons holding their ground (Y-6). Your win gets
+  // the bigger letters and the breathing glow; an opponent's win the
+  // same letters with no glow; the rest stay quiet.
+  if (gameIsOver(s)) {
+    label.innerHTML = '';
+    const span = document.createElement('span');
+    if (s.accusationResult === 'won') {
+      span.className = 'win-text win-glow';
+      span.textContent = '⭐ You Won!';
+    } else if (s.accusationResult === 'lost') {
+      span.textContent = 'Game over — you lost';
+    } else if (typeof s.accusationResult === 'string' &&
+               s.accusationResult.startsWith('opp:')) {
+      span.className = 'win-text';
+      span.textContent =
+        `Game over — ${nameOf(s, Number(s.accusationResult.slice(4)))} won`;
+    } else {
+      span.textContent = 'Game over — you won';
+    }
+    label.appendChild(span);
+    return;
+  }
+  const col = s.activePlayers[s.turnStep % s.activePlayers.length];
+  const askerName = col === s.meSlot ? 'Me' : s.players[col];
+  const name = s.gamePhase === 'waiting'
+    ? (s.lastShowerName || askerName) : askerName;
+  const isMe = name === 'Me';
+  const stage = s.gamePhase === 'asking'
+      ? (isMe ? 'are thinking 🤔' : 'is thinking 🤔')
+    : s.gamePhase === 'showing'
+      ? (isMe ? 'are waiting ⏳' : 'is waiting ⏳')
+    : 'showed ✓';
+  label.textContent =
+    `Turn ${s.turnCount} — ${isMe ? 'You' : name} ${stage}`;
+}
+
+// The turn hook: rebuild on a shape change, repaint otherwise.
+// Cells repaint too — the picked look follows pendingCards,
+// which can change without any cellChanged report.
+function onTurnChanged() {
+  const s = Engine.inspect();
+  if (!s.gameInProgress) {
+    grid = null;
+    document.getElementById('gridWrap').innerHTML = '';
+    return;
+  }
+  if (!grid || grid.sig !== gridSignature(s)) {
+    buildGrid();
+    return;
+  }
+  paintHeaders(s);
+  paintTurnBar(s);
+  paintStage(s);
+  s.categories.forEach(cat => cat.cards.forEach(card => {
+    for (let c = 0; c < 6; c++) paintCell(card, c, s);
+  }));
+}
+
+// ════════════════════════════════════════════════════════════
+// GAME TAPS — every tap routed to its engine door
+// ════════════════════════════════════════════════════════════
+// The engine decides every road; this section opens the windows
+// the roads name and carries the confirms back. The two-tap
+// confirms belong to the buttons here, never to the engine.
+
+function nameOf(s, col)   { return col === s.meSlot ? 'Me' : (s.players[col] || ''); }
+function phraseOf(s, col) { return col === s.meSlot ? 'your column' : nameOf(s, col) + "'s column"; }
+
+// A cell tap the engine does not take is the note-editor road
+function onCellTap(card, col) {
+  if (!Engine.cellTap(card, col)) openNote(card, col);
+}
+
+function onHeaderTap(col) {
+  const road = Engine.headerTap(col);
+  if (road.road === 'shownme') openShownMe(road.showerCol, road.cards);
+  else if (road.road === 'ishowed') openIShowed(road.askerCol, road.cards);
+  else if (road.road === 'correct')
+    twoTap('correctHdr', grid.headers[col], () => Engine.correctShower(), 'Sure?');
+}
+
+// ── The two show pickers ────────────────────────────────────
+// One selection variable serves both — only one picker is ever
+// open. Nothing lands until Confirm; Cancel needs no engine call.
+let showPick = null;
+
+function fillPickList(listId, cards) {
+  showPick = null;
+  const list = document.getElementById(listId);
+  list.innerHTML = '';
+  cards.forEach(card => {
+    const b = document.createElement('button');
+    b.className = 'pick-opt';
+    b.textContent = card;
+    b.onclick = () => {
+      showPick = card;
+      list.querySelectorAll('.pick-opt').forEach(x =>
+        x.classList.toggle('selected', x === b));
+    };
+    list.appendChild(b);
+  });
+}
+
+function openShownMe(showerCol, cards) {
+  const s = Engine.inspect();
+  document.getElementById('shownMeTitle').textContent =
+    nameOf(s, showerCol) + ' shows you…';
+  fillPickList('shownMeList', cards);
+  openModal('modalShownMe');
+}
+
+function confirmShownMePick() {
+  Engine.confirmShownMe(showPick);
+  if (Engine.inspect().gamePhase !== 'showing') closeModal('modalShownMe');
+}
+
+function openIShowed(askerCol, cards) {
+  const s = Engine.inspect();
+  document.getElementById('ishowedTitle').textContent =
+    'You show ' + nameOf(s, askerCol) + '…';
+  fillPickList('ishowedList', cards);
+  // One possible card to show — it arrives already selected
+  if (cards.length === 1)
+    document.querySelector('#ishowedList .pick-opt').click();
+  openModal('modalIShowed');
+}
+
+function confirmIShowedPick() {
+  Engine.confirmIShowed(showPick);
+  if (Engine.inspect().gamePhase !== 'showing') closeModal('modalIShowed');
+}
+
+// ── The ∑ picker ────────────────────────────────────────────
+// ✕, ⭐, or Clear. A second ⭐ in one category arms "Sure?" with
+// the warning spoken first; a lone ⭐ lands at once.
+let sumCard = null;
+
+function openSum(card) {
+  sumCard = card;
+  document.getElementById('sumTitle').textContent = '∑ — ' + card;
+  const cur = Engine.inspect().sumOverrides[card];
+  document.getElementById('btnSumHas').classList.toggle('selected', cur === 'check');
+  const star = document.getElementById('btnSumStar');
+  star.classList.toggle('selected', cur === 'star');
+  if (twoTapState['sumStar']) {
+    clearTimeout(twoTapState['sumStar'].timer);
+    delete twoTapState['sumStar'];
+  }
+  star.textContent = '⭐ Solution?';
+  star.classList.remove('two-tap-active');
+  openModal('modalSum');
+}
+
+function sumPick(value) {
+  if (Engine.sumCommit(sumCard, value)) closeModal('modalSum');
+}
+
+function sumStarTap(btn) {
+  if (!Engine.sumStarWarning(sumCard)) { sumPick('star'); return; }
+  const armed = !!twoTapState['sumStar'];
+  twoTap('sumStar', btn, () => sumPick('star'), 'Sure?');
+  if (!armed) showStatus(Engine.sumStarWarning(sumCard), 'warning');
+}
+
+// ── The note window ─────────────────────────────────────────
+// Up to 4 characters; saving an empty box clears the note.
+let noteCard = null, noteCol = -1;
+
+function openNote(card, col) {
+  const s = Engine.inspect();
+  noteCard = card;
+  noteCol = col;
+  document.getElementById('noteWhere').textContent =
+    card + ' — ' + phraseOf(s, col);
+  document.getElementById('noteInput').value = Engine.cellNote(card, col);
+  openModal('modalNote');
+  setTimeout(() => document.getElementById('noteInput').focus(), 100);
+}
+
+function confirmNote() {
+  if (Engine.setCellNote(noteCard, noteCol,
+      document.getElementById('noteInput').value))
+    closeModal('modalNote');
+}
+
+// ── The endings' shared bits ────────────────────────────────
+// A window opening after the game has ended gets the engine's own
+// game-over line; and any armed two-tap from a window's last visit
+// is disarmed before it opens again.
+function endedGuard(s) {
+  if (!gameIsOver(s)) return false;
+  showStatus('Game over — tap New to start a new game', 'warning');
+  return true;
+}
+
+function resetTwoTaps(ids) {
+  ids.forEach(id => {
+    if (twoTapState[id]) {
+      clearTimeout(twoTapState[id].timer);
+      delete twoTapState[id];
+    }
+  });
+}
+
+// ── The ⭐ Accusation window ─────────────────────────────────
+// Pick the accuser (a 😢 player is listed but refused), then one
+// card per category — a second pick in the same category swaps —
+// and the verdict question wakes: Yes and No rest dim until the
+// picks are complete, and each fires through the two-tap "Sure?".
+// The engine's accuse door takes the verdict; no verdict can be
+// undone. Cancel leaves the game untouched.
+let accuseCol = -1, accusePicks = [];
+
+function openAccuse() {
+  const s = Engine.inspect();
+  if (endedGuard(s)) return;
+  accuseCol = -1;
+  accusePicks = [];
+  resetTwoTaps(['accVerdictright', 'accVerdictwrong']);
+  const list = document.getElementById('accusePlayerList');
+  list.innerHTML = '';
+  document.getElementById('accuseCardArea').style.display = 'none';
+  document.getElementById('accuseVerdictArea').style.display = 'none';
+  s.activePlayers.forEach(col => {
+    const o = document.createElement('button');
+    o.className = 'pick-opt';
+    o.textContent = nameOf(s, col) +
+      (s.playerOutKind[col] === 'wrongacc' ? ' 😢' : '');
+    o.onclick = () => {
+      if (s.playerOutKind[col] === 'wrongacc') {
+        showStatus(`${nameOf(s, col)} is already out on a wrong accusation`,
+          'warning');
+        return;
+      }
+      list.querySelectorAll('.pick-opt').forEach(x =>
+        x.classList.toggle('selected', x === o));
+      accuseCol = col;
+      accusePicks = [];
+      buildAccuseCards(s);
+      document.getElementById('accuseVerdictQ').textContent =
+        col === s.meSlot ? 'Are you right?' : 'Are they right?';
+      document.getElementById('accuseCardArea').style.display = 'block';
+      document.getElementById('accuseVerdictArea').style.display = 'block';
+      refreshAccuseVerdict(s);
+    };
+    list.appendChild(o);
+  });
+  openModal('modalAccuse');
+}
+
+function buildAccuseCards(s) {
+  const list = document.getElementById('accuseCardList');
+  list.innerHTML = '';
+  const n = s.categories.filter(c => c.cards.length > 0).length;
+  document.getElementById('accuseDirection').textContent =
+    `Select the ${n} cards accused`;
+  s.categories.forEach(cat => {
+    if (cat.cards.length === 0) return;
+    const lbl = document.createElement('div');
+    lbl.className = 'modal-sec';
+    lbl.textContent = cat.name;
+    list.appendChild(lbl);
+    cat.cards.forEach(card => {
+      const o = document.createElement('button');
+      o.className = 'pick-opt';
+      o.textContent = card;
+      o.dataset.card = card;
+      o.onclick = () => {
+        const had = accusePicks.includes(card);
+        accusePicks = accusePicks.filter(c => !cat.cards.includes(c));
+        if (!had) accusePicks.push(card);
+        list.querySelectorAll('.pick-opt').forEach(x =>
+          x.classList.toggle('selected', accusePicks.includes(x.dataset.card)));
+        refreshAccuseVerdict(s);
+      };
+      list.appendChild(o);
+    });
+  });
+}
+
+// The verdict buttons rest dim until the accusation is complete —
+// dim guides; a dim tap still gets the refusal in words
+function refreshAccuseVerdict(s) {
+  const n = s.categories.filter(c => c.cards.length > 0).length;
+  const ready = accuseCol >= 0 && accusePicks.length === n;
+  document.getElementById('accVerdictYes').style.opacity = ready ? '1' : '0.5';
+  document.getElementById('accVerdictNo').style.opacity = ready ? '1' : '0.5';
+}
+
+function accuseVerdict(result, btn) {
+  const s = Engine.inspect();
+  const n = s.categories.filter(c => c.cards.length > 0).length;
+  if (accuseCol < 0) {
+    showStatus('Select who is accusing first', 'warning');
+    return;
+  }
+  if (accusePicks.length !== n) {
+    showStatus(`Select the ${n} cards accused first`, 'warning');
+    return;
+  }
+  twoTap('accVerdict' + result, btn, () => {
+    if (Engine.accuse(accuseCol, accusePicks, result)) closeModal('modalAccuse');
+  }, 'Sure?');
+}
+
+// ── The Player Out window ───────────────────────────────────
+// Pick who is leaving — every active player but Me — then the 👋
+// Quits button (dim until a pick) opens the shown-cards picker:
+// cards ✓-held elsewhere faded and dead with their holder named,
+// picking none legal. Remove Player fires through the two-tap and
+// the engine's playerOut door commits the permanent marks.
+let outCol = -1, outCards = new Set();
+
+function openPlayerOut() {
+  const s = Engine.inspect();
+  if (endedGuard(s)) return;
+  outCol = -1;
+  outCards = new Set();
+  resetTwoTaps(['outRemove']);
+  const list = document.getElementById('playerOutList');
+  list.innerHTML = '';
+  document.getElementById('outKindArea').style.display = 'block';
+  document.getElementById('outCardArea').style.display = 'none';
+  document.getElementById('outRemoveBtn').style.display = 'none';
+  const quitBtn = document.getElementById('quitShowBtn');
+  quitBtn.style.opacity = '0.5';
+  const eligible = s.activePlayers.filter(col => col !== s.meSlot);
+  if (eligible.length === 0) {
+    list.innerHTML = '<div class="placeholder">No other active players.</div>';
+    document.getElementById('outKindArea').style.display = 'none';
+    openModal('modalPlayerOut');
+    return;
+  }
+  eligible.forEach(col => {
+    const o = document.createElement('button');
+    o.className = 'pick-opt';
+    o.textContent = nameOf(s, col) +
+      (s.playerOutKind[col] === 'wrongacc' ? ' 😢' : '');
+    o.onclick = () => {
+      list.querySelectorAll('.pick-opt').forEach(x =>
+        x.classList.toggle('selected', x === o));
+      outCol = col;
+      quitBtn.style.opacity = '1';
+    };
+    list.appendChild(o);
+  });
+  openModal('modalPlayerOut');
+}
+
+// 👋 Quit step 1 — reveal the picker for what they showed on the way out
+function quitShowTap() {
+  if (outCol < 0) {
+    showStatus('Select a player first', 'warning');
+    return;
+  }
+  const list = document.getElementById('outCardList');
+  list.innerHTML = '';
+  outCards = new Set();
+  Engine.playerOutCards(outCol).forEach(e => {
+    const o = document.createElement('button');
+    o.className = 'pick-opt';
+    if (e.holder) {
+      o.textContent = `${e.card} — held by ${e.holder}`;
+      o.style.opacity = '0.45';
+    } else {
+      o.textContent = e.card;
+      o.onclick = () => {
+        if (outCards.has(e.card)) {
+          outCards.delete(e.card);
+          o.classList.remove('selected');
+        } else {
+          outCards.add(e.card);
+          o.classList.add('selected');
+        }
+      };
+    }
+    list.appendChild(o);
+  });
+  document.getElementById('outKindArea').style.display = 'none';
+  document.getElementById('outCardArea').style.display = 'block';
+  document.getElementById('outRemoveBtn').style.display = 'inline-block';
+}
+
+// 👋 Quit step 2 — commit through the engine's playerOut door
+function outRemoveTap(btn) {
+  if (outCol < 0) {
+    showStatus('Select a player first', 'warning');
+    return;
+  }
+  twoTap('outRemove', btn, () => {
+    if (Engine.playerOut(outCol, [...outCards])) closeModal('modalPlayerOut');
+  }, 'Sure?');
+}
+
+// ── The New Game window ─────────────────────────────────────
+// The two Same-or-New pick pairs; Start rests dim until both are
+// answered, then fires through the two-tap. The engine resets the
+// state under the two keep choices, and Setup comes back.
+let ngPicks = { players: null, deck: null };
+
+function openNewGame() {
+  ngPicks = { players: null, deck: null };
+  resetTwoTaps(['ngStart']);
+  document.querySelectorAll('.ng-p-btn, .ng-d-btn').forEach(b =>
+    b.style.opacity = '0.65');
+  updateNgStart();
+  openModal('modalNewGame');
+}
+
+function setNgPick(kind, val) {
+  ngPicks[kind] = val;
+  const cls = kind === 'players' ? '.ng-p-btn' : '.ng-d-btn';
+  document.querySelectorAll(cls).forEach(b => {
+    b.style.opacity = b.dataset.val === val ? '1' : '0.4';
+  });
+  updateNgStart();
+}
+
+function updateNgStart() {
+  document.getElementById('ngStartBtn').style.opacity =
+    (ngPicks.players && ngPicks.deck) ? '1' : '0.5';
+}
+
+function ngStartTap(btn) {
+  if (!(ngPicks.players && ngPicks.deck)) return;
+  twoTap('ngStart', btn, () => {
+    Engine.newGame(ngPicks.players === 'same', ngPicks.deck === 'same');
+    closeModal('modalNewGame');
+    renderSetup();
+    showScreen('screenSetup');
+  }, 'Sure?');
+}
+
+// ── The stage bar ───────────────────────────────────────────
+// Undo dims when there is nothing to undo. The hint line rests
+// on the phase's direction; a status message borrows it and the
+// direction returns when the message clears.
+let gameStatusLive = false;
+
+function restingHint(s) {
+  if (!s.gameInProgress || s.activePlayers.length === 0) return '—';
+  if (gameIsOver(s)) return '';   // the hint sleeps at every ending
+  const n = s.categories.filter(c => c.cards.length > 0).length;
+  if (s.gamePhase === 'asking') {
+    const col = s.activePlayers[s.turnStep % s.activePlayers.length];
+    return `Select ${n} cards in ${phraseOf(s, col)}`;
+  }
+  if (s.gamePhase === 'showing')
+    return 'Tap the name of who showed — or Next ▶';
+  return 'Tap Next ▶ to continue';
+}
+
+function paintStage(s) {
+  // Undo dims at turn 1's clean start — and sleeps at every ending,
+  // since no verdict can be undone
+  const undo = document.getElementById('undoBtn');
+  const dead = gameIsOver(s) ||
+    (s.turnCount <= 1 && s.gamePhase === 'asking' &&
+     s.pendingCards.length === 0);
+  undo.style.opacity = dead ? '0.3' : '';
+  undo.style.pointerEvents = dead ? 'none' : '';
+  if (!gameStatusLive)
+    document.getElementById('stageHint').textContent = restingHint(s);
+}
+
+// ════════════════════════════════════════════════════════════
+// BOOT — the engine wakes; the hooks fill in with each piece
+// ════════════════════════════════════════════════════════════
+Engine.connect({
+  setupChanged: renderSetup,
+  status: showStatus,
+  cellChanged: paintCell,
+  sumChanged: paintSum,
+  houseChanged: paintHouse,
+  turnChanged: onTurnChanged,
+  logChanged: () => {
+    if (document.getElementById('screenLog').classList.contains('active'))
+      renderLogPage();
+  }
+});
+Engine.boot();
+renderSetup();
+document.getElementById('nextBtn').onclick = () => Engine.nextTap();
+document.getElementById('undoBtn').onclick = e =>
+  twoTap('undo', e.currentTarget, () => Engine.undoTap(), 'Sure?');
+if (Engine.inspect().gameInProgress) {
+  buildGrid();
+  showScreen('screenGame');
+} else {
+  showScreen('screenSetup');
+}
+
+let savedTheme = 'dark';
+try { savedTheme = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}
+applyTheme(savedTheme === 'light' ? 'light' : 'dark');
+</script>
+</body>
+</html>

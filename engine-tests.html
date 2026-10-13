@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Clues Tracker Sheet engine tests</title>
+<style>
+  body { font-family: Georgia, serif; background: #1a1410; color: #f0e8d8;
+         max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 1.15rem; color: #e8b060; }
+  .test { padding: 4px 0; font-size: 0.95rem; }
+  .pass::before { content: '✓ '; color: #60e090; font-weight: bold; }
+  .fail::before { content: '✗ '; color: #e06060; font-weight: bold; }
+  .fail { color: #e06060; }
+  .why { color: #a89878; font-size: 0.85rem; padding-left: 20px; }
+  #summary { margin-top: 16px; font-weight: bold; font-size: 1.05rem; }
+</style>
+</head>
+<body>
+<h1>Clues Tracker Sheet engine tests</h1>
+<div id="results"></div>
+<div id="summary"></div>
+
+<script src="clues-tracker-engine.js"></script>
+<script>
+'use strict';
+
+// ── Tiny test runner ────────────────────────────────────────
+// test() runs one test and records pass or fail; results render
+// on the page and print to the console, so the same file serves
+// a browser and a command-line runner.
+const results = [];
+function test(name, fn) {
+  try { fn(); results.push({ name, ok: true }); }
+  catch (e) { results.push({ name, ok: false, why: e.message }); }
+}
+function assert(cond, why) { if (!cond) throw new Error(why); }
+
+// Tests save under their own keys — the app's real saves are untouched
+const TEST_KEY = 'mctsGameTest';
+const DECK_TEST_KEY = 'mctsDecksTest';
+Engine.testing.useStorageKey(TEST_KEY);
+Engine.testing.useDeckKey(DECK_TEST_KEY);
+
+// Every test starts from a small three-seat scenario: Me in seat
+// 0, Ann and Bob beside, the default 27-card deck
+function scenario() {
+  Engine.connect({});
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''],
+    meSlot: 0,
+    activePlayers: [0, 1, 2],
+    gameInProgress: true
+  });
+}
+function cellOf(card, col) {
+  const s = Engine.inspect();
+  return (s.cellState[card] && s.cellState[card][col]) || [];
+}
+function count(list, type) { return list.filter(m => m.type === type).length; }
+
+// ── Landing rules ───────────────────────────────────────────
+
+test('A ✓ lands once ever in a cell', () => {
+  scenario();
+  assert(Engine.testing.placeMark('Card 1', 1, 'check') === true, 'first ✓ refused');
+  assert(Engine.testing.placeMark('Card 1', 1, 'check') === false, 'second ✓ accepted');
+  assert(count(cellOf('Card 1', 1), 'check') === 1, 'cell should hold one ✓');
+});
+
+test('An ✗ lands once ever in a cell', () => {
+  scenario();
+  assert(Engine.testing.placeMark('Card 2', 1, 'cross') === true, 'first ✗ refused');
+  assert(Engine.testing.placeMark('Card 2', 1, 'cross') === false, 'second ✗ accepted');
+  assert(count(cellOf('Card 2', 1), 'cross') === 1, 'cell should hold one ✗');
+});
+
+test('A ! lands once ever in a cell', () => {
+  scenario();
+  assert(Engine.testing.placeMark('Card 3', 1, 'showed') === true, 'first ! refused');
+  assert(Engine.testing.placeMark('Card 3', 1, 'showed') === false, 'second ! accepted');
+  assert(count(cellOf('Card 3', 1), 'showed') === 1, 'cell should hold one !');
+});
+
+test('A ! refuses a cell holding a ✓', () => {
+  scenario();
+  Engine.testing.placeMark('Card 4', 1, 'check');
+  assert(Engine.testing.placeMark('Card 4', 1, 'showed') === false, '! accepted on a ✓ cell');
+  assert(count(cellOf('Card 4', 1), 'showed') === 0, 'the refused ! was stored');
+});
+
+test('A ! refuses a cell holding an ✗', () => {
+  scenario();
+  Engine.testing.placeMark('Card 5', 1, 'cross');
+  assert(Engine.testing.placeMark('Card 5', 1, 'showed') === false, '! accepted on an ✗ cell');
+  assert(count(cellOf('Card 5', 1), 'showed') === 0, 'the refused ! was stored');
+});
+
+test('A ? lands once per turn, and again next turn', () => {
+  scenario();
+  assert(Engine.testing.placeMark('Card 6', 1, 'asked') === true, 'first ? refused');
+  assert(Engine.testing.placeMark('Card 6', 1, 'asked') === false, 'same-turn ? accepted');
+  Engine.testing.setTurn(2);
+  assert(Engine.testing.placeMark('Card 6', 1, 'asked') === true, 'next-turn ? refused');
+  assert(count(cellOf('Card 6', 1), 'asked') === 2, 'cell should hold two ? marks');
+});
+
+test('A Me mark lands once per turn', () => {
+  scenario();
+  assert(Engine.testing.placeMark('Card 7', 1, 'ishowed') === true, 'first Me refused');
+  assert(Engine.testing.placeMark('Card 7', 1, 'ishowed') === false, 'same-turn Me accepted');
+});
+
+// ── Hidden marks and their return ───────────────────────────
+
+test('An ✗ arriving on a ! hides it but keeps it stored', () => {
+  scenario();
+  Engine.testing.placeMark('Card 8', 1, 'showed');
+  Engine.testing.setTurn(2);
+  Engine.testing.placeMark('Card 8', 1, 'cross');
+  const shown = Engine.visibleMarks('Card 8', 1);
+  assert(shown.length === 1 && shown[0].type === 'cross', 'display should show only the ✗');
+  assert(count(cellOf('Card 8', 1), 'showed') === 1, 'the hidden ! left storage');
+});
+
+test('Wiping the ✗ brings the hidden ! back into view', () => {
+  scenario();
+  Engine.testing.placeMark('Card 9', 1, 'showed');
+  Engine.testing.setTurn(2);
+  Engine.testing.placeMark('Card 9', 1, 'cross');
+  Engine.testing.wipeTurn(2);
+  const shown = Engine.visibleMarks('Card 9', 1);
+  assert(shown.length === 1 && shown[0].type === 'showed', 'the ! should be visible again');
+});
+
+test('A ✓ arriving on a ? leaves the ? in view', () => {
+  scenario();
+  Engine.testing.placeMark('Card 10', 1, 'asked');
+  Engine.testing.setTurn(2);
+  Engine.testing.placeMark('Card 10', 1, 'check');
+  const shown = Engine.visibleMarks('Card 10', 1);
+  assert(shown.some(m => m.type === 'check'), 'the ✓ is missing');
+  assert(shown.some(m => m.type === 'asked'), 'the ? was hidden');
+});
+
+test('An ✗ arriving on a ? leaves the ? in view', () => {
+  scenario();
+  Engine.testing.placeMark('Card 11', 1, 'asked');
+  Engine.testing.setTurn(2);
+  Engine.testing.placeMark('Card 11', 1, 'cross');
+  const shown = Engine.visibleMarks('Card 11', 1);
+  assert(shown.some(m => m.type === 'cross'), 'the ✗ is missing');
+  assert(shown.some(m => m.type === 'asked'), 'the ? was hidden');
+});
+
+// ── The ✓'s automatic crosses ───────────────────────────────
+
+test('A ✓ crosses the card off for every other active player', () => {
+  scenario();
+  Engine.testing.placeMark('Card 12', 1, 'check');
+  assert(count(cellOf('Card 12', 0), 'cross') === 1, 'Me should have the auto-✗');
+  assert(count(cellOf('Card 12', 2), 'cross') === 1, 'Bob should have the auto-✗');
+  assert(cellOf('Card 12', 3).length === 0, 'an empty seat got a mark');
+});
+
+test('The auto-✗ never doubles an existing ✗', () => {
+  scenario();
+  Engine.testing.placeMark('Card 13', 2, 'cross');
+  Engine.testing.placeMark('Card 13', 1, 'check');
+  assert(count(cellOf('Card 13', 2), 'cross') === 1, 'Bob should still have one ✗');
+});
+
+// ── Turn wipes ──────────────────────────────────────────────
+
+test('A turn wipe removes only that turn\'s marks', () => {
+  scenario();
+  Engine.testing.placeMark('Card 14', 1, 'asked');
+  Engine.testing.setTurn(2);
+  Engine.testing.placeMark('Card 14', 1, 'asked');
+  Engine.testing.wipeTurn(2);
+  const cell = cellOf('Card 14', 1);
+  assert(count(cell, 'asked') === 1 && cell[0].turn === 1, 'only the turn-1 ? should remain');
+});
+
+test('Quit-flagged marks survive a turn wipe', () => {
+  scenario();
+  Engine.testing.placeMark('Card 15', 1, 'check', { quit: true });
+  Engine.testing.wipeTurn(1);
+  assert(count(cellOf('Card 15', 1), 'check') === 1, 'the quit ✓ was wiped');
+  assert(count(cellOf('Card 15', 0), 'cross') === 1, 'the quit auto-✗ on Me was wiped');
+  assert(count(cellOf('Card 15', 2), 'cross') === 1, 'the quit auto-✗ on Bob was wiped');
+});
+
+test('A wiped turn takes its 🏠 marks with it', () => {
+  scenario();
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''],
+    meSlot: 0,
+    activePlayers: [0, 1, 2],
+    gameInProgress: true,
+    houseChecked: { 'Card 16': 2, 'Card 17': 1 }
+  });
+  Engine.testing.wipeTurn(2);
+  const s = Engine.inspect();
+  assert(s.houseChecked['Card 16'] === undefined, 'the turn-2 🏠 mark should be gone');
+  assert(s.houseChecked['Card 17'] === 1, 'the turn-1 🏠 mark should remain');
+});
+
+// ── Hooks ───────────────────────────────────────────────────
+
+test('cellChanged reports every repainted cell', () => {
+  scenario();
+  const calls = [];
+  Engine.connect({ cellChanged: (card, col) => calls.push(card + '/' + col) });
+  Engine.testing.placeMark('Card 18', 1, 'check');
+  Engine.connect({});
+  assert(calls.includes('Card 18/1'), 'the ✓ cell was not reported');
+  assert(calls.includes('Card 18/0'), 'the auto-✗ on Me was not reported');
+  assert(calls.includes('Card 18/2'), 'the auto-✗ on Bob was not reported');
+});
+
+test('A missing hook is quietly skipped', () => {
+  scenario();
+  Engine.connect({});
+  assert(Engine.testing.placeMark('Card 19', 1, 'check') === true, 'placing failed with no hooks');
+});
+
+// ── The snapshot ────────────────────────────────────────────
+
+test('The snapshot round-trips: reset saves, boot restores', () => {
+  scenario();
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''],
+    meSlot: 0,
+    activePlayers: [0, 1, 2],
+    gameInProgress: true,
+    turnCount: 7
+  });
+  Engine.testing.placeMark('Card 20', 1, 'check');   // unsaved change after the save
+  Engine.boot();
+  const s = Engine.inspect();
+  assert(s.turnCount === 7, 'the saved turn count did not come back');
+  assert(s.players[1] === 'Ann', 'the saved players did not come back');
+  assert(!s.cellState['Card 20'], 'an unsaved mark survived the boot');
+});
+
+test('Booting with no saved record leaves state alone', () => {
+  scenario();
+  localStorage.removeItem(TEST_KEY);
+  Engine.boot();
+  const s = Engine.inspect();
+  assert(s.players[1] === 'Ann', 'boot with nothing saved changed the state');
+});
+
+test('visibleMarks hands out copies, not the stored marks', () => {
+  scenario();
+  Engine.testing.placeMark('Card 21', 1, 'showed');
+  const shown = Engine.visibleMarks('Card 21', 1);
+  shown[0].type = 'check';
+  assert(cellOf('Card 21', 1)[0].type === 'showed', 'a caller changed the stored mark');
+});
+
+// ── The asking flow ─────────────────────────────────────────
+// The scenario's deck: Card 1–9 in Category 1, Card 10–18 in
+// Category 2, Card 19–27 in Category 3. Me (seat 0) holds the
+// first turn.
+
+function catchStatus() {
+  const seen = [];
+  Engine.connect({ status: (text, kind) => seen.push({ text, kind }) });
+  return seen;
+}
+
+test('An asking tap places a ? and records the pick', () => {
+  scenario();
+  assert(Engine.cellTap('Card 1', 0) === true, 'the tap was not consumed');
+  const s = Engine.inspect();
+  assert(s.pendingCards.includes('Card 1'), 'the pick was not recorded');
+  assert(count(cellOf('Card 1', 0), 'asked') === 1, 'no ? landed');
+});
+
+test('A second tap on the picked card takes it back', () => {
+  scenario();
+  Engine.cellTap('Card 1', 0);
+  Engine.cellTap('Card 1', 0);
+  const s = Engine.inspect();
+  assert(s.pendingCards.length === 0, 'the pick was not taken back');
+  assert(count(cellOf('Card 1', 0), 'asked') === 0, 'the ? was not removed');
+});
+
+test('A second pick in one category swaps the pick', () => {
+  scenario();
+  Engine.cellTap('Card 1', 0);
+  Engine.cellTap('Card 2', 0);
+  const s = Engine.inspect();
+  assert(s.pendingCards.length === 1 && s.pendingCards[0] === 'Card 2',
+    'the picks did not swap');
+  assert(count(cellOf('Card 1', 0), 'asked') === 0, 'the old ? stayed');
+  assert(count(cellOf('Card 2', 0), 'asked') === 1, 'the new ? is missing');
+});
+
+test('The last pick swings the gate to the showing phase', () => {
+  scenario();
+  Engine.cellTap('Card 1', 0);
+  Engine.cellTap('Card 10', 0);
+  Engine.cellTap('Card 19', 0);
+  const s = Engine.inspect();
+  assert(s.gamePhase === 'showing', 'the gate did not swing');
+  assert(s.pendingAskerCol === 0, 'the asker was not recorded');
+});
+
+test('The progress message names the missing categories', () => {
+  scenario();
+  const seen = catchStatus();
+  Engine.cellTap('Card 1', 0);
+  const msg = seen[seen.length - 1];
+  assert(msg && msg.text.includes('1/3'), 'no progress count spoken');
+  assert(msg.text.includes('Category 2') && msg.text.includes('Category 3'),
+    'the missing categories were not named');
+});
+
+test('After the gate, a tap on an asked cell takes back the pick and the gate', () => {
+  scenario();
+  Engine.cellTap('Card 1', 0);
+  Engine.cellTap('Card 10', 0);
+  Engine.cellTap('Card 19', 0);
+  assert(Engine.cellTap('Card 19', 0) === true, 'the take-back tap was not consumed');
+  const s = Engine.inspect();
+  assert(s.gamePhase === 'asking', 'the phase did not reopen');
+  assert(s.pendingAskerCol === -1, 'the asker record was not cleared');
+  assert(!s.pendingCards.includes('Card 19'), 'the pick was not taken back');
+  assert(s.pendingCards.length === 2, 'the other picks did not stay');
+  assert(count(cellOf('Card 19', 0), 'asked') === 0, 'the taken-back ? stayed');
+});
+
+test('The take-back road closes once the shower moment passes', () => {
+  scenario();
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    gamePhase: 'waiting'
+  });
+  assert(Engine.cellTap('Card 1', 0) === false, 'a waiting-phase tap was consumed');
+});
+
+test("A tap outside the asker's column goes to the note road", () => {
+  scenario();
+  assert(Engine.cellTap('Card 1', 1) === false, "a tap in Ann's column was consumed");
+});
+
+test('A tap on an empty seat does nothing', () => {
+  scenario();
+  assert(Engine.cellTap('Card 1', 3) === true, 'an empty-seat tap reached the note road');
+  assert(cellOf('Card 1', 3).length === 0, 'an empty seat got a mark');
+});
+
+// ── Next ────────────────────────────────────────────────────
+
+test('Next with no picks logs a pass and advances', () => {
+  scenario();
+  Engine.nextTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 2, 'the turn did not advance');
+  const entry = s.turnLog[s.turnLog.length - 1];
+  assert(entry.type === 'pass' && entry.player === 'Me', 'no pass entry logged');
+});
+
+test('Next refuses a half-made ask', () => {
+  scenario();
+  Engine.cellTap('Card 1', 0);
+  const seen = catchStatus();
+  Engine.nextTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 1, 'the turn advanced past a half-made ask');
+  assert(s.pendingCards.length === 1, 'the pick did not stay');
+  const msg = seen[seen.length - 1];
+  assert(msg && msg.kind === 'warning' && msg.text.includes('all or none of the cards'),
+    'no refusal spoken');
+});
+
+test('Next in the waiting phase advances the turn', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    gamePhase: 'waiting', lastShowerName: 'Ann'
+  });
+  Engine.nextTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 2 && s.gamePhase === 'asking', 'the turn did not advance');
+  assert(s.lastShowerName === '', "the shower's name was not cleared");
+});
+
+test('Advancing skips a 😢 player', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    playerOutKind: { 1: 'wrongacc' }
+  });
+  Engine.nextTap();
+  assert(Engine.inspect().turnStep === 2, 'the turn landed on the 😢 player');
+});
+
+// ── Undo ────────────────────────────────────────────────────
+
+test("Undo at the game's start refuses", () => {
+  scenario();
+  const seen = catchStatus();
+  Engine.undoTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 1, 'the turn moved');
+  assert(!s.turnLog.some(e => e.type === 'undo'), 'an undo entry was logged');
+  const msg = seen[seen.length - 1];
+  assert(msg && msg.text === 'Nothing to undo', 'no refusal spoken');
+});
+
+test('Undo mid-ask wipes the picks and stays on the turn', () => {
+  scenario();
+  Engine.cellTap('Card 1', 0);
+  Engine.undoTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 1, 'the turn moved');
+  assert(s.pendingCards.length === 0, 'the picks were not cleared');
+  assert(count(cellOf('Card 1', 0), 'asked') === 0, 'the ? was not wiped');
+  assert(s.turnLog[s.turnLog.length - 1].type === 'undo', 'no undo entry logged');
+});
+
+test("Undo at a turn's start steps back and wipes that turn", () => {
+  scenario();
+  Engine.testing.placeMark('Card 5', 1, 'asked');
+  Engine.nextTap();
+  Engine.undoTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 1 && s.turnStep === 0, 'the step back went wrong');
+  assert(cellOf('Card 5', 1).length === 0, "the previous turn's mark stayed");
+});
+
+test('Undo stepping back skips a 😢 player', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    playerOutKind: { 1: 'wrongacc' }, turnCount: 2, turnStep: 2
+  });
+  Engine.undoTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 1, 'the turn did not step back');
+  assert(s.turnStep === 0, 'the step back landed on the 😢 player');
+});
+
+test('An undo that uncovers a hidden ! records the return', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    turnCount: 2, gamePhase: 'waiting',
+    cellState: { 'Card 6': { 1: [
+      { type: 'showed', turn: 1 }, { type: 'cross', turn: 2 }
+    ] } }
+  });
+  Engine.undoTap();
+  const s = Engine.inspect();
+  const entry = s.turnLog[s.turnLog.length - 1];
+  assert(entry.type === 'undo', 'no undo entry logged');
+  assert(entry.returned.length === 1 &&
+    entry.returned[0].card === 'Card 6' &&
+    entry.returned[0].col === 1 &&
+    entry.returned[0].type === 'showed', 'the ! return was not recorded');
+  const shown = Engine.visibleMarks('Card 6', 1);
+  assert(shown.length === 1 && shown[0].type === 'showed', 'the ! is not back in view');
+});
+
+test('An undo never records a ? return — the ? was never hidden', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    turnCount: 2, gamePhase: 'waiting',
+    cellState: { 'Card 7': { 1: [
+      { type: 'asked', turn: 1 }, { type: 'check', turn: 2 }
+    ] } }
+  });
+  Engine.undoTap();
+  const s = Engine.inspect();
+  const entry = s.turnLog[s.turnLog.length - 1];
+  assert(entry.type === 'undo', 'no undo entry logged');
+  assert(entry.returned.length === 0, 'a return was recorded for a visible ?');
+  const shown = Engine.visibleMarks('Card 7', 1);
+  assert(shown.length === 1 && shown[0].type === 'asked', 'the ? is not standing alone');
+});
+
+test('Every action refuses at game over', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    accusationResult: 'won', turnCount: 5
+  });
+  const seen = catchStatus();
+  assert(Engine.cellTap('Card 1', 0) === true, 'a game-over tap reached the note road');
+  Engine.nextTap();
+  Engine.undoTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 5, 'the turn moved at game over');
+  assert(!s.turnLog.some(e => e.type === 'undo'), 'an undo ran at game over');
+  assert(seen.length === 3 &&
+    seen.every(m => m.text.includes('Game over')), 'the guard did not speak each time');
+});
+
+// ── The showing flow ────────────────────────────────────────
+
+function fullAsk() {
+  Engine.cellTap('Card 1', 0);
+  Engine.cellTap('Card 10', 0);
+  Engine.cellTap('Card 19', 0);
+}
+
+test('A header tap during asking is refused with the asker named', () => {
+  scenario();
+  const seen = catchStatus();
+  const r = Engine.headerTap(1);
+  assert(r.road === 'refused', 'the tap was not refused');
+  const msg = seen[seen.length - 1];
+  assert(msg && msg.text.includes('your column'), "the asker's column was not named");
+});
+
+test('The asker cannot also show', () => {
+  scenario();
+  fullAsk();
+  const seen = catchStatus();
+  assert(Engine.headerTap(0).road === 'refused', 'the asker was allowed to show');
+  assert(seen[seen.length - 1].text.includes('cannot also show'), 'no refusal spoken');
+});
+
+test('A player with ❌ on every asked card cannot show', () => {
+  scenario();
+  ['Card 1', 'Card 10', 'Card 19'].forEach(c => Engine.testing.placeMark(c, 1, 'cross'));
+  fullAsk();
+  const seen = catchStatus();
+  assert(Engine.headerTap(1).road === 'refused', 'a fully ❌-ed player was allowed');
+  assert(seen[seen.length - 1].text.includes('cannot show'), 'no refusal spoken');
+});
+
+// A show between two other players needs Me out of the walk:
+// four seats, Ann asking, so Bob can pass and Cid can show.
+function fourSeats() {
+  Engine.connect({});
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', 'Cid', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2, 3], gameInProgress: true, turnStep: 1
+  });
+}
+function annAsks() {
+  Engine.cellTap('Card 1', 1);
+  Engine.cellTap('Card 10', 1);
+  Engine.cellTap('Card 19', 1);
+}
+
+test('A third-party show lands ! marks and ❌-s the passers', () => {
+  fourSeats();
+  annAsks();
+  const r = Engine.headerTap(3);
+  assert(r.road === 'marked', 'the show did not commit');
+  ['Card 1', 'Card 10', 'Card 19'].forEach(c => {
+    assert(count(cellOf(c, 3), 'showed') === 1, `no ! on Cid for ${c}`);
+    assert(count(cellOf(c, 2), 'cross') === 1, `the passer Bob kept ${c}`);
+    assert(count(cellOf(c, 0), 'cross') === 0, 'Me was walked past');
+  });
+  const s = Engine.inspect();
+  assert(s.gamePhase === 'waiting', 'the phase did not move on');
+  const entry = s.turnLog[s.turnLog.length - 1];
+  assert(entry.type === 'turn' && entry.shower === 'Cid' && entry.result === 'showed',
+    'the turn was not logged');
+});
+
+test('A must-show player blocks those after them', () => {
+  fourSeats();
+  Engine.testing.placeMark('Card 1', 2, 'check');
+  annAsks();
+  const seen = catchStatus();
+  assert(Engine.headerTap(3).road === 'refused', 'a blocked shower was allowed');
+  assert(seen[seen.length - 1].text.includes('must show first'), 'no refusal spoken');
+  assert(Engine.headerTap(2).road === 'marked', 'the must-show player was refused');
+});
+
+test('Showing to me opens the shown-to-me road with the right cards', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    myCards: ['Card 1']
+  });
+  fullAsk();
+  const r = Engine.headerTap(1);
+  assert(r.road === 'shownme', 'the shown-to-me road did not open');
+  assert(r.cards.length === 2 && r.cards[0] === 'Card 10' && r.cards[1] === 'Card 19',
+    'the offered cards are wrong');
+  assert(Engine.inspect().gamePhase === 'showing', 'the road committed early');
+  assert(count(cellOf('Card 10', 1), 'check') === 0, 'a mark landed before the confirm');
+});
+
+test('Confirming shown-to-me lands the ✓ in the shower\'s column', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    myCards: ['Card 1']
+  });
+  fullAsk();
+  Engine.headerTap(1);
+  Engine.confirmShownMe('Card 10');
+  const s = Engine.inspect();
+  assert(count(cellOf('Card 10', 1), 'check') === 1, 'no ✓ landed on Ann');
+  assert(count(cellOf('Card 10', 0), 'cross') === 1, 'the ✓ did not auto-✗ Me');
+  assert(s.gamePhase === 'waiting' && s.lastShowerName === 'Ann', 'the turn state is wrong');
+  const entry = s.turnLog[s.turnLog.length - 1];
+  assert(entry.shownCard === 'Card 10' && entry.shower === 'Ann', 'the show was not logged');
+});
+
+test('The I-showed road offers the cards I hold', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    myCards: ['Card 1', 'Card 2'], turnStep: 1
+  });
+  Engine.cellTap('Card 1', 1);
+  Engine.cellTap('Card 10', 1);
+  Engine.cellTap('Card 19', 1);
+  const r = Engine.headerTap(0);
+  assert(r.road === 'ishowed', 'the I-showed road did not open');
+  assert(r.cards.length === 1 && r.cards[0] === 'Card 1', 'the offered cards are wrong');
+});
+
+test('Confirming I-showed lands the Me mark in the asker\'s column', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    myCards: ['Card 1', 'Card 2'], turnStep: 1
+  });
+  Engine.cellTap('Card 1', 1);
+  Engine.cellTap('Card 10', 1);
+  Engine.cellTap('Card 19', 1);
+  Engine.headerTap(0);
+  Engine.confirmIShowed('Card 1');
+  const s = Engine.inspect();
+  assert(count(cellOf('Card 1', 1), 'ishowed') === 1, 'no Me mark in the asker\'s column');
+  ['Card 1', 'Card 10', 'Card 19'].forEach(c =>
+    assert(count(cellOf(c, 2), 'cross') === 1, `the passer Bob kept ${c}`));
+  assert(s.gamePhase === 'waiting' && s.lastShowerName === 'Me', 'the turn state is wrong');
+  assert(s.turnLog[s.turnLog.length - 1].shower === 'Me', 'the show was not logged');
+});
+
+test('Nobody-showed ❌-s everyone but the asker and advances', () => {
+  scenario();
+  fullAsk();
+  Engine.nextTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 2, 'the turn did not advance');
+  ['Card 1', 'Card 10', 'Card 19'].forEach(c => {
+    assert(count(cellOf(c, 1), 'cross') === 1, `Ann kept ${c}`);
+    assert(count(cellOf(c, 2), 'cross') === 1, `Bob kept ${c}`);
+    assert(count(cellOf(c, 0), 'cross') === 0, 'the asker was ❌-ed');
+  });
+  const entry = s.turnLog[s.turnLog.length - 1];
+  assert(entry.type === 'turn' && entry.result === 'nobody', 'the turn was not logged');
+});
+
+test('Nobody-showed is refused while a must-show player waits', () => {
+  scenario();
+  Engine.testing.placeMark('Card 1', 1, 'check');
+  fullAsk();
+  const seen = catchStatus();
+  Engine.nextTap();
+  const s = Engine.inspect();
+  assert(s.turnCount === 1 && s.gamePhase === 'showing', 'the turn moved past the guard');
+  assert(seen[seen.length - 1].text.includes('must show first'), 'no refusal spoken');
+});
+
+test("A quit player's header explains itself", () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1], gameInProgress: true,
+    playerOutKind: { 2: 'quit' }
+  });
+  const seen = catchStatus();
+  assert(Engine.headerTap(2).road === 'refused', 'a quit player was allowed');
+  assert(seen[seen.length - 1].text.includes('has quit'), 'no explanation spoken');
+});
+
+test('A different header in the waiting phase says tap Next', () => {
+  fourSeats();
+  annAsks();
+  Engine.headerTap(3);
+  const seen = catchStatus();
+  assert(Engine.headerTap(2).road === 'refused', 'a waiting-phase tap did something');
+  assert(seen[seen.length - 1].text.includes('Next'), 'no direction spoken');
+});
+
+test("Tapping the shower's header again offers the correction", () => {
+  fourSeats();
+  annAsks();
+  Engine.headerTap(3);
+  assert(Engine.headerTap(3).road === 'correct', 'the correction road did not answer');
+  assert(Engine.inspect().gamePhase === 'waiting', 'the offer alone changed the game');
+});
+
+test('The confirmed correction takes the show back whole', () => {
+  fourSeats();
+  annAsks();
+  Engine.headerTap(3);
+  Engine.correctShower();
+  const s = Engine.inspect();
+  assert(s.gamePhase === 'showing', 'the turn did not reopen');
+  assert(s.pendingCards.length === 3, 'the ask did not come back');
+  ['Card 1', 'Card 10', 'Card 19'].forEach(c => {
+    assert(count(cellOf(c, 3), 'showed') === 0, `Cid's ! stayed on ${c}`);
+    assert(count(cellOf(c, 2), 'cross') === 0, `Bob's passer ✗ stayed on ${c}`);
+    assert(count(cellOf(c, 1), 'asked') === 1, `the ask's ? left ${c}`);
+  });
+  assert(!s.turnLog.some(e => e.type === 'turn'), 'the log entry stayed');
+  assert(Engine.headerTap(2).road === 'marked', 'the right shower could not be picked');
+});
+
+// ── The accusation ──────────────────────────────────────────
+
+test('Your right accusation wins the game', () => {
+  scenario();
+  assert(Engine.accuse(0, ['Card 1', 'Card 10', 'Card 19'], 'right') === true,
+    'the accusation was refused');
+  const s = Engine.inspect();
+  assert(s.accusationResult === 'won', 'the result is not won');
+  const e = s.turnLog[s.turnLog.length - 1];
+  assert(e.type === 'accuse' && e.accuser === 'Me' && e.result === 'right',
+    'the accusation was not logged');
+});
+
+test('Your wrong accusation loses the game', () => {
+  scenario();
+  Engine.accuse(0, ['Card 1', 'Card 10', 'Card 19'], 'wrong');
+  assert(Engine.inspect().accusationResult === 'lost', 'the result is not lost');
+});
+
+test("An opponent's right accusation ends the game as their win", () => {
+  scenario();
+  Engine.accuse(1, ['Card 1', 'Card 10', 'Card 19'], 'right');
+  assert(Engine.inspect().accusationResult === 'opp:1',
+    'the result is not the opponent win');
+});
+
+test("An opponent's wrong accusation sidelines them and play goes on", () => {
+  fourSeats();
+  const seen = catchStatus();
+  Engine.accuse(2, ['Card 1', 'Card 10', 'Card 19'], 'wrong');
+  const s = Engine.inspect();
+  assert(s.accusationResult === null, 'the game ended');
+  assert(s.playerOutKind[2] === 'wrongacc', 'Bob is not sidelined');
+  assert(s.activePlayers.includes(2), 'Bob left the showing ring');
+  assert(seen[seen.length - 1].text.includes('accusation was wrong'),
+    'no line spoken');
+});
+
+test('A wrong accusation by the clean turn-holder passes the turn on', () => {
+  fourSeats();   // Ann holds the turn, nothing picked
+  Engine.accuse(1, ['Card 1', 'Card 10', 'Card 19'], 'wrong');
+  const s = Engine.inspect();
+  assert(s.turnCount === 2, 'the turn did not advance');
+  assert(s.activePlayers[s.turnStep] === 2, 'the turn is not on Bob');
+});
+
+test('A wrong accusation by the turn-holder mid-ask abandons the ask and passes the turn on', () => {
+  fourSeats();
+  Engine.cellTap('Card 1', 1);   // Ann picks one card, then accuses
+  Engine.accuse(1, ['Card 2', 'Card 10', 'Card 19'], 'wrong');
+  const s = Engine.inspect();
+  assert(s.turnCount === 2, 'the turn did not advance');
+  assert(s.activePlayers[s.turnStep] === 2, 'the turn is not on Bob');
+  assert(s.pendingCards.length === 0, 'the abandoned ask still stands');
+  assert(count(cellOf('Card 1', 1), 'asked') === 0,
+    "the abandoned pick's ? stayed");
+});
+
+test('A wrong accusation by the turn-holder with a full ask standing passes the turn on', () => {
+  fourSeats();
+  annAsks();                     // the full ask stands, no shower yet
+  Engine.accuse(1, ['Card 2', 'Card 11', 'Card 20'], 'wrong');
+  const s = Engine.inspect();
+  assert(s.turnCount === 2, 'the turn did not advance');
+  assert(s.activePlayers[s.turnStep] === 2, 'the turn is not on Bob');
+  assert(s.gamePhase === 'asking', 'the phase did not reopen');
+  assert(s.pendingCards.length === 0, 'the abandoned ask still stands');
+  ['Card 1', 'Card 10', 'Card 19'].forEach(c =>
+    assert(count(cellOf(c, 1), 'asked') === 0, `the abandoned ? stayed on ${c}`));
+});
+
+test('A wrong accusation by the turn-holder after a show passes the turn on', () => {
+  fourSeats();
+  annAsks();
+  Engine.headerTap(3);           // Cid shows; the turn waits on Next
+  Engine.accuse(1, ['Card 2', 'Card 11', 'Card 20'], 'wrong');
+  const s = Engine.inspect();
+  assert(s.turnCount === 2, 'the turn did not advance');
+  assert(s.activePlayers[s.turnStep] === 2, 'the turn is not on Bob');
+  assert(s.lastShowerName === '', "the old show's name lingered");
+});
+
+test("A non-holder's wrong accusation leaves the standing turn alone", () => {
+  fourSeats();
+  annAsks();
+  Engine.accuse(3, ['Card 2', 'Card 11', 'Card 20'], 'wrong');   // Cid, not the holder
+  const s = Engine.inspect();
+  assert(s.turnCount === 1, 'the turn moved');
+  assert(s.gamePhase === 'showing', "Ann's ask was disturbed");
+  assert(s.pendingCards.length === 3, "Ann's picks were lost");
+});
+
+test('The last live opponent accusing wrongly ends the game as your win', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    playerOutKind: { 2: 'wrongacc' }
+  });
+  const seen = catchStatus();
+  Engine.accuse(1, ['Card 1', 'Card 10', 'Card 19'], 'wrong');
+  assert(Engine.inspect().playerOutKind[1] === 'wrongacc', 'Ann is not sidelined');
+  assert(seen[seen.length - 1].text.includes('game over, you won'),
+    'the win was not spoken');
+  assert(Engine.headerTap(1).road === 'refused', 'the game plays on');
+});
+
+test('A 😢 player cannot accuse again', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    playerOutKind: { 1: 'wrongacc' }
+  });
+  const seen = catchStatus();
+  assert(Engine.accuse(1, ['Card 1', 'Card 10', 'Card 19'], 'right') === false,
+    'the accusation was accepted');
+  assert(seen[seen.length - 1].text.includes('already out'), 'no refusal spoken');
+});
+
+test('An incomplete accusation is refused', () => {
+  scenario();
+  assert(Engine.accuse(0, ['Card 1', 'Card 10'], 'right') === false,
+    'two cards were accepted');
+  assert(Engine.inspect().accusationResult === null, 'the game ended');
+});
+
+test('Two picks in one category are refused', () => {
+  scenario();
+  assert(Engine.accuse(0, ['Card 1', 'Card 2', 'Card 10'], 'right') === false,
+    'a doubled category was accepted');
+});
+
+test('The logged accusation lists the cards in deck order', () => {
+  scenario();
+  Engine.accuse(0, ['Card 19', 'Card 1', 'Card 10'], 'right');
+  const s = Engine.inspect();
+  const e = s.turnLog[s.turnLog.length - 1];
+  assert(e.cards.join(',') === 'Card 1,Card 10,Card 19',
+    'the cards are not in deck order');
+});
+
+test('An accusation is refused at game over', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    accusationResult: 'won'
+  });
+  assert(Engine.accuse(1, ['Card 1', 'Card 10', 'Card 19'], 'wrong') === false,
+    'an accusation landed after the ending');
+});
+
+test('No road back: after an accusation ending, Undo refuses', () => {
+  scenario();
+  Engine.accuse(0, ['Card 1', 'Card 10', 'Card 19'], 'wrong');
+  Engine.undoTap();
+  const s = Engine.inspect();
+  assert(s.accusationResult === 'lost', 'the ending was undone');
+  assert(!s.turnLog.some(e => e.type === 'undo'), 'an undo ran after the ending');
+});
+
+test('Undo never lifts the 😢 sideline', () => {
+  fourSeats();
+  Engine.nextTap();   // Ann passes — turn 2, Bob's turn
+  Engine.accuse(2, ['Card 1', 'Card 10', 'Card 19'], 'wrong');
+  Engine.undoTap();
+  assert(Engine.inspect().playerOutKind[2] === 'wrongacc', 'the sideline was lifted');
+});
+
+// ── Player Out — the 👋 quit road ───────────────────────────
+
+test('playerOutCards names the holder of a card confirmed elsewhere', () => {
+  scenario();
+  Engine.testing.placeMark('Card 3', 2, 'check');   // Bob holds Card 3
+  const list = Engine.playerOutCards(1);            // Ann's quit picker
+  assert(list.length === 27, 'the full deck was not offered');
+  assert(list[0].card === 'Card 1', 'the list is not in deck order');
+  const e3 = list.find(e => e.card === 'Card 3');
+  assert(e3 && e3.holder === 'Bob', 'the holder was not named');
+  assert(list.filter(e => e.holder === null).length === 26, 'other cards gained holders');
+});
+
+test('The quit commit lands the permanent marks and the log entry', () => {
+  scenario();
+  assert(Engine.playerOut(1, ['Card 5']) === true, 'the quit was refused');
+  const s = Engine.inspect();
+  const shownCell = cellOf('Card 5', 1);
+  assert(count(shownCell, 'check') === 1 && shownCell[0].quit === true,
+    'no permanent ✓ on the shown card');
+  assert(count(cellOf('Card 5', 2), 'cross') === 1, 'the shown ✓ did not auto-✗ Bob');
+  const restCell = cellOf('Card 1', 1);
+  assert(count(restCell, 'cross') === 1 && restCell[0].quit === true,
+    'the rest of the column was not permanently ✗-ed');
+  assert(s.playerOutKind[1] === 'quit', 'the quit was not recorded');
+  assert(!s.activePlayers.includes(1), 'Ann is still in the ring');
+  const e = s.turnLog[s.turnLog.length - 1];
+  assert(e.type === 'out' && e.player === 'Ann' &&
+    e.cards.length === 1 && e.cards[0] === 'Card 5', 'the quit was not logged');
+});
+
+test('Picking no shown cards is legal — the whole column is ✗-ed', () => {
+  scenario();
+  assert(Engine.playerOut(1, []) === true, 'the zero-card quit was refused');
+  const s = Engine.inspect();
+  const columnDone = s.categories.every(cat => cat.cards.every(card =>
+    count(cellOf(card, 1), 'cross') === 1 && count(cellOf(card, 1), 'check') === 0));
+  assert(columnDone, 'the column was not fully ✗-ed');
+});
+
+test('A shown card already confirmed elsewhere is quietly dropped', () => {
+  scenario();
+  Engine.testing.placeMark('Card 3', 2, 'check');   // Bob holds Card 3
+  Engine.playerOut(1, ['Card 3']);
+  assert(count(cellOf('Card 3', 1), 'check') === 0, 'an impossible ✓ landed');
+  assert(count(cellOf('Card 3', 1), 'cross') === 1, 'the cell was not ✗-ed');
+  const e = Engine.inspect().turnLog.slice(-1)[0];
+  assert(e.type === 'out' && e.cards.length === 0,
+    'the dropped card was logged as shown');
+});
+
+test('Quit marks and the quit itself survive an Undo', () => {
+  scenario();
+  Engine.nextTap();          // Me passes — turn 2, Ann's turn
+  Engine.playerOut(2, []);   // Bob quits on Ann's turn
+  Engine.undoTap();          // steps back and wipes both turns
+  const s = Engine.inspect();
+  assert(count(cellOf('Card 1', 2), 'cross') === 1, 'the quit ✗ was undone');
+  assert(s.playerOutKind[2] === 'quit', 'the quit kind was undone');
+  assert(!s.activePlayers.includes(2), 'Bob returned to the ring');
+});
+
+test("A quit on someone else's turn leaves the turn where it stands", () => {
+  fourSeats();               // Ann holds the turn
+  Engine.playerOut(2, []);   // Bob quits
+  const s = Engine.inspect();
+  assert(s.activePlayers[s.turnStep] === 1, 'the turn moved off Ann');
+  assert(s.turnCount === 1, 'the turn count moved');
+});
+
+test('A quit by the clean turn-holder passes the turn on', () => {
+  fourSeats();               // Ann holds the turn
+  Engine.playerOut(1, []);
+  const s = Engine.inspect();
+  assert(s.turnCount === 2, 'the turn count did not move');
+  assert(s.activePlayers[s.turnStep] === 2, 'the turn is not on Bob');
+});
+
+test('The landing spot after a quit is never a 😢 player', () => {
+  Engine.connect({});
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', 'Cid', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2, 3], gameInProgress: true, turnStep: 1,
+    playerOutKind: { 2: 'wrongacc' }
+  });
+  Engine.playerOut(1, []);   // the turn-holder quits; Bob is 😢
+  const s = Engine.inspect();
+  assert(s.activePlayers[s.turnStep] === 3, 'the turn landed on the 😢 player');
+});
+
+test('The last live opponent quitting ends the game', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', '', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1], gameInProgress: true
+  });
+  const seen = catchStatus();
+  Engine.playerOut(1, []);
+  assert(seen.some(m => m.text.includes('has left the game — game over, you won')),
+    'the ending was not spoken');
+  Engine.nextTap();
+  assert(Engine.inspect().turnCount === 1, 'the game played on');
+});
+
+test('A 😢 player may take the 👋 road out', () => {
+  Engine.connect({});
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', 'Cid', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2, 3], gameInProgress: true, turnStep: 1,
+    playerOutKind: { 2: 'wrongacc' }
+  });
+  assert(Engine.playerOut(2, []) === true, 'the quit was refused');
+  const s = Engine.inspect();
+  assert(s.playerOutKind[2] === 'quit', 'the record did not change to quit');
+  assert(!s.activePlayers.includes(2), 'they stayed in the ring');
+});
+
+test('Me cannot be sent out the quit road', () => {
+  scenario();
+  assert(Engine.playerOut(0, []) === false, 'Me was allowed to quit');
+  assert(Engine.inspect().activePlayers.includes(0), 'Me left the ring');
+});
+
+test('The quit road is refused at game over', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    accusationResult: 'won'
+  });
+  assert(Engine.playerOut(1, []) === false, 'a quit landed after the ending');
+});
+
+// ── New Game ────────────────────────────────────────────────
+
+test('New Game with nothing kept starts wholly fresh', () => {
+  fourSeats();
+  Engine.cellTap('Card 1', 1);
+  Engine.newGame(false, false);
+  const s = Engine.inspect();
+  assert(s.players.every(p => p === '') && s.meSlot === -1, 'the seats stayed');
+  assert(Object.keys(s.cellState).length === 0, 'marks stayed');
+  assert(s.turnLog.length === 0, 'the log stayed');
+  assert(s.gameInProgress === false, 'the game is still running');
+});
+
+test('Same players: the seats survive, the game facts do not', () => {
+  fourSeats();
+  Engine.testing.placeMark('Card 2', 1, 'check');
+  Engine.newGame(true, false);
+  const s = Engine.inspect();
+  assert(s.players[1] === 'Ann' && s.meSlot === 0, 'the seats were lost');
+  assert(Object.keys(s.cellState).length === 0, 'the marks stayed');
+  assert(s.activePlayers.length === 0, 'the ring was kept');
+});
+
+test('Same deck keeps the categories; a new deck restores the defaults', () => {
+  Engine.connect({});
+  Engine.testing.reset({
+    categories: [{ name: 'Rooms', cards: ['Hall', 'Study', 'Attic'] }],
+    players: ['', 'Ann', '', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1], gameInProgress: true
+  });
+  Engine.newGame(false, true);
+  let s = Engine.inspect();
+  assert(s.categories.length === 1 && s.categories[0].name === 'Rooms',
+    'the deck was lost');
+  Engine.newGame(false, false);
+  s = Engine.inspect();
+  assert(s.categories.length === 3 && s.categories[0].cards.length === 9,
+    'the defaults did not return');
+});
+
+test('A new game clears the ending and the sideline', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    accusationResult: 'won', playerOutKind: { 1: 'wrongacc' }
+  });
+  Engine.newGame(true, true);
+  const s = Engine.inspect();
+  assert(s.accusationResult === null, 'the ending stayed');
+  assert(Object.keys(s.playerOutKind).length === 0, 'the sideline stayed');
+});
+
+test('Same players and same deck: the numbers come back, unsettled', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    counts: { entered: true, house: 3, players: [4, 4, 4, 0, 0, 0] }
+  });
+  Engine.newGame(true, true);
+  const s = Engine.inspect();
+  assert(s.counts.entered === false, 'the counts came back already settled');
+  assert(s.counts.house === 3, 'the House count was lost');
+  assert(s.counts.players.join() === '4,4,4,0,0,0', 'the seat counts were lost');
+});
+
+test('The counts clear when either choice is New', () => {
+  const seated = {
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    counts: { entered: true, house: 3, players: [4, 4, 4, 0, 0, 0] }
+  };
+  Engine.testing.reset(seated);
+  Engine.newGame(true, false);
+  let s = Engine.inspect();
+  assert(s.counts.entered === false && s.counts.house === 0 &&
+    s.counts.players.every(c => c === 0), 'a new deck kept the counts');
+  Engine.testing.reset(seated);
+  Engine.newGame(false, true);
+  s = Engine.inspect();
+  assert(s.counts.entered === false && s.counts.house === 0 &&
+    s.counts.players.every(c => c === 0), 'new players kept the counts');
+});
+
+test('New Game is the one door open at game over', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    accusationResult: 'won'
+  });
+  Engine.newGame(false, false);
+  assert(Engine.inspect().accusationResult === null, 'the door was blocked');
+});
+
+test('The new game saves: boot restores the fresh start', () => {
+  fourSeats();
+  Engine.newGame(true, false);
+  Engine.testing.placeMark('Card 9', 1, 'check');   // unsaved change after the save
+  Engine.boot();
+  const s = Engine.inspect();
+  assert(s.players[1] === 'Ann', 'the kept seats did not come back');
+  assert(Object.keys(s.cellState).length === 0, 'the fresh start did not come back');
+});
+
+// ── The log renderer ────────────────────────────────────────
+
+test('An empty log hands back the shared empty line', () => {
+  scenario();
+  const v = Engine.logView();
+  assert(v.entries.length === 0, 'entries appeared from nowhere');
+  assert(v.empty === 'No turns logged yet.', 'the empty line is wrong');
+});
+
+test('A third-party show is worded with asker, cards, and shower', () => {
+  fourSeats();
+  annAsks();
+  Engine.headerTap(3);
+  const e = Engine.logView().entries[0];
+  assert(e.kind === 'turn', 'the kind is wrong');
+  assert(e.title === 'Turn 1 — Ann asked', 'the title is wrong: ' + e.title);
+  assert(e.lines[0].text === 'Card 1, Card 10, Card 19', 'the cards line is wrong');
+  assert(e.lines[1].text === 'Cid showed', 'the shower line is wrong');
+});
+
+test('Your own turn says You, and a no-show turn says Nobody showed', () => {
+  scenario();
+  fullAsk();
+  Engine.nextTap();
+  const e = Engine.logView().entries[0];
+  assert(e.title === 'Turn 1 — You asked', 'the title is wrong: ' + e.title);
+  assert(e.lines[1].text === 'Nobody showed.', 'the no-show line is wrong');
+});
+
+test('A show to you names the shown card', () => {
+  Engine.connect({});
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true, myCards: ['Card 1']
+  });
+  fullAsk();
+  Engine.headerTap(1);
+  Engine.confirmShownMe('Card 10');
+  const e = Engine.logView().entries[0];
+  assert(e.lines[1].text === 'Ann showed Card 10',
+    'the show line is wrong: ' + e.lines[1].text);
+});
+
+test('Your own show is worded as You showed', () => {
+  Engine.connect({});
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    myCards: ['Card 1'], turnStep: 1
+  });
+  Engine.cellTap('Card 1', 1);
+  Engine.cellTap('Card 10', 1);
+  Engine.cellTap('Card 19', 1);
+  Engine.headerTap(0);
+  Engine.confirmIShowed('Card 1');
+  const e = Engine.logView().entries[0];
+  assert(e.lines[1].text === 'You showed Card 1',
+    'the show line is wrong: ' + e.lines[1].text);
+});
+
+test('A pass is worded with the passer named', () => {
+  fourSeats();
+  Engine.nextTap();
+  const e = Engine.logView().entries[0];
+  assert(e.kind === 'pass' &&
+    e.title === "Turn 1 — Ann didn't get a chance to ask",
+    'the pass is worded wrong: ' + e.title);
+});
+
+test('Your right accusation is worded as your win', () => {
+  scenario();
+  Engine.accuse(0, ['Card 1', 'Card 10', 'Card 19'], 'right');
+  const e = Engine.logView().entries[0];
+  assert(e.kind === 'accuse', 'the kind is wrong');
+  assert(e.title === 'Turn 1 — ⭐ You accused', 'the title is wrong: ' + e.title);
+  assert(e.lines[0].text === 'Card 1, Card 10, Card 19', 'the cards line is wrong');
+  assert(e.lines[1].text === 'Right — you won the game.',
+    'the verdict line is wrong: ' + e.lines[1].text);
+});
+
+test("An opponent's wrong accusation is worded as their 😢 exit", () => {
+  fourSeats();
+  Engine.accuse(2, ['Card 1', 'Card 10', 'Card 19'], 'wrong');
+  const e = Engine.logView().entries[0];
+  assert(e.lines[1].text === 'Wrong — Bob is out on a wrong accusation. 😢',
+    'the verdict line is wrong: ' + e.lines[1].text);
+});
+
+test('A quit is worded with the shown cards', () => {
+  scenario();
+  Engine.playerOut(1, ['Card 5']);
+  const e = Engine.logView().entries[0];
+  assert(e.kind === 'out' && e.title === 'Turn 1 — 👋 Ann quit',
+    'the title is wrong: ' + e.title);
+  assert(e.lines[0].text === 'Showed on the way out: Card 5',
+    'the cards line is wrong: ' + e.lines[0].text);
+});
+
+test('A zero-card quit says so plainly', () => {
+  scenario();
+  Engine.playerOut(1, []);
+  const e = Engine.logView().entries[0];
+  assert(e.lines[0].text === 'Showed no cards.',
+    'the line is wrong: ' + e.lines[0].text);
+});
+
+test('An undo entry highlights a returned hidden mark', () => {
+  Engine.connect({});
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true,
+    turnCount: 2, gamePhase: 'waiting',
+    cellState: { 'Card 6': { 1: [
+      { type: 'showed', turn: 1 }, { type: 'cross', turn: 2 }
+    ] } }
+  });
+  Engine.undoTap();
+  const e = Engine.logView().entries[0];
+  assert(e.kind === 'undo', 'the kind is wrong');
+  assert(e.title === 'Turn 2 — ↩ Undo — turn restarted',
+    'the title is wrong: ' + e.title);
+  assert(e.lines[0].text === 'All Turn 2 marks removed.',
+    'the wipe line is wrong: ' + e.lines[0].text);
+  assert(e.lines[1].text === "The hidden ! on Card 6 in Ann's column is back.",
+    'the return line is wrong: ' + e.lines[1].text);
+  assert(e.lines[1].highlight === true, 'the return is not highlighted');
+  assert(e.lines[0].highlight === false, 'the wipe line is highlighted');
+});
+
+test('The log hands back newest first', () => {
+  fourSeats();
+  Engine.nextTap();   // Ann passes — turn 1
+  Engine.nextTap();   // Bob passes — turn 2
+  const v = Engine.logView();
+  assert(v.entries[0].title.startsWith('Turn 2'), 'the newest entry is not first');
+  assert(v.entries[1].title.startsWith('Turn 1'), 'the older entry is not second');
+});
+
+test('The Now line follows the game', () => {
+  fourSeats();
+  assert(Engine.logView().now === "Now — Ann's turn to ask",
+    'asking is wrong: ' + Engine.logView().now);
+  annAsks();
+  assert(Engine.logView().now === 'Now — waiting for someone to show',
+    'showing is wrong: ' + Engine.logView().now);
+  Engine.headerTap(3);
+  assert(Engine.logView().now === 'Now — Cid showed — tap Next ▶',
+    'waiting is wrong: ' + Engine.logView().now);
+});
+
+test('The Now line at your turn says your', () => {
+  scenario();
+  assert(Engine.logView().now === 'Now — your turn to ask',
+    'the wording is wrong: ' + Engine.logView().now);
+});
+
+test('The Now line carries the game-over flavors', () => {
+  Engine.connect({});
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true, accusationResult: 'opp:1'
+  });
+  assert(Engine.logView().now === 'Game over — Ann won.',
+    'the opponent win is wrong: ' + Engine.logView().now);
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true, accusationResult: 'won'
+  });
+  assert(Engine.logView().now === 'Game over — you won!',
+    'the win is wrong: ' + Engine.logView().now);
+});
+
+test('No game, no Now line', () => {
+  Engine.connect({});
+  Engine.testing.reset({});   // fresh state — no game running
+  assert(Engine.logView().now === null, 'a Now line appeared with no game');
+});
+
+// ── The ∑ column ────────────────────────────────────────────
+
+test('The ∑ picker commit lands, repaints, and clears', () => {
+  scenario();
+  let painted = null;
+  Engine.connect({ sumChanged: card => painted = card });
+  assert(Engine.sumCommit('Card 1', 'check') === true, 'the commit was refused');
+  assert(Engine.inspect().sumOverrides['Card 1'] === 'check', 'the mark did not land');
+  assert(painted === 'Card 1', 'the repaint was not reported');
+  Engine.sumCommit('Card 1', null);
+  assert(!('Card 1' in Engine.inspect().sumOverrides), 'the clear did not land');
+  Engine.connect({});
+});
+
+test('An unknown card or a bad ∑ value is refused', () => {
+  scenario();
+  assert(Engine.sumCommit('No such', 'check') === false, 'an unknown card landed');
+  assert(Engine.sumCommit('Card 1', 'cross') === false, 'a bad value landed');
+});
+
+test('The star warning names the crowded category', () => {
+  scenario();
+  Engine.sumCommit('Card 1', 'star');
+  assert(Engine.sumStarWarning('Card 2') === 'More than one ⭐ in Category 1',
+    'wrong: ' + Engine.sumStarWarning('Card 2'));
+  assert(Engine.sumStarWarning('Card 1') === null, 'the starred card warned itself');
+  assert(Engine.sumStarWarning('Card 10') === null, 'a clear category warned');
+});
+
+test('A second star speaks the warning after it lands', () => {
+  scenario();
+  const seen = catchStatus();
+  Engine.sumCommit('Card 1', 'star');
+  assert(seen.length === 0, 'the first star spoke');
+  Engine.sumCommit('Card 2', 'star');
+  assert(seen.length === 1 &&
+    seen[0].text === 'More than one ⭐ in Category 1' &&
+    seen[0].kind === 'warning', 'the second star did not speak');
+});
+
+test('∑ marks survive an Undo', () => {
+  scenario();
+  Engine.sumCommit('Card 1', 'star');
+  Engine.cellTap('Card 2', 0);
+  Engine.undoTap();
+  assert(Engine.inspect().sumOverrides['Card 1'] === 'star', 'the ∑ mark was undone');
+});
+
+test('∑ is frozen at game over', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true, accusationResult: 'won'
+  });
+  const seen = catchStatus();
+  assert(Engine.sumCommit('Card 1', 'check') === false, 'a ∑ mark landed');
+  assert(seen[0].text.includes('Game over'), 'the guard did not speak');
+});
+
+test("The settled ∑ state logs once at the turn's end", () => {
+  scenario();
+  Engine.sumCommit('Card 10', 'check');
+  Engine.sumCommit('Card 1', 'check');
+  Engine.sumCommit('Card 1', 'star');   // settles as the star
+  Engine.nextTap();                     // the pass ends the turn
+  const s = Engine.inspect();
+  const sums = s.turnLog.filter(e => e.type === 'sum');
+  assert(sums.length === 1 && sums[0].turn === 1, 'the settled entry is wrong');
+  assert(sums[0].changes.length === 2 &&
+    sums[0].changes[0].card === 'Card 1' &&
+    sums[0].changes[0].value === 'star' &&
+    sums[0].changes[1].card === 'Card 10', 'the changes are wrong or out of deck order');
+  const v = Engine.logView().entries.find(e => e.kind === 'sum');
+  assert(v.title === 'Turn 1 — ∑ changed', 'the title is wrong: ' + v.title);
+  assert(v.lines[0].text === 'Card 1 — ⭐ Solution?' &&
+    v.lines[1].text === 'Card 10 — ✕ Has card', 'the lines are wrong');
+});
+
+test('A touched-and-reverted ∑ cell logs nothing', () => {
+  scenario();
+  Engine.sumCommit('Card 1', 'star');
+  Engine.sumCommit('Card 1', null);   // back as the turn found it
+  Engine.nextTap();
+  assert(!Engine.inspect().turnLog.some(e => e.type === 'sum'),
+    'a no-change entry was logged');
+});
+
+test('An accusation flushes the pending ∑ first', () => {
+  scenario();
+  Engine.sumCommit('Card 1', 'star');
+  Engine.accuse(0, ['Card 1', 'Card 10', 'Card 19'], 'right');
+  const log = Engine.inspect().turnLog;
+  assert(log[log.length - 2].type === 'sum' &&
+    log[log.length - 1].type === 'accuse', 'the ∑ entry did not land first');
+});
+
+test('A quit flushes the pending ∑ first', () => {
+  scenario();
+  Engine.sumCommit('Card 1', 'check');
+  Engine.playerOut(1, []);
+  const log = Engine.inspect().turnLog;
+  assert(log[log.length - 2].type === 'sum' &&
+    log[log.length - 1].type === 'out', 'the ∑ entry did not land first');
+});
+
+// ── The 🏠 column ───────────────────────────────────────────
+
+test('The 🏠 tap marks the board card and crosses the other players', () => {
+  scenario();
+  const seen = catchStatus();
+  assert(Engine.houseTap('Card 1') === true, 'the tap was refused');
+  const s = Engine.inspect();
+  assert(s.houseChecked['Card 1'] === 1, 'the mark did not land');
+  [1, 2].forEach(col => {
+    const cell = cellOf('Card 1', col);
+    assert(count(cell, 'cross') === 1 && cell[0].house === true,
+      `no house ✗ on seat ${col}`);
+  });
+  assert(cellOf('Card 1', 0).length === 0,
+    'Me was crossed — the Me column already handles unheld cards');
+  assert(cellOf('Card 1', 3).length === 0, 'an empty seat got a mark');
+  const e = s.turnLog[s.turnLog.length - 1];
+  assert(e.type === 'house' && e.card === 'Card 1', 'the mark was not logged');
+  assert(seen[seen.length - 1].text === 'Card 1 is on the board',
+    'the status is wrong');
+});
+
+test('The 🏠 tap never doubles an existing ✗', () => {
+  scenario();
+  Engine.testing.placeMark('Card 2', 1, 'cross');
+  Engine.houseTap('Card 2');
+  assert(count(cellOf('Card 2', 1), 'cross') === 1, 'Ann holds two ✗ marks');
+});
+
+test('A second tap clears the mark, exactly its crosses, and its entry', () => {
+  scenario();
+  Engine.testing.placeMark('Card 3', 1, 'cross');   // Ann's own ✗, not the house's
+  Engine.houseTap('Card 3');
+  const seen = catchStatus();
+  Engine.houseTap('Card 3');
+  const s = Engine.inspect();
+  assert(s.houseChecked['Card 3'] === undefined, 'the mark stayed');
+  assert(count(cellOf('Card 3', 2), 'cross') === 0, 'the house ✗ stayed on Bob');
+  assert(count(cellOf('Card 3', 1), 'cross') === 1, "Ann's own ✗ was taken");
+  assert(!s.turnLog.some(e => e.type === 'house'), 'the same-turn entry stayed');
+  assert(seen[seen.length - 1].text === 'Card 3 board mark cleared',
+    'the status is wrong');
+});
+
+test("An earlier turn's 🏠 entry stays as history when cleared later", () => {
+  scenario();
+  Engine.houseTap('Card 4');
+  Engine.testing.setTurn(3);
+  Engine.houseTap('Card 4');   // cleared two turns later
+  const s = Engine.inspect();
+  assert(s.houseChecked['Card 4'] === undefined, 'the mark stayed');
+  assert(s.turnLog.some(e => e.type === 'house' && e.turn === 1),
+    'the history entry was taken');
+});
+
+test('A wiped turn takes the 🏠 crosses with it', () => {
+  scenario();
+  Engine.houseTap('Card 5');
+  Engine.testing.wipeTurn(1);
+  const s = Engine.inspect();
+  assert(s.houseChecked['Card 5'] === undefined, 'the mark survived the wipe');
+  assert(count(cellOf('Card 5', 1), 'cross') === 0, 'a house ✗ survived the wipe');
+});
+
+test('🏠 is frozen at game over, and the log words the mark', () => {
+  scenario();
+  Engine.houseTap('Card 6');
+  const v = Engine.logView().entries[0];
+  assert(v.kind === 'house' &&
+    v.title === 'Turn 1 — 🏠 Card 6 is on the board' && v.lines.length === 0,
+    'the wording is wrong: ' + v.title);
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true, accusationResult: 'won'
+  });
+  assert(Engine.houseTap('Card 6') === false, 'a 🏠 mark landed at game over');
+});
+
+// ── Cell notes ──────────────────────────────────────────────
+
+test('A note lands, trimmed and capped at 4 characters', () => {
+  scenario();
+  assert(Engine.setCellNote('Card 1', 1, '  abcdef ') === true, 'the note was refused');
+  assert(Engine.cellNote('Card 1', 1) === 'abcd', 'the note was not trimmed and capped');
+});
+
+test('An empty note clears the stored note whole', () => {
+  scenario();
+  Engine.setCellNote('Card 2', 1, 'hm');
+  assert(Engine.setCellNote('Card 2', 1, '   ') === true, 'the clearing was refused');
+  assert(Engine.cellNote('Card 2', 1) === '', 'the note stayed');
+  assert(!('Card 2_1' in Engine.inspect().cellNotes), 'the cleared key stayed behind');
+});
+
+test('A note refuses an unknown card and a seat off the grid', () => {
+  scenario();
+  assert(Engine.setCellNote('No card', 1, 'ab') === false, 'an unknown card took a note');
+  assert(Engine.setCellNote('Card 3', 6, 'ab') === false, 'a seat off the grid took a note');
+});
+
+test('Notes are frozen at game over', () => {
+  Engine.testing.reset({
+    players: ['', 'Ann', 'Bob', '', '', ''], meSlot: 0,
+    activePlayers: [0, 1, 2], gameInProgress: true, accusationResult: 'won'
+  });
+  const seen = catchStatus();
+  assert(Engine.setCellNote('Card 4', 1, 'ab') === false, 'a note landed at game over');
+  assert(seen[0].text.includes('Game over'), 'the guard did not speak');
+});
+
+test('A note is never logged', () => {
+  scenario();
+  Engine.setCellNote('Card 5', 1, 'ab');
+  Engine.setCellNote('Card 5', 1, '');
+  assert(Engine.inspect().turnLog.length === 0, 'a note wrote a log entry');
+});
+
+test('A turn wipe leaves notes standing', () => {
+  scenario();
+  Engine.setCellNote('Card 6', 1, 'keep');
+  Engine.testing.placeMark('Card 6', 1, 'cross');
+  Engine.testing.wipeTurn(1);
+  assert(Engine.cellNote('Card 6', 1) === 'keep', 'the wipe took the note');
+});
+
+test('cellChanged reports a note change', () => {
+  scenario();
+  const calls = [];
+  Engine.connect({ cellChanged: (card, col) => calls.push([card, col]) });
+  Engine.setCellNote('Card 7', 2, 'ab');
+  Engine.connect({});
+  assert(calls.some(c => c[0] === 'Card 7' && c[1] === 2), 'the hook never fired');
+});
+
+// ── Setup — seats ───────────────────────────────────────────
+// Setup tests start from a pre-game state: no game running, the
+// counts entered where a test needs them already standing
+
+function setupScenario(fields) {
+  Engine.connect({});
+  Engine.testing.reset(Object.assign({
+    players: ['', 'Ann', 'Bob', '', '', ''],
+    meSlot: 0
+  }, fields || {}));
+}
+const enteredCounts = () =>   // 27 cards: 3 in the envelope, 3 House, 21 in hands
+  ({ entered: true, house: 3, players: [7, 7, 7, 0, 0, 0] });
+
+test('Naming a seat seats the player', () => {
+  Engine.connect({});
+  Engine.testing.reset({});
+  assert(Engine.setSeat(1, 'Ann', false) === true, 'the seat commit was refused');
+  assert(Engine.inspect().players[1] === 'Ann', 'the name did not land');
+});
+
+test('Marking a seat as Me clears its name', () => {
+  Engine.connect({});
+  Engine.testing.reset({ players: ['', 'Ann', '', '', '', ''] });
+  Engine.setSeat(1, 'Ann', true);
+  const s = Engine.inspect();
+  assert(s.meSlot === 1, 'Me did not land on the seat');
+  assert(s.players[1] === '', 'the Me seat kept a name');
+});
+
+test('Naming the Me seat unsets Me', () => {
+  setupScenario();
+  Engine.setSeat(0, 'Dot', false);
+  const s = Engine.inspect();
+  assert(s.meSlot === -1, 'Me stayed on the named seat');
+  assert(s.players[0] === 'Dot', 'the name did not land');
+});
+
+test('Player names are trimmed and capped at 6 characters', () => {
+  Engine.connect({});
+  Engine.testing.reset({});
+  Engine.setSeat(1, '  Anniversary  ', false);
+  assert(Engine.inspect().players[1] === 'Annive',
+    'the cap failed: ' + Engine.inspect().players[1]);
+});
+
+test('A seat change clears the entered counts', () => {
+  setupScenario({ counts: enteredCounts() });
+  Engine.setSeat(3, 'Cid', false);
+  assert(Engine.inspect().counts.entered === false, 'the counts stood');
+});
+
+test('An unchanged seat commit leaves the counts standing', () => {
+  setupScenario({ counts: enteredCounts() });
+  Engine.setSeat(1, 'Ann', false);   // the same name again
+  assert(Engine.inspect().counts.entered === true, 'the counts were cleared');
+});
+
+test('Every Setup door is closed while a game runs', () => {
+  scenario();   // gameInProgress: true
+  assert(Engine.setSeat(3, 'Cid', false) === false, 'setSeat ran mid-game');
+  assert(Engine.addCategory() === false, 'addCategory ran mid-game');
+  assert(Engine.deleteCategory(0) === false, 'deleteCategory ran mid-game');
+  assert(Engine.editCategory(0, 'X', []) === false, 'editCategory ran mid-game');
+  assert(Engine.toggleMyCard('Card 1') === false, 'toggleMyCard ran mid-game');
+  assert(Engine.setCounts(3, [8, 8, 8, 0, 0, 0]) === false, 'setCounts ran mid-game');
+  assert(Engine.saveDeck('Mine') === false, 'saveDeck ran mid-game');
+  assert(Engine.play() === false, 'play ran mid-game');
+});
+
+// ── Setup — deck editing ────────────────────────────────────
+
+test('Add Category joins as the fourth at most', () => {
+  setupScenario();
+  assert(Engine.addCategory() === true, 'the fourth category was refused');
+  const s = Engine.inspect();
+  assert(s.categories.length === 4 && s.categories[3].name === 'Category 4',
+    'the category did not land');
+  assert(Engine.addCategory() === false, 'a fifth category was accepted');
+});
+
+test('Deleting a category takes its cards out of the hand', () => {
+  setupScenario({ myCards: ['Card 1', 'Card 10'], counts: enteredCounts() });
+  assert(Engine.deleteCategory(0) === true, 'the delete was refused');
+  const s = Engine.inspect();
+  assert(s.categories.length === 2, 'the category stayed');
+  assert(!s.myCards.includes('Card 1') && s.myCards.includes('Card 10'),
+    'the hand was not kept in step');
+  assert(s.counts.entered === false, 'the counts stood');
+});
+
+test('The last category cannot be deleted', () => {
+  setupScenario({ categories: [{ name: 'Only', cards: ['A', 'B', 'C'] }] });
+  const seen = catchStatus();
+  assert(Engine.deleteCategory(0) === false, 'the last category was deleted');
+  assert(seen[seen.length - 1].text === 'At least one category is needed',
+    'no refusal spoken');
+});
+
+test('The edit commit renames the category and its cards', () => {
+  setupScenario({
+    categories: [
+      { name: 'Category 1', cards: ['Card 1', 'Card 2', 'Card 3'] },
+      { name: 'Category 2', cards: ['Card 4', 'Card 5', 'Card 6'] }
+    ],
+    myCards: ['Card 1']
+  });
+  const ok = Engine.editCategory(0, 'Rooms', [
+    { orig: 'Card 1', name: 'Hall' },
+    { orig: 'Card 2', name: 'Card 2' },
+    { orig: 'Card 3', name: 'Card 3' },
+    { orig: null, name: 'Attic' }
+  ]);
+  assert(ok === true, 'the edit was refused');
+  const s = Engine.inspect();
+  assert(s.categories[0].name === 'Rooms', 'the category name did not land');
+  assert(s.categories[0].cards.join(',') === 'Hall,Card 2,Card 3,Attic',
+    'the cards are wrong: ' + s.categories[0].cards.join(','));
+  assert(s.myCards.includes('Hall') && !s.myCards.includes('Card 1'),
+    'the renamed card left the hand');
+  assert(s.counts.entered === false, 'the counts stood');
+});
+
+test('A removed card leaves the Me hand', () => {
+  setupScenario({ myCards: ['Card 1'] });
+  Engine.editCategory(0, '', [
+    { orig: 'Card 2', name: 'Card 2' },
+    { orig: 'Card 3', name: 'Card 3' },
+    { orig: 'Card 4', name: 'Card 4' }
+  ]);
+  assert(!Engine.inspect().myCards.includes('Card 1'), 'the removed card stayed');
+});
+
+test('A duplicate card name refuses the whole edit', () => {
+  setupScenario();
+  const seen = catchStatus();
+  const ok = Engine.editCategory(0, '', [
+    { orig: 'Card 1', name: 'card 10' }   // Card 10 lives in Category 2
+  ]);
+  assert(ok === false, 'the duplicate was accepted');
+  assert(seen[seen.length - 1].text === 'Duplicate card name: "card 10"',
+    'no refusal spoken: ' + seen[seen.length - 1].text);
+  assert(Engine.inspect().categories[0].cards.includes('Card 1'),
+    'the refused edit changed the deck');
+});
+
+test('A 31st card refuses the edit', () => {
+  setupScenario();   // 27 cards; four more make 31
+  const seen = catchStatus();
+  const rows = Engine.inspect().categories[0].cards
+    .map(c => ({ orig: c, name: c }));
+  ['New 1', 'New 2', 'New 3', 'New 4'].forEach(n =>
+    rows.push({ orig: null, name: n }));
+  assert(Engine.editCategory(0, '', rows) === false, 'the overfull deck was accepted');
+  assert(seen[seen.length - 1].text.includes('deck is full'), 'no refusal spoken');
+});
+
+test('An emptied category is deleted with the edit', () => {
+  setupScenario();
+  Engine.editCategory(0, '', []);
+  assert(Engine.inspect().categories.length === 2, 'the emptied category stayed');
+});
+
+test('A nameless new row is dropped', () => {
+  setupScenario();
+  Engine.editCategory(0, '', [
+    { orig: 'Card 1', name: 'Card 1' },
+    { orig: null, name: '   ' }
+  ]);
+  assert(Engine.inspect().categories[0].cards.length === 1, 'a blank card landed');
+});
+
+test('Card and category names are capped at 13 characters', () => {
+  setupScenario();
+  Engine.editCategory(0, 'A very long category name', [
+    { orig: 'Card 1', name: 'A very long card name' }
+  ]);
+  const s = Engine.inspect();
+  assert(s.categories[0].name === 'A very long c',
+    'the category cap failed: ' + s.categories[0].name);
+  assert(s.categories[0].cards[0] === 'A very long c',
+    'the card cap failed: ' + s.categories[0].cards[0]);
+});
+
+// ── Setup — the Me hand ─────────────────────────────────────
+
+test('A chip tap moves a card into the hand and back out', () => {
+  setupScenario();
+  assert(Engine.toggleMyCard('Card 1') === true, 'the tap was refused');
+  assert(Engine.inspect().myCards.includes('Card 1'), 'the card did not join');
+  Engine.toggleMyCard('Card 1');
+  assert(!Engine.inspect().myCards.includes('Card 1'), 'the card did not leave');
+});
+
+test('A card outside the deck is refused', () => {
+  setupScenario();
+  assert(Engine.toggleMyCard('No such') === false, 'an unknown card was accepted');
+});
+
+test('Picking the hand leaves the counts standing', () => {
+  setupScenario({ counts: enteredCounts() });
+  Engine.toggleMyCard('Card 1');
+  assert(Engine.inspect().counts.entered === true, 'the counts were cleared');
+});
+
+// ── Setup — the counts ──────────────────────────────────────
+
+test('The envelope holds one card per category with cards', () => {
+  setupScenario();   // three categories, all with cards
+  assert(Engine.envelopeSize() === 3,
+    'the envelope is wrong: ' + Engine.envelopeSize());
+  Engine.addCategory();   // a fourth, empty — no envelope card
+  assert(Engine.envelopeSize() === 3,
+    'an empty category put a card in the envelope');
+});
+
+test('An evenly split deck opens the counts window filled in', () => {
+  setupScenario();   // 27 cards, 3 aside — 24 over three seats, even
+  const d = Engine.countsDefault();
+  assert(d !== null, 'no default was offered');
+  assert(d.house === 0, 'the House default is not 0');
+  assert(d.players.join(',') === '8,8,8,0,0,0',
+    'the shares are wrong: ' + d.players.join(','));
+});
+
+test('An uneven deck hands the leftovers to House', () => {
+  setupScenario({ categories: [
+    { name: 'Category 1', cards: ['C1', 'C2', 'C3', 'C4'] },
+    { name: 'Category 2', cards: ['C5', 'C6', 'C7'] },
+    { name: 'Category 3', cards: ['C8', 'C9', 'C10'] }
+  ] });   // 10 cards, 3 aside — 7 over three seats, uneven
+  const d = Engine.countsDefault();
+  assert(d !== null, 'no default was offered');
+  assert(d.house === 1, 'the leftover did not go to House: ' + d.house);
+  assert(d.players.join(',') === '2,2,2,0,0,0',
+    'the shares are wrong: ' + d.players.join(','));
+});
+
+test('The even split deals the remainder from the first seat on', () => {
+  setupScenario();   // 27 cards, 3 aside — 24 dealt, three seats
+  assert(Engine.countsPrefill(3).join(',') === '7,7,7,0,0,0',
+    'the even case is wrong: ' + Engine.countsPrefill(3).join(','));
+  assert(Engine.countsPrefill(4).join(',') === '7,7,6,0,0,0',
+    'the remainder case is wrong: ' + Engine.countsPrefill(4).join(','));
+});
+
+test('A mismatched Done is refused with the settled line', () => {
+  setupScenario();
+  const seen = catchStatus();
+  assert(Engine.setCounts(3, [8, 8, 7, 0, 0, 0]) === false,
+    'an overfull entry was accepted');
+  assert(seen[seen.length - 1].text ===
+    'The number of cards entered does not equal the number of cards in your deck',
+    'the line is wrong: ' + seen[seen.length - 1].text);
+  assert(Engine.inspect().counts.entered === false, 'the counts entered anyway');
+});
+
+test('A matching Done enters the counts', () => {
+  setupScenario();
+  assert(Engine.setCounts(3, [7, 7, 7, 0, 0, 0]) === true, 'the entry was refused');
+  const s = Engine.inspect();
+  assert(s.counts.entered === true && s.counts.house === 3 &&
+    s.counts.players[2] === 7, 'the counts did not land');
+});
+
+test('Counts offered for empty seats are ignored', () => {
+  setupScenario();
+  assert(Engine.setCounts(3, [7, 7, 7, 0, 5, 0]) === true,
+    'the junk seat blocked the entry');
+  assert(Engine.inspect().counts.players[4] === 0, 'an empty seat kept a count');
+});
+
+// ── Setup — the Play gate ───────────────────────────────────
+
+test('The gate asks for Me first', () => {
+  Engine.connect({});
+  Engine.testing.reset({});
+  assert(Engine.setupUnmet() === 'You need to mark one of the seats as Me before you can play',
+    'wrong: ' + Engine.setupUnmet());
+});
+
+test('Then a second player', () => {
+  Engine.connect({});
+  Engine.testing.reset({ meSlot: 0 });
+  assert(Engine.setupUnmet() === 'You need to have at least two players, counting yourself',
+    'wrong: ' + Engine.setupUnmet());
+});
+
+test('Then 2 categories with cards', () => {
+  setupScenario({ categories: [{ name: 'Only', cards: ['A', 'B', 'C'] }] });
+  assert(Engine.setupUnmet() === 'You need to have at least two categories with cards in them',
+    'wrong: ' + Engine.setupUnmet());
+});
+
+test('Then 3 cards in every filled category', () => {
+  setupScenario({ categories: [
+    { name: 'Full', cards: ['A', 'B', 'C'] },
+    { name: 'Thin', cards: ['D', 'E'] }
+  ] });
+  assert(Engine.setupUnmet() === 'You need to have at least three cards in Thin',
+    'wrong: ' + Engine.setupUnmet());
+});
+
+test('Then 12 cards in the deck', () => {
+  setupScenario({ categories: [
+    { name: 'One', cards: ['A', 'B', 'C', 'D', 'E'] },
+    { name: 'Two', cards: ['F', 'G', 'H', 'I', 'J'] }
+  ] });
+  assert(Engine.setupUnmet() === 'You need to have at least twelve cards in your deck',
+    'wrong: ' + Engine.setupUnmet());
+});
+
+test('Then the counts', () => {
+  setupScenario();
+  assert(Engine.setupUnmet() ===
+    'You need to enter the card counts — tap "Where are the cards?"',
+    'wrong: ' + Engine.setupUnmet());
+});
+
+test('Then the hand matching the count', () => {
+  setupScenario({ counts: enteredCounts(),
+    myCards: ['Card 1', 'Card 2', 'Card 3'] });
+  assert(Engine.setupUnmet() ===
+    'You need to tap 7 cards as yours — you have tapped 3',
+    'wrong: ' + Engine.setupUnmet());
+});
+
+test('A complete Setup passes the gate', () => {
+  setupScenario({ counts: enteredCounts(),
+    myCards: ['Card 1', 'Card 2', 'Card 3', 'Card 4',
+              'Card 5', 'Card 6', 'Card 7'] });
+  assert(Engine.setupUnmet() === null, 'the gate still speaks: ' + Engine.setupUnmet());
+});
+
+// ── Setup — Play ────────────────────────────────────────────
+
+function completeSetup(extra) {
+  setupScenario(Object.assign({
+    counts: enteredCounts(),
+    myCards: ['Card 1', 'Card 2', 'Card 3', 'Card 4',
+              'Card 5', 'Card 6', 'Card 7']
+  }, extra || {}));
+}
+
+test('Play refuses with the first unmet condition spoken', () => {
+  Engine.connect({});
+  Engine.testing.reset({});
+  const seen = catchStatus();
+  assert(Engine.play() === false, 'an empty Setup started a game');
+  assert(seen[seen.length - 1].text === 'You need to mark one of the seats as Me before you can play' &&
+    seen[seen.length - 1].kind === 'warning', 'the gate did not speak');
+  assert(Engine.inspect().gameInProgress === false, 'the game started anyway');
+});
+
+test('Play lays the turn-zero marks and opens turn 1', () => {
+  completeSetup();
+  assert(Engine.play() === true, 'a complete Setup was refused');
+  const s = Engine.inspect();
+  assert(s.gameInProgress === true && s.turnCount === 1 &&
+    s.gamePhase === 'asking' && s.turnStep === 0, 'the game did not open right');
+  assert(s.activePlayers.join(',') === '0,1,2', 'the ring is wrong');
+  const held = cellOf('Card 1', 0);
+  assert(count(held, 'check') === 1 && held[0].turn === 0,
+    'no turn-zero ✓ on a held card');
+  assert(count(cellOf('Card 1', 1), 'cross') === 1,
+    'the held ✓ did not cross Ann off');
+  assert(count(cellOf('Card 9', 0), 'cross') === 1,
+    'no ✗ on an unheld card in the Me column');
+  assert(count(cellOf('Card 9', 1), 'cross') === 0,
+    'an unheld card marked another player');
+});
+
+test('Play drops the empty categories', () => {
+  completeSetup();
+  Engine.addCategory();                      // the counts clear with it
+  Engine.setCounts(3, [7, 7, 7, 0, 0, 0]);   // entered afresh
+  Engine.play();
+  assert(Engine.inspect().categories.length === 3, 'the empty category stayed');
+});
+
+test('A second Play is refused', () => {
+  completeSetup();
+  Engine.play();
+  assert(Engine.play() === false, 'a running game was restarted');
+});
+
+// ── Setup — saved decks ─────────────────────────────────────
+
+function clearDecks() { localStorage.removeItem(DECK_TEST_KEY); }
+
+test('A deck saves by name, capped at 6 characters', () => {
+  setupScenario();
+  clearDecks();
+  assert(Engine.saveDeck('Classic') === true, 'the save was refused');
+  const decks = Engine.savedDecks();
+  assert(decks.length === 1 && decks[0].name === 'Classi',
+    'the deck did not save right');
+  assert(decks[0].categories.length === 3 &&
+    decks[0].categories[0].cards.length === 9, 'the structure was not kept');
+});
+
+test('A fifth deck is refused', () => {
+  setupScenario();
+  clearDecks();
+  ['One', 'Two', 'Three', 'Four'].forEach(n => Engine.saveDeck(n));
+  const seen = catchStatus();
+  assert(Engine.saveDeck('Five') === false, 'a fifth deck was accepted');
+  assert(seen[seen.length - 1].text === 'Maximum 4 saved decks — delete one first',
+    'no refusal spoken');
+});
+
+test('A doubled deck name is refused', () => {
+  setupScenario();
+  clearDecks();
+  Engine.saveDeck('Mine');
+  const seen = catchStatus();
+  assert(Engine.saveDeck('mine') === false, 'the doubled name was accepted');
+  assert(seen[seen.length - 1].text === 'That name is already used',
+    'no refusal spoken');
+});
+
+test('An empty deck name is refused', () => {
+  setupScenario();
+  clearDecks();
+  const seen = catchStatus();
+  assert(Engine.saveDeck('   ') === false, 'a blank name was accepted');
+  assert(seen[seen.length - 1].text === 'Enter a deck name first',
+    'no refusal spoken');
+});
+
+test('Loading a deck replaces the structure and clears the hand and counts', () => {
+  setupScenario({ categories: [
+    { name: 'Rooms', cards: ['Hall', 'Study', 'Attic'] },
+    { name: 'Tools', cards: ['Rope', 'Pipe', 'Wrench'] }
+  ] });
+  clearDecks();
+  Engine.saveDeck('Rooms');
+  setupScenario({ myCards: ['Card 1'], counts: enteredCounts() });
+  assert(Engine.loadDeck(0) === true, 'the load was refused');
+  const s = Engine.inspect();
+  assert(s.categories.length === 2 && s.categories[0].name === 'Rooms',
+    'the structure did not come back');
+  assert(s.myCards.length === 0, 'the hand stayed');
+  assert(s.counts.entered === false, 'the counts stood');
+});
+
+test('Deleting a deck removes it', () => {
+  setupScenario();
+  clearDecks();
+  Engine.saveDeck('One');
+  Engine.saveDeck('Two');
+  assert(Engine.deleteDeck(0) === true, 'the delete was refused');
+  const decks = Engine.savedDecks();
+  assert(decks.length === 1 && decks[0].name === 'Two', 'the wrong deck left');
+});
+
+test('The saved decks survive a New Game', () => {
+  setupScenario();
+  clearDecks();
+  Engine.saveDeck('Keeper');
+  Engine.newGame(false, false);
+  assert(Engine.savedDecks().length === 1, 'a New Game touched the saved decks');
+});
+
+// ── Setup — the hook ────────────────────────────────────────
+
+test('setupChanged reports a Setup edit', () => {
+  Engine.testing.reset({});
+  let calls = 0;
+  Engine.connect({ setupChanged: () => calls++ });
+  Engine.setSeat(1, 'Ann', false);
+  Engine.connect({});
+  assert(calls > 0, 'the hook never fired');
+});
+
+// ── Results ─────────────────────────────────────────────────
+if (typeof localStorage !== 'undefined') {
+  localStorage.removeItem(TEST_KEY);
+  localStorage.removeItem(DECK_TEST_KEY);
+}
+const passed = results.filter(r => r.ok).length;
+const summaryText = passed + ' of ' + results.length + ' tests passed' +
+  (passed === results.length ? '' : ' — FAILURES ABOVE');
+if (typeof document !== 'undefined') {
+  const box = document.getElementById('results');
+  results.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'test ' + (r.ok ? 'pass' : 'fail');
+    div.textContent = r.name;
+    box.appendChild(div);
+    if (!r.ok) {
+      const why = document.createElement('div');
+      why.className = 'why';
+      why.textContent = r.why;
+      box.appendChild(why);
+    }
+  });
+  document.getElementById('summary').textContent = summaryText;
+}
+results.forEach(r => console.log((r.ok ? 'PASS ' : 'FAIL ') + r.name + (r.ok ? '' : ' — ' + r.why)));
+console.log(summaryText);
+</script>
+</body>
+</html>

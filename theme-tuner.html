@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme Tuner — Clues Tracker Sheet</title>
+<style>
+/* Bundled fonts — same files the app uses */
+@font-face { font-family:'Lora'; font-style:normal; font-weight:400; font-display:swap;
+  src:url('static/fonts/lora-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family:'Lora'; font-style:italic; font-weight:400; font-display:swap;
+  src:url('static/fonts/lora-latin-400-italic.woff2') format('woff2'); }
+@font-face { font-family:'Lora'; font-style:normal; font-weight:500; font-display:swap;
+  src:url('static/fonts/lora-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family:'Playfair Display'; font-style:normal; font-weight:600; font-display:swap;
+  src:url('static/fonts/playfair-display-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family:'Playfair Display'; font-style:normal; font-weight:700; font-display:swap;
+  src:url('static/fonts/playfair-display-latin-700-normal.woff2') format('woff2'); }
+</style>
+<style>
+/* ═══ TUNER CHROME — the page around the sample; not app colors ═══ */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Lora',Georgia,serif;background:#efeae2;color:#33291a;padding:16px;}
+.tuner-head{max-width:900px;margin:0 auto 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.tuner-head h1{font-family:'Playfair Display',serif;font-size:1.2rem;flex:1;}
+.tuner-btn{font-family:'Lora',serif;font-size:0.85rem;padding:7px 14px;border-radius:5px;border:1.5px solid #8b6a38;background:#fff;color:#5a4420;cursor:pointer;}
+.tuner-btn:active{background:#f0e4c8;}
+.tuner-note{max-width:900px;margin:0 auto 14px;font-size:0.85rem;font-style:italic;color:#6a5a40;}
+.tuner-cols{max-width:900px;margin:0 auto;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;}
+.sample-col{flex:0 0 430px;position:sticky;top:10px;}
+.picker-col{flex:1;min-width:300px;}
+.group-hdr{font-family:'Playfair Display',serif;font-size:0.95rem;color:#5a4420;border-bottom:1.5px solid #b09868;padding:14px 0 4px;margin-bottom:8px;}
+.pick-row{display:flex;align-items:center;gap:10px;padding:4px 0;}
+.pick-row input[type=color]{width:44px;height:30px;border:1px solid #999;border-radius:4px;padding:0;background:none;cursor:pointer;flex-shrink:0;}
+.pick-lbl{font-size:0.85rem;flex:1;}
+.pick-where{font-size:0.72rem;color:#7a6a4a;font-style:italic;}
+.pick-hex{font-size:0.75rem;color:#7a6a4a;width:70px;text-align:right;}
+.out-wrap{max-width:900px;margin:20px auto;}
+.out-wrap textarea{width:100%;height:180px;font-family:monospace;font-size:0.75rem;padding:10px;border:1.5px solid #8b6a38;border-radius:5px;background:#fffdf6;color:#33291a;}
+.dimmed{opacity:0.45;pointer-events:none;}
+/* The section chooser — which slice of the app is being worked on */
+.tuner-secs{max-width:900px;margin:0 auto 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.tuner-secs .lbl{font-size:0.8rem;font-style:italic;color:#6a5a40;margin-right:2px;}
+.sec-btn.on{background:#8b6a38;border-color:#8b6a38;color:#fff;font-weight:600;}
+</style>
+<style>
+/* ═══ THE APP SAMPLE — one flat color per area (Patrick's law, Y-6) ═══
+   Values are installed by the script: whichever theme is being tuned. */
+#app{
+  max-width:430px;font-family:'Lora',Georgia,serif;background:var(--page-ground);color:var(--text);
+  border:1px solid #999;border-radius:6px;overflow:hidden;user-select:none;
+}
+/* Header — one area */
+#app .app-header{background:var(--header);color:var(--header-text);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
+#app .app-header h1{font-family:'Playfair Display',serif;font-size:1.1rem;letter-spacing:0.03em;flex:1;text-align:center;color:var(--header-text);}
+#app .hbtn{font-family:'Lora',serif;font-size:0.8rem;background:transparent;border:1.5px solid var(--header-text);color:var(--header-text);border-radius:4px;padding:6px 12px;font-weight:600;}
+/* The two bars */
+#app .turn-bar{background:var(--turn-bar);color:var(--turn-bar-text);padding:6px 14px;font-size:0.85rem;display:flex;justify-content:space-between;align-items:center;}
+#app .accuse-btn{font-family:'Lora',serif;font-size:0.78rem;background:transparent;border:1px solid var(--turn-bar-text);color:var(--turn-bar-text);border-radius:3px;padding:3px 9px;font-weight:600;white-space:nowrap;}
+#app .stage-bar{background:var(--stage-bar);border-bottom:1px solid var(--grid-lines);padding:5px 10px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;}
+#app .stage-hint{text-align:center;font-style:italic;color:var(--stage-hint);font-size:0.78rem;white-space:nowrap;overflow:hidden;}
+#app .undo-btn{font-size:0.82rem;padding:4px 11px;border-radius:3px;background:var(--undo-button);color:var(--button-text);border:none;font-family:'Lora',serif;font-weight:600;}
+#app .next-btn{font-size:0.82rem;padding:4px 11px;border-radius:3px;background:var(--next-button);color:var(--button-text);border:none;font-family:'Lora',serif;font-weight:600;}
+/* Column headers */
+#app .grid-wrap{max-height:430px;overflow-y:auto;overflow-x:hidden;}
+#app .tracker-table{border-collapse:separate;border-spacing:0;width:100%;}
+#app .corner-th{position:sticky;left:0;top:0;z-index:10;background:var(--col-header);color:var(--col-header-text);padding:5px 6px;font-size:9px;text-align:left;border-left:1px solid var(--grid-lines);border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:82px;min-width:82px;}
+#app .player-th{position:sticky;top:0;z-index:9;background:var(--col-header);color:var(--col-header-text);text-align:center;padding:5px 3px;font-size:9.5px;border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:47px;min-width:47px;max-width:47px;overflow:hidden;white-space:nowrap;}
+#app .player-th.me-th{background:var(--me-header);color:var(--me-header-text);}
+#app .player-th.active-asker{background:var(--asker-header);color:var(--asker-header-text);}
+#app .player-th.inactive-th{background:var(--empty-header);color:var(--empty-header-text);}
+#app .player-th.quit-th{background:var(--quit-header);color:var(--quit-header-text);}
+#app .summary-th,#app .house-th{position:sticky;top:0;z-index:9;background:var(--col-header);color:var(--col-header-text);text-align:center;padding:4px 1px;font-size:9px;border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:33px;min-width:33px;}
+#app .house-th{font-size:10px;}
+/* Category banners — one color apiece */
+#app .cat-row td{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;padding:2px 6px;color:var(--band-text);line-height:1.8;border-bottom:1px solid var(--grid-lines);}
+#app .cat-c0{background:var(--band-1);}
+#app .cat-c1{background:var(--band-2);}
+#app .cat-c2{background:var(--band-3);}
+#app .cat-c3{background:var(--band-4);color:var(--band-4-text);}
+/* The grid — one ground; overlays are solid and bury it */
+#app .card-th{position:sticky;left:0;z-index:8;text-align:left;padding:3px 5px;font-size:12px;font-weight:400;color:var(--grid-text);background:var(--card-col);border-left:1px solid var(--grid-lines);border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);white-space:nowrap;width:82px;min-width:82px;}
+#app .sum-cell,#app .house-cell{border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:33px;min-width:33px;text-align:center;vertical-align:middle;padding:1px;background:var(--tally-col);font-size:11px;}
+#app .data-cell{border-right:1px solid var(--grid-lines);border-bottom:1px solid var(--grid-lines);width:47px;min-width:47px;vertical-align:top;padding:2px 3px;background:var(--grid);word-wrap:break-word;position:relative;}
+#app .data-cell.me-cell{background:var(--me-col);}
+#app .data-cell.inactive-cell{background:var(--dead-col);}
+#app .data-cell.picked{background:var(--picked-cell)!important;outline:1px solid var(--focus-outline);outline-offset:-1px;}
+/* The washes rest on the grid ground alone — nothing bleeds up from below */
+#app td.cell-check{background:linear-gradient(var(--check-wash),var(--check-wash)) var(--grid)!important;}
+#app td.cell-cross{background:linear-gradient(var(--cross-wash),var(--cross-wash)) var(--grid)!important;}
+/* The marks */
+#app .cell-inner{display:flex;flex-wrap:wrap;gap:2px;align-items:flex-start;min-height:24px;}
+#app .sym{font-size:10px;line-height:1.2;display:inline-flex;white-space:nowrap;}
+#app .sym-check{color:var(--check);font-weight:700;font-size:9px;}
+#app .sym-cross{color:var(--cross);font-weight:700;font-size:8px;}
+#app .sym-asked{color:var(--asked);font-weight:700;background:var(--asked-plate);border-radius:2px;padding:0 2px;}
+#app .sym-showed{color:var(--showed);font-weight:700;background:var(--showed-plate);border-radius:2px;padding:0 2px;}
+#app .sym-ishowed{color:var(--me-mark);font-weight:700;background:var(--me-mark-plate);border-radius:2px;padding:0 2px;}
+#app .cell-note{position:absolute;bottom:1px;right:2px;font-size:8px;color:var(--grid-faded);font-style:italic;line-height:1;}
+/* Setup sample — a slice of the Setup screen on open page ground */
+#app .setup-sample{background:var(--setup-ground);padding:14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--setup-lines);}
+#app .sec-label{font-family:'Playfair Display',serif;font-size:0.85rem;color:var(--setup-label);text-transform:uppercase;letter-spacing:0.1em;border-bottom:1px solid var(--setup-lines);padding-bottom:4px;}
+#app .setup-hint{font-size:0.82rem;color:var(--setup-faded);font-style:italic;}
+#app .player-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+#app .player-slot{background:var(--slot);border:1.5px solid var(--setup-lines);border-radius:6px;padding:5px 8px;min-height:40px;display:flex;flex-direction:column;gap:2px;}
+#app .player-slot.has-name{border-color:var(--named-slot);}
+#app .player-slot.is-me{border-color:var(--me-badge);background:var(--me-slot);}
+#app .slot-lbl{font-size:0.6rem;color:var(--seat-label);text-transform:uppercase;letter-spacing:0.08em;}
+#app .slot-name{font-size:0.85rem;color:var(--setup-text);font-weight:500;min-height:1em;}
+#app .setup-cat{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;padding:0 10px;line-height:1.8;border-radius:3px;color:var(--band-text);}
+#app .setup-cat.s1{background:var(--setup-band-1);}
+#app .setup-cat.s2{background:var(--setup-band-2);}
+#app .setup-cat.s3{background:var(--setup-band-3);}
+#app .setup-cat.s4{background:var(--setup-band-4);color:var(--band-4-text);border:1px solid var(--band-4-text);}
+#app .card-chips{display:flex;flex-wrap:wrap;gap:6px;}
+#app .card-chip{font-size:0.85rem;padding:6px 12px;border-radius:16px;border:1.5px solid var(--setup-lines);background:var(--chip);color:var(--setup-text);}
+#app .card-chip.selected{background:var(--picked-chip);border-color:var(--picked-chip);color:var(--picked-chip-text);font-weight:500;}
+#app .add-cat-btn{width:100%;padding:8px;border:1.5px dashed var(--add-button);border-radius:4px;background:transparent;color:var(--add-button);font-family:'Lora',serif;font-size:0.8rem;}
+/* Footer strip — open page ground, like the real app's footer */
+#app .footer-strip{background:var(--footer);border-top:1px solid var(--footer-lines);padding:10px 44px;display:flex;justify-content:space-between;font-size:0.82rem;}
+#app .foot-btn{font-family:'Lora',serif;font-size:0.78rem;background:none;border:1px solid var(--footer-lines);color:var(--footer-faded);padding:4px 12px;border-radius:4px;}
+#app .foot-btn.bright{border-color:var(--guide-button);color:var(--guide-button);font-weight:600;}
+/* Side pages — the Log, the Guide and the Notepad */
+#app .panel-head{background:var(--panel-bar);border-top:1px solid var(--panel-lines);border-bottom:1px solid var(--panel-lines);padding:6px 14px;font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--panel-title);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+#app .panel-body{padding:12px 14px;}
+#app .head-status-sample{font-size:0.8rem;color:var(--panel-status);font-style:italic;}
+#app .log-list{background:var(--log-ground);}
+#app .log-entry{padding:7px 0;border-bottom:1px solid var(--panel-lines);font-size:0.78rem;line-height:1.6;}
+#app .log-title{font-family:'Playfair Display',serif;font-weight:600;color:var(--log-title);}
+#app .log-entry.kind-sum .log-title{font-family:'Lora',serif;font-weight:400;color:var(--log-summary);font-style:italic;}
+#app .log-line{color:var(--panel-text);}
+#app .log-line.hi{color:var(--log-notice);font-weight:600;}
+#app .log-now{color:var(--log-now);font-style:italic;}
+#app .log-empty{color:var(--panel-faded);font-style:italic;font-size:0.9rem;text-align:center;padding:8px 0;}
+#app .guide-body{background:var(--guide-ground);}
+#app .g-sec{font-family:'Playfair Display',serif;font-size:1rem;color:var(--guide-head);margin:4px 0;}
+#app .g-intro{font-size:0.78rem;color:var(--guide-intro);margin-bottom:10px;}
+#app .g-sub{font-size:0.82rem;font-weight:600;color:var(--guide-sub);margin-bottom:4px;}
+#app .g-p{font-size:0.78rem;color:var(--panel-text);margin-bottom:10px;}
+#app .g-ul{font-size:0.78rem;color:var(--panel-text);margin-bottom:10px;padding-left:16px;}
+#app .g-rule{border-top:1px solid var(--panel-lines);margin:10px 0;}
+#app .notes-area{background:var(--notes-ground);color:var(--panel-text);font-family:'Lora',serif;font-size:0.88rem;padding:14px;line-height:1.6;}
+#app .notes-ph{color:var(--notes-hint);font-style:italic;}
+#app .panel-foot{position:relative;}
+#app .panel-foot .foot{background:var(--footer);border-top:1px solid var(--footer-lines);padding:6px 20px;display:flex;justify-content:space-between;}
+#app .foot-status{position:absolute;inset:0;display:flex;align-items:center;padding:0 14px;background:var(--foot-status-ground);border-top:2px solid var(--footer-lines);font-size:0.9rem;color:var(--header-text);overflow:hidden;white-space:nowrap;}
+/* Modal sample — shown flat on the page inside a backdrop swatch */
+#app .backdrop-sample{background:var(--backdrop);padding:14px 20px;}
+#app .modal{background:var(--modal);border:2px solid var(--modal-lines);border-radius:10px;overflow:hidden;}
+#app .modal-head{background:var(--modal-head);color:var(--modal-head-text);font-family:'Playfair Display',serif;font-size:0.95rem;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
+#app .modal-close{background:none;border:1px solid var(--modal-head-text);color:var(--modal-head-text);font-size:0.75rem;padding:3px 8px;border-radius:3px;font-family:'Lora',serif;font-weight:600;}
+#app .modal-body{padding:14px;display:flex;flex-direction:column;gap:10px;}
+#app .modal-hint{font-size:0.78rem;color:var(--modal-faded);font-style:italic;}
+#app .modal-sec{font-size:0.72rem;color:var(--hint);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;}
+#app .modal-input{width:100%;font-family:'Lora',serif;font-size:1rem;padding:9px 11px;border:1.5px solid var(--modal-lines);border-radius:6px;background:var(--input);color:var(--modal-text);}
+#app .me-toggle{display:flex;align-items:center;gap:10px;background:var(--me-toggle);border:1.5px solid var(--chosen);border-radius:6px;padding:9px 14px;}
+#app .me-toggle label{font-size:0.9rem;color:var(--chosen);font-weight:500;}
+#app .private-opt{padding:9px 14px;border:1.5px solid var(--modal-lines);border-radius:6px;background:var(--input);font-size:0.92rem;}
+#app .private-opt.selected{background:var(--chosen);border-color:var(--chosen);color:var(--chosen-text);font-weight:500;}
+#app .modal-btn-row{display:flex;gap:8px;}
+#app .modal-btn{flex:1;font-family:'Lora',serif;font-size:0.9rem;padding:10px;border-radius:6px;border:1px solid var(--modal-lines);}
+#app .modal-btn.primary{background:var(--save-button);color:var(--save-button-text);border-color:var(--save-button);}
+#app .modal-btn.secondary{background:transparent;color:var(--skip-button-text);}
+#app .modal-btn.danger{background:var(--delete-button);color:var(--delete-button-text);border-color:var(--delete-button);}
+#app .modal-msg{text-align:center;font-size:0.8rem;font-weight:600;color:var(--warn);min-height:20px;}
+</style>
+</head>
+<body>
+
+<div class="tuner-head">
+  <h1>Theme Tuner</h1>
+  <button class="tuner-btn" id="themeToggle">Tuning: LIGHT — switch to dark</button>
+  <button class="tuner-btn" id="resetBtn">Back to starting values</button>
+</div>
+<div class="tuner-secs" id="secRow">
+  <span class="lbl">Working on:</span>
+  <button class="tuner-btn sec-btn on" data-sec="all">Everything</button>
+  <button class="tuner-btn sec-btn" data-sec="setup">Setup</button>
+  <button class="tuner-btn sec-btn" data-sec="game">Game</button>
+  <button class="tuner-btn sec-btn" data-sec="modals">Modals</button>
+  <button class="tuner-btn sec-btn" data-sec="panels">Side pages</button>
+</div>
+<div class="tuner-note">
+  The sample below is painted by the real engine. Change any picker and the
+  piece wearing that color changes at once. Both themes are tunable — the
+  button above says which one the pickers are shaping — and each theme's
+  choices are saved in this browser on their own. The finished palette
+  blocks wait at the bottom, ready to copy. Pick a section above to work on
+  one part of the app at a time; the page-wide colors stay in view with every
+  section, since they show on every screen.
+</div>
+
+<div class="tuner-cols">
+  <div class="sample-col" id="sampleCol"></div>
+  <div class="picker-col" id="pickerCol"></div>
+</div>
+
+<div class="out-wrap">
+  <div class="group-hdr">The finished palettes — dark and light</div>
+  <textarea id="outBlock" readonly></textarea>
+  <p style="margin-top:8px"><button class="tuner-btn" id="copyBtn">Copy palette block</button>
+  <button class="tuner-btn" id="downloadBtn">Download palettes</button>
+  <span id="copyMsg" style="font-size:0.8rem;color:#4a7a3a;"></span></p>
+</div>
+
+<script src="clues-tracker-engine.js"></script>
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════════
+// THE PALETTE — one row per named color
+// name, label, where-it-shows, dark value, light first guess.
+// alpha: when set, the stored color is rgba; the picker tunes
+// the rgb and the alpha stays fixed.
+// ════════════════════════════════════════════════════════════
+const PALETTE = [
+ { group:'The page' },
+ { name:'footer',   lbl:'Footer strip',  where:'the Guide-Notes-Log strip below the grid', dark:'#1a1410', light:'#d7ae88' },
+ { name:'page-ground', lbl:'Page ground', where:'the page’s own background', dark:'#1a1410', light:'#d7ae88' },
+ { name:'text',   lbl:'Text',         where:'main lettering',                    dark:'#f0e8d8', light:'#110d07' },
+ { name:'guide-button', lbl:'Guide button', where:'the 📖 Guide button in the footer — word and outline', dark:'#e8b060', light:'#a87018' },
+
+ { name:'footer-lines', lbl:'Footer lines',     where:'the footer’s top edge and its status strip’s edge', dark:'#8b6a38', light:'#8b6a38' },
+ { name:'footer-faded', lbl:'Footer lettering', where:'the Guide, Notes and Log button words', dark:'#a89878', light:'#382f21' },
+ { group:'The header' },
+ { name:'header',      lbl:'Header',           where:'the gold title strip',      dark:'#e8b060', light:'#edbb5d' },
+ { name:'header-text', lbl:'Header lettering', where:'its title and buttons',     dark:'#1a1410', light:'#2a1c08' },
+
+ { group:'The two bars' },
+ { name:'turn-bar',      lbl:'Turn bar',          where:'the green turn strip',            dark:'#2a8a48', light:'#299e54' },
+ { name:'turn-bar-text', lbl:'Turn-bar lettering',where:'its words and the ⭐ button',     dark:'#e8f5ec', light:'#eef8f0' },
+ { name:'stage-bar',     lbl:'Stage bar',         where:'the strip holding Undo and Next', dark:'#242018', light:'#ebc188' },
+ { name:'stage-hint',    lbl:'Stage hint',        where:'the italic direction line in the stage bar', dark:'#e8b060', light:'#a87018' },
+ { name:'undo-button',   lbl:'Undo button',       where:'the Undo button',                 dark:'#c04040', light:'#df4b6c' },
+ { name:'next-button',   lbl:'Next button',       where:'the Next button',                 dark:'#2a8a48', light:'#278b4b' },
+ { name:'button-text',   lbl:'Button lettering',  where:'lettering on Undo and Next',      dark:'#ffffff', light:'#ffffff' },
+
+ { group:'The column headers' },
+ { name:'col-header',        lbl:'Column headers',   where:'the gold name row, ∑ and 🏠 too', dark:'#e8b060', light:'#f0cd5a' },
+ { name:'col-header-text',   lbl:'Their lettering',  where:'the names in that row',            dark:'#1a1410', light:'#2a1c08' },
+ { name:'me-header',         lbl:'Me header',        where:'Me’s green header',           dark:'#2a8a48', light:'#5acd82' },
+ { name:'me-header-text',    lbl:'Me lettering',     where:'the word Me',                      dark:'#e8f5ec', light:'#eef8f0' },
+ { name:'asker-header',      lbl:'Asker header',     where:'the asking player’s header',  dark:'#3a5a9b', light:'#5d95ff' },
+ { name:'asker-header-text', lbl:'Asker lettering',  where:'that header’s name',          dark:'#e8f0ff', light:'#e6efff' },
+ { name:'quit-header',       lbl:'Out header',       where:'a quit player’s header',      dark:'#957240', light:'#fbd58f' },
+ { name:'quit-header-text',  lbl:'Out lettering',    where:'that header’s name',          dark:'#564e2a', light:'#7e663e' },
+ { name:'empty-header',      lbl:'Empty-seat header',where:'an unused seat’s header',     dark:'#433320', light:'#c2b398' },
+ { name:'empty-header-text', lbl:'Empty lettering',  where:'the dash it shows',                dark:'#6a5c44', light:'#a89b81' },
+
+ { group:'The category banners' },
+ { name:'band-1',      lbl:'Banner one',        where:'the first category banner',   dark:'#c04040', light:'#d26755' },
+ { name:'band-2',      lbl:'Banner two',        where:'the second',                  dark:'#4a6aab', light:'#6593c8' },
+ { name:'band-3',      lbl:'Banner three',      where:'the third',                   dark:'#278546', light:'#54a473' },
+ { name:'band-4',      lbl:'Banner four',       where:'the fourth',                  dark:'#7b642a', light:'#d49433' },
+ { name:'band-text',   lbl:'Banner lettering',  where:'banners one to three',        dark:'#ffffff', light:'#ffffff' },
+ { name:'band-4-text', lbl:'Fourth’s lettering', where:'the fourth banner',     dark:'#f5c878', light:'#f5c878' },
+
+ { group:'The grid' },
+ { name:'grid',        lbl:'Grid ground',     where:'the one color every row sits on',  dark:'#1e1a14', light:'#eccc9d' },
+ { name:'card-col',    lbl:'Card column',     where:'the card-name column',             dark:'#2a2218', light:'#dbbd92' },
+ { name:'me-col',      lbl:'Me column',       where:'Me’s cells — solid',          dark:'#0f2018', light:'#eccc9d' },
+ { name:'dead-col',    lbl:'Empty seats',     where:'an unused column — solid',         dark:'#1a1614', light:'#d1c2a6' },
+ { name:'picked-cell', lbl:'Picked cell',     where:'a cell tapped while asking',       dark:'#1e2a4a', light:'#f0cc5a' },
+ { name:'focus-outline', lbl:'Focus outline', where:'the edge of a picked cell and a dragged column', dark:'#3a5a9b', light:'#5d95ff' },
+ { name:'tally-col',   lbl:'∑ and 🏠 cells',  where:'the two right-hand columns',       dark:'#1e1a14', light:'#eccc9d' },
+ { name:'sum-star',    lbl:'∑ star',      where:'the ⭐ in the ∑ column',            dark:'#e8b060', light:'#a87018' },
+ { name:'check-wash',  lbl:'✓ wash',     where:'behind a ✓ — see-through on purpose', dark:'rgba(0,155,50,0.3)', light:'rgba(0,194,0,0.35)',  alpha:true },
+ { name:'cross-wash',  lbl:'✗ wash',     where:'behind a ✗ — see-through on purpose', dark:'rgba(215,30,30,0.32)', light:'rgba(255,0,0,0.25)', alpha:true },
+
+ { name:'grid-lines', lbl:'Grid lines',  where:'every line in the grid, its headers and the stage bar', dark:'#8b6a38', light:'#8b6a38' },
+ { name:'grid-text',  lbl:'Card names',   where:'the card-name column’s lettering', dark:'#f0e8d8', light:'#110d07' },
+ { name:'grid-faded', lbl:'Cell note',    where:'the little turn note in a cell’s corner', dark:'#a89878', light:'#382f21' },
+ { group:'The marks' },
+ { name:'check',         lbl:'✓ mark',   where:'the ✓ itself',           dark:'#60e090', light:'#1a7a34' },
+ { name:'cross',         lbl:'✗ mark',   where:'the ✗ itself',           dark:'#e51c2a', light:'#d7002e' },
+ { name:'asked',         lbl:'? mark',        where:'the ?',                       dark:'#8aaaf0', light:'#2a4a9b' },
+ { name:'asked-plate',   lbl:'? plate',       where:'the little plate behind it',  dark:'#1a2a50', light:'#fff2ed' },
+ { name:'showed',        lbl:'! mark',        where:'the !',                       dark:'#e0a060', light:'#9a5a20' },
+ { name:'showed-plate',  lbl:'! plate',       where:'its plate',                   dark:'#3a2010', light:'#f0d8b8' },
+ { name:'me-mark',       lbl:'Me mark',       where:'the Me-showed mark',          dark:'#c8903a', light:'#a87018' },
+ { name:'me-mark-plate', lbl:'Me plate',      where:'its plate',                   dark:'#2a1e08', light:'#f0e0b0' },
+
+ { group:'The Setup screen' },
+ { name:'setup-ground',     lbl:'Setup ground',     where:'the Setup screen’s own background', dark:'#1a1410', light:'#ebca9d' },
+ { name:'setup-label',      lbl:'Section labels',   where:'PLAYERS, CARDS headings',          dark:'#e8b060', light:'#4d330e' },
+ { name:'seat-label',       lbl:'Seat titles',      where:'the Seat 1–Seat 6 titles',         dark:'#a89878', light:'#382f21' },
+ { name:'slot',             lbl:'Player slot',      where:'a seat box’s fill',           dark:'#2a2218', light:'#e9a859' },
+ { name:'named-slot',       lbl:'Named slot edge',  where:'a filled seat’s border',      dark:'#c8903a', light:'#a87018' },
+ { name:'me-slot',          lbl:'Me slot',          where:'your own seat’s fill',        dark:'#0f2e18', light:'#54a473' },
+ { name:'me-badge',         lbl:'Me badge',         where:'the ME marker and its border',     dark:'#2a8a48', light:'#278b4b' },
+ { name:'setup-band-1',     lbl:'Deep banner one',  where:'Setup’s first category head', dark:'#801217', light:'#d26755' },
+ { name:'setup-band-2',     lbl:'Deep banner two',  where:'the second',                       dark:'#204485', light:'#6593c8' },
+ { name:'setup-band-3',     lbl:'Deep banner three',where:'the third',                        dark:'#1c6132', light:'#54a473' },
+ { name:'setup-band-4',     lbl:'Deep banner four', where:'the fourth',                       dark:'#5a481e', light:'#d49433' },
+ { name:'chip',             lbl:'Card chip',        where:'an unpicked card’s fill',     dark:'#2a2218', light:'#f5d9a8' },
+ { name:'picked-chip',      lbl:'Picked chip',      where:'a card in your hand',              dark:'#2a8a48', light:'#2bb761' },
+ { name:'picked-chip-text', lbl:'Picked lettering', where:'its words',                        dark:'#e8f5e8', light:'#ecf4ef' },
+ { name:'add-button',       lbl:'Add button',       where:'the dashed add-a-category button', dark:'#c8903a', light:'#2b1d08' },
+
+ { name:'setup-lines', lbl:'Setup lines',       where:'seat-box edges, chip edges and section rules', dark:'#8b6a38', light:'#8b6a38' },
+ { name:'setup-text',  lbl:'Setup lettering',   where:'seat names and card-chip words', dark:'#f0e8d8', light:'#110d07' },
+ { name:'setup-faded', lbl:'Setup placeholder', where:'the italic placeholder lines', dark:'#a89878', light:'#382f21' },
+ { group:'The modals' },
+ { name:'hint',          lbl:'Hint lettering',    where:'modal section labels, the message line and input focus edges', dark:'#e8b060', light:'#a87018' },
+ { name:'modal',           lbl:'Modal body',      where:'the box itself',                 dark:'#2a2218', light:'#f2d1a2' },
+ { name:'modal-head',      lbl:'Modal head',      where:'its title strip; Save button',   dark:'#e8b060', light:'#fbbc59' },
+ { name:'modal-head-text', lbl:'Head lettering',  where:'that strip’s words',        dark:'#1a1410', light:'#2a1c08' },
+ { name:'input',           lbl:'Typing boxes',    where:'inputs and option rows',         dark:'#1a1410', light:'#ffd9ac' },
+ { name:'me-toggle',       lbl:'Me-toggle row',   where:'the pale "This is me" row',      dark:'#edf7f0', light:'#edf7f0' },
+ { name:'chosen',          lbl:'Chosen option',   where:'a selected option’s fill',  dark:'#2a8a48', light:'#2dc267' },
+ { name:'chosen-text',     lbl:'Chosen lettering',where:'its words',                      dark:'#e8f5ec', light:'#ecf4ef' },
+ { name:'save-button',        lbl:'Save button',       where:'the Save button’s fill',   dark:'#e8b060', light:'#f3b556' },
+ { name:'save-button-text',   lbl:'Save lettering',    where:'its words',                     dark:'#1a1410', light:'#2a1c08' },
+ { name:'skip-button-text',   lbl:'Skip lettering',    where:'the open middle button',        dark:'#e8b060', light:'#7a5610' },
+ { name:'delete-button',      lbl:'Delete button',     where:'the Delete button’s fill', dark:'#c04040', light:'#e50033' },
+ { name:'delete-button-text', lbl:'Delete lettering',  where:'its words',                     dark:'#ffffff', light:'#ffffff' },
+ { name:'warn',            lbl:'Warning text',    where:'the warning message line',       dark:'#ffffff', light:'#ff0000' },
+ { name:'backdrop',        lbl:'Backdrop',        where:'the dimming behind — see-through on purpose', dark:'rgba(44,26,8,0.75)', light:'rgba(44,26,8,0.14)', alpha:true },
+
+ { name:'modal-lines', lbl:'Modal lines',      where:'modal borders, inputs, options and buttons', dark:'#8b6a38', light:'#8b6a38' },
+ { name:'modal-text',  lbl:'Modal lettering',  where:'typed words, options and counters', dark:'#f0e8d8', light:'#110d07' },
+ { name:'modal-faded', lbl:'Modal quiet text', where:'placeholders and quiet questions', dark:'#a89878', light:'#382f21' },
+ { group:'The side pages' },
+ { name:'panel-bar',          lbl:'Title bar',          where:'the side pages’ title bar',            dark:'#242018', light:'#f7d9b9' },
+ { name:'panel-title',        lbl:'Title lettering',    where:'the side pages’ title-bar words',      dark:'#e8b060', light:'#a87018' },
+ { name:'panel-status',       lbl:'Header status',      where:'the status line in the Notes header',  dark:'#e8b060', light:'#a87018' },
+ { name:'foot-status-ground', lbl:'Footer status strip',where:'the status strip over a footer',       dark:'#e8b060', light:'#f7d9b9' },
+ { name:'log-ground',         lbl:'Log ground',         where:'the Log list’s background',            dark:'#1a1410', light:'#eecca1' },
+ { name:'log-title',          lbl:'Log titles',         where:'the Log’s entry titles',               dark:'#e8b060', light:'#a87018' },
+ { name:'log-summary',        lbl:'Quiet titles',       where:'the ∑ and 🏠 entries’ quieter titles', dark:'#a89878', light:'#382f21' },
+ { name:'log-now',            lbl:'Now line',           where:'the Log’s live Now line',              dark:'#e8b060', light:'#a87018' },
+ { name:'log-notice',         lbl:'Call-out line',      where:'the Log line calling out an obscure occurrence', dark:'#ffffff', light:'#ff0000' },
+ { name:'guide-ground',       lbl:'Guide ground',       where:'the Guide text’s background',          dark:'#1a1410', light:'#eecca1' },
+ { name:'guide-head',         lbl:'Guide headings',     where:'the Guide’s section headings',         dark:'#e8b060', light:'#a87018' },
+ { name:'guide-sub',          lbl:'Guide sub-headings', where:'the Guide’s sub-headings',             dark:'#e8b060', light:'#a87018' },
+ { name:'guide-intro',        lbl:'Guide opening',      where:'the Guide’s opening line',             dark:'#a89878', light:'#382f21' },
+ { name:'notes-ground',       lbl:'Notepad ground',     where:'the notepad’s background',             dark:'#1a1410', light:'#eccc9c' },
+ { name:'notes-hint',         lbl:'Notepad hint',       where:'the notepad’s placeholder words',      dark:'#a89878', light:'#382f21' },
+
+ { name:'panel-lines', lbl:'Side-page lines',      where:'panel-head edges, Log entry rules, Guide rules', dark:'#8b6a38', light:'#8b6a38' },
+ { name:'panel-text',  lbl:'Side-page lettering',  where:'Log lines, Guide paragraphs and the notepad', dark:'#f0e8d8', light:'#110d07' },
+ { name:'panel-faded', lbl:'Side-page quiet text', where:'the Log’s empty-list line', dark:'#a89878', light:'#382f21' },
+ { group:'The feedback popup' },
+ { name:'feedback-question',     lbl:'Question labels',   where:'the four questions and the rating label', dark:'#e8b060', light:'#9b6718' },
+ { name:'feedback-invite',       lbl:'Opening line',      where:'the italic invitation and the slider’s end words', dark:'#a89878', light:'#382f21' },
+ { name:'rating-slider',         lbl:'Rating slider',     where:'the slider’s bar and knob',          dark:'#c8903a', light:'#a87018' },
+ { name:'feedback-thanks',       lbl:'Thank-you line',    where:'THANK YOU VERY MUCH',                dark:'#c8903a', light:'#a87018' },
+ { name:'feedback-appreciation', lbl:'Appreciation line', where:'the italic line beneath it',         dark:'#f0e8d8', light:'#110d07' }
+];
+
+// The light key was bumped when the approved palettes-tuned.css
+// values became the starting values — older browser-saved tunings
+// (including an accidental reset) are ignored.
+const STORE_KEYS = { light:'mctsTunerLight2', dark:'mctsTunerDark' };
+
+// ── color helpers ──
+function rgbaToHexA(v){ // 'rgba(r,g,b,a)' -> {hex, a}
+  const m = v.match(/rgba?\(([^)]+)\)/);
+  const p = m[1].split(',').map(s=>parseFloat(s));
+  const hex = '#' + p.slice(0,3).map(n=>Math.round(n).toString(16).padStart(2,'0')).join('');
+  return { hex, a: p.length > 3 ? p[3] : 1 };
+}
+function hexToRgba(hex, a){
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+// ── working values — one tunable set per theme ──
+const items = PALETTE.filter(p => p.name);
+function startValues(theme){ const o={}; items.forEach(p=>o[p.name]=p[theme]); return o; }
+function loadTheme(theme){
+  try { return Object.assign(startValues(theme),
+        JSON.parse(localStorage.getItem(STORE_KEYS[theme])) || {}); }
+  catch(e){ return startValues(theme); }
+}
+const palettes = { light: loadTheme('light'), dark: loadTheme('dark') };
+let tuning = 'light';
+
+// Which section each picker group belongs to. 'page' means the
+// colors show on every screen, so they stay in view throughout.
+const GROUP_SEC = {
+  'The page':'page',
+  'The header':'game',
+  'The two bars':'game',
+  'The column headers':'game',
+  'The category banners':'game',
+  'The grid':'game',
+  'The marks':'game',
+  'The Setup screen':'setup',
+  'The modals':'modals',
+  'The side pages':'panels',
+  'The feedback popup':'modals'
+};
+let section = 'all';
+function inSection(sec){ return section === 'all' || sec === section || sec === 'page'; }
+
+function applyPalette(){
+  const app = document.getElementById('app');
+  items.forEach(p => app.style.setProperty('--' + p.name, palettes[tuning][p.name]));
+}
+
+function saveNow(){
+  try { localStorage.setItem(STORE_KEYS[tuning], JSON.stringify(palettes[tuning])); } catch(e){}
+}
+
+// ════════════════════════════════════════════════════════════
+// SEED THE ENGINE — a sample game with every look on display
+// ════════════════════════════════════════════════════════════
+Engine.testing.useStorageKey('mctsTunerSample');   // never touch a real game
+Engine.testing.reset({
+  categories: [
+    { name:'Suspects', cards:['Aunt Rose','Colonel Gray','Professor Vine','Madame Jade','Doctor Ash','Sir Copper'] },
+    { name:'Weapons',  cards:['Rope','Dagger','Wrench','Poison','Candlestick'] },
+    { name:'Rooms',    cards:['Kitchen','Library','Study','Lounge','Hall','Cellar'] },
+    { name:'Extras',   cards:['Midnight','The Letter'] }
+  ],
+  players:['Pat','Beth','Carl','Dana','Evan',''],
+  meSlot:0,
+  activePlayers:[0,1,2,3],
+  playerOutKind:{ 4:'quit' },
+  turnCount:7, turnStep:1,
+  gameInProgress:true,
+  sumOverrides:{ 'Dagger':'star', 'Kitchen':'check' },
+  houseChecked:{ 'Hall':3 },
+  cellNotes:{ 'Rope_1':'t2' }
+});
+const T = Engine.testing;
+// a solved card: Me holds the Rope. The engine's own rule
+// spreads the ✗s to the other active players when a ✓ lands.
+T.placeMark('Rope',0,'check');
+// scattered knowledge
+T.placeMark('Aunt Rose',2,'check');
+T.placeMark('Study',1,'cross');
+T.placeMark('Library',3,'cross');
+// question marks and shows still open
+T.placeMark('Wrench',2,'asked');
+T.placeMark('Wrench',3,'asked');
+T.placeMark('Poison',1,'showed');
+T.placeMark('Candlestick',0,'ishowed');
+T.placeMark('Lounge',2,'asked');
+// the quit player's permanent marks
+T.placeMark('Cellar',4,'cross',{quit:true});
+T.placeMark('Midnight',4,'cross',{quit:true});
+
+// ════════════════════════════════════════════════════════════
+// PAINT THE SAMPLE — header, bars, grid, and a flat modal
+// ════════════════════════════════════════════════════════════
+const SYM = { check:['✓','sym-check'], cross:['✗','sym-cross'],
+              asked:['?','sym-asked'], showed:['!','sym-showed'], ishowed:['Me','sym-ishowed'] };
+
+function buildSample(){
+  const s = Engine.inspect();
+  const askerCol = 1;                       // Beth is asking in this sample
+  let h = '<div id="app">';
+  h += '<div class="app-header" data-sec="game"><button class="hbtn">New</button><h1>Clues Tracker Sheet</h1><button class="hbtn">Out</button></div>';
+  h += '<div class="turn-bar" data-sec="game"><span>Turn 7 — Beth asks</span><button class="accuse-btn">⭐ Accuse</button></div>';
+  h += '<div class="stage-bar" data-sec="game"><button class="undo-btn">↩ Undo</button><div class="stage-hint">Tap a card in each category</div><button class="next-btn">Next ▶</button></div>';
+  h += '<div class="grid-wrap" data-sec="game"><table class="tracker-table">';
+  h += '<tr><th class="corner-th">CARDS</th>';
+  s.players.forEach((name,c)=>{
+    let cls='player-th', label=name;
+    if (c===s.meSlot){ cls+=' me-th'; label='Me'; }
+    else if (c===askerCol) cls+=' active-asker';
+    else if (s.playerOutKind[c]==='quit'){ cls+=' quit-th'; label='👋 '+name; }
+    else if (!name){ cls+=' inactive-th'; label='—'; }
+    h += `<th class="${cls}">${label}</th>`;
+  });
+  h += '<th class="summary-th">∑</th><th class="house-th">🏠</th></tr>';
+  s.categories.forEach((cat,ci)=>{
+    h += `<tr class="cat-row"><td class="cat-c${ci}" colspan="9">${cat.name}</td></tr>`;
+    cat.cards.forEach(card=>{
+      h += `<tr><th class="card-th">${card}</th>`;
+      for (let c=0;c<6;c++){
+        const marks = Engine.visibleMarks(card,c);
+        let cls='data-cell';
+        if (c===s.meSlot) cls+=' me-cell';
+        if (!s.players[c] && s.playerOutKind[c]!=='quit') cls+=' inactive-cell';
+        if (card==='Madame Jade' && c===1) cls+=' picked';   // one picked-cell example
+        if (marks.some(m=>m.type==='check')) cls+=' cell-check';
+        if (marks.some(m=>m.type==='cross')) cls+=' cell-cross';
+        const inner = marks.map(m=>`<span class="sym ${SYM[m.type][1]}">${SYM[m.type][0]}</span>`).join('');
+        const note = s.cellNotes[card+'_'+c] ? `<span class="cell-note">${s.cellNotes[card+'_'+c]}</span>` : '';
+        h += `<td class="${cls}"><div class="cell-inner">${inner}</div>${note}</td>`;
+      }
+      const so = s.sumOverrides[card];
+      const sum = so==='star' ? '<span style="color:var(--sum-star)">⭐</span>'
+                : so==='check' ? '<span style="color:var(--cross);font-weight:700">✕</span>' : '';
+      const house = s.houseChecked[card]!==undefined ? '<span class="sym sym-check">✓</span>' : '';
+      h += `<td class="sum-cell">${sum}</td><td class="house-cell">${house}</td></tr>`;
+    });
+  });
+  h += '</table></div>';
+  // the footer strip — open page ground, like the real app's footer
+  h += '<div class="footer-strip" data-sec="page"><span class="foot-btn bright">📖 Guide</span><span class="foot-btn">📝 Notes</span><span class="foot-btn">📃 Log</span></div>';
+  // the Setup slice — slots, deep banners, chips, on open ground
+  h += '<div class="setup-sample" data-sec="setup">';
+  h += '<div class="sec-label">Players</div>';
+  h += '<div class="setup-hint">Tap a seat to name a player. Seat order is turn order.</div>';
+  h += '<div class="player-grid">';
+  h += '<div class="player-slot is-me"><span class="slot-lbl">Seat 1</span><span class="slot-name">Me</span></div>';
+  h += '<div class="player-slot has-name"><span class="slot-lbl">Seat 2</span><span class="slot-name">Beth</span></div>';
+  h += '<div class="player-slot has-name"><span class="slot-lbl">Seat 3</span><span class="slot-name">Carl</span></div>';
+  h += '<div class="player-slot"><span class="slot-lbl">Seat 4</span><span class="slot-name"></span></div>';
+  h += '</div>';
+  h += '<div class="sec-label">Cards</div>';
+  h += '<div class="setup-cat s1">Suspects</div>';
+  h += '<div class="card-chips"><span class="card-chip">Aunt Rose</span><span class="card-chip selected">Colonel Gray</span><span class="card-chip">Professor Vine</span></div>';
+  h += '<div class="setup-cat s2">Weapons</div>';
+  h += '<div class="setup-cat s3">Rooms</div>';
+  h += '<div class="setup-cat s4">Extras</div>';
+  h += '<button class="add-cat-btn">+ Add a category</button>';
+  h += '</div>';
+  // the modal, flat on a backdrop swatch
+  h += '<div class="backdrop-sample" data-sec="modals"><div class="modal">';
+  h += '<div class="modal-head"><span>Player Name</span><button class="modal-close">Close</button></div>';
+  h += '<div class="modal-body">';
+  h += '<p class="modal-hint">A sample of every modal look, on the backdrop shade.</p>';
+  h += '<div class="modal-sec">Players</div>';
+  h += '<input class="modal-input" value="Beth" readonly>';
+  h += '<div class="me-toggle"><input type="checkbox" checked><label>This is me</label></div>';
+  h += '<div class="private-opt">Colonel Gray</div>';
+  h += '<div class="private-opt selected">Rope</div>';
+  h += '<div class="modal-msg">A warning message shows here</div>';
+  h += '<div class="modal-btn-row"><button class="modal-btn primary">Save</button><button class="modal-btn secondary">Skip</button><button class="modal-btn danger">Delete</button></div>';
+  h += '</div></div></div>';
+  // the feedback popup — the app's second modal (Y-20)
+  h += '<div class="backdrop-sample" data-sec="modals" style="padding-top:0">';
+  h += '<div class="modal">';
+  h += '<div class="modal-head"><span>💬 Feedback</span><button class="modal-close">Close</button></div>';
+  h += '<div class="modal-body">';
+  h += '<p style="font-size:0.82rem;color:var(--feedback-invite);font-style:italic;line-height:1.5">Do you have an idea, or did something not work right? I’d love to hear it.</p>';
+  h += '<div style="font-size:0.78rem;color:var(--feedback-question);font-weight:600">1. Did the tracker work correctly?</div>';
+  h += '<div class="modal-btn-row"><button class="modal-btn primary" style="font-size:0.8rem;padding:7px;opacity:0.65">✅ Yes</button>';
+  h += '<button class="modal-btn secondary" style="font-size:0.8rem;padding:7px;opacity:0.65">⚠️ Mostly</button>';
+  h += '<button class="modal-btn danger" style="font-size:0.8rem;padding:7px;opacity:0.65">❌ No</button></div>';
+  h += '<div style="font-size:0.78rem;color:var(--feedback-question);font-weight:600">2. Do you find anything confusing or hard to use?</div>';
+  h += '<textarea class="modal-input" rows="2" style="resize:none" placeholder="Describe anything confusing…"></textarea>';
+  h += '<div style="font-size:0.78rem;color:var(--feedback-question);font-weight:600">How would you rate this app.</div>';
+  h += '<div style="display:flex;align-items:center;gap:8px">';
+  h += '<span style="font-size:0.68rem;color:var(--feedback-invite);white-space:nowrap">I don’t like it</span>';
+  h += '<input type="range" min="0" max="100" value="50" style="flex:1;accent-color:var(--rating-slider);height:2px;margin:0">';
+  h += '<span style="font-size:0.68rem;color:var(--feedback-invite);white-space:nowrap">I really like it</span></div>';
+  h += '<div style="text-align:center;margin-top:4px">';
+  h += '<div style="font-size:0.85rem;color:var(--feedback-thanks);font-weight:700;letter-spacing:0.5px">THANK YOU VERY MUCH</div>';
+  h += '<div style="font-size:0.8rem;color:var(--feedback-appreciation);font-style:italic">I appreciate your feedback 😊</div></div>';
+  h += '<div class="modal-btn-row" style="margin-top:4px"><button class="modal-btn secondary">Cancel</button>';
+  h += '<button class="modal-btn primary">Send Feedback</button></div>';
+  h += '</div></div></div>';
+  // the three side pages — Log, Guide, Notepad, each on its own ground
+  h += '<div class="panel-slice" data-sec="panels">';
+  h += '<div class="panel-head"><span>📋 Turn Log</span><span class="foot-btn">Copy</span></div>';
+  h += '<div class="panel-body log-list">';
+  h += '<div class="log-entry log-now">Now: Turn 7 — Beth is asking</div>';
+  h += '<div class="log-entry kind-turn"><div class="log-title">Turn 6 — Carl asked</div>';
+  h += '<div class="log-line">Asked: Professor Vine, Dagger, Library</div>';
+  h += '<div class="log-line">Dana showed a card</div>';
+  h += '<div class="log-line hi">The hidden ! came back when the turn was undone</div></div>';
+  h += '<div class="log-entry kind-sum"><div class="log-title">∑ Dagger marked by hand</div>';
+  h += '<div class="log-line">Set to ⭐ in the ∑ column</div></div>';
+  h += '<div class="log-empty">Nothing has happened yet</div>';
+  h += '</div>';
+  h += '<div class="panel-foot"><div class="foot"><span class="foot-btn">← Setup</span><span class="foot-btn">Game →</span></div>';
+  h += '<div class="foot-status">Log copied!</div></div>';
+
+  h += '<div class="panel-head"><span>📖 Player Guide</span></div>';
+  h += '<div class="panel-body guide-body">';
+  h += '<div class="g-sec">SETUP</div>';
+  h += '<p class="g-intro">The Setup screen is where you get ready to play — shape the deck, name the players, then select the cards in your hand.</p>';
+  h += '<div class="g-sub">Categories</div>';
+  h += '<p class="g-p">Tap ＋ Add Category below the last category to add one, up to four in all.</p>';
+  h += '<ul class="g-ul"><li>A new category arrives empty.</li><li>Use Rename → Edit to name it.</li></ul>';
+  h += '<div class="g-rule"></div>';
+  h += '<div class="g-sub">Players</div>';
+  h += '<p class="g-p">Tap any seat to open the player popup and enter a name.</p>';
+  h += '</div>';
+
+  h += '<div class="panel-head"><span>📝 Notepad</span><span class="head-status-sample">Notes saved</span></div>';
+  h += '<div class="notes-area"><span class="notes-ph">Tap here to type your notes…</span></div>';
+  h += '</div>';
+  h += '</div>';
+  document.getElementById('sampleCol').innerHTML = h;
+}
+
+// ════════════════════════════════════════════════════════════
+// THE PICKERS — one row per named color, grouped
+// ════════════════════════════════════════════════════════════
+function buildPickers(){
+  let h = '';
+  let currentGroup = '';
+  PALETTE.forEach(p=>{
+    if (p.group){
+      currentGroup = p.group;
+      if (inSection(GROUP_SEC[currentGroup]))
+        h += `<div class="group-hdr">${p.group}</div>`;
+      return;
+    }
+    if (!inSection(GROUP_SEC[currentGroup])) return;
+    const v = palettes[tuning][p.name];
+    const hex = p.alpha ? rgbaToHexA(v).hex : v;
+    h += `<div class="pick-row"><input type="color" data-name="${p.name}" value="${hex}">`;
+    h += `<span class="pick-lbl">${p.lbl}<br><span class="pick-where">${p.where}</span>`;
+    if (p.alpha){
+      const pct = Math.round(rgbaToHexA(v).a * 100);
+      h += `<br><span class="pick-where">strength</span> <input type="range" min="5" max="100" value="${pct}" data-alpha-for="${p.name}" style="width:120px;vertical-align:middle">`;
+    }
+    h += `</span><span class="pick-hex" id="hex-${p.name}">${v}</span></div>`;
+  });
+  document.getElementById('pickerCol').innerHTML = h;
+  function setValue(p, hex, a){
+    palettes[tuning][p.name] = p.alpha ? hexToRgba(hex, a) : hex;
+    document.getElementById('hex-'+p.name).textContent = palettes[tuning][p.name];
+    document.getElementById('app').style.setProperty('--'+p.name, palettes[tuning][p.name]);
+    saveNow(); buildOutput();
+  }
+  document.querySelectorAll('#pickerCol input[type=color]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const p = items.find(x=>x.name===inp.dataset.name);
+      const a = p.alpha ? rgbaToHexA(palettes[tuning][p.name]).a : 1;
+      setValue(p, inp.value, a);
+    });
+  });
+  document.querySelectorAll('#pickerCol input[type=range]').forEach(sl=>{
+    sl.addEventListener('input', ()=>{
+      const p = items.find(x=>x.name===sl.dataset.alphaFor);
+      const hex = rgbaToHexA(palettes[tuning][p.name]).hex;
+      setValue(p, hex, sl.value / 100);
+    });
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// THE FINISHED BLOCK — the light palette as CSS, ready to carry
+// ════════════════════════════════════════════════════════════
+// --winner and --i-won-glow have no pickers — deliberate at Y-6,
+// since the sample shows no win announcement — so the walk below
+// never reaches them and every download used to drop them (cured
+// Y-20). They ride along here with their fixed values from the
+// ruling record, in their recorded place after turn-bar-text.
+const PICKERLESS = { 'winner':'#ffffff', 'i-won-glow':'#fff4c8' };
+function buildOutput(){
+  let out = '/* Palettes — tuned in theme-tuner.html */\n';
+  ['dark','light'].forEach(theme=>{
+    out += `.theme-${theme} {\n`;
+    items.forEach(p=>{
+      out += `  --${p.name}: ${palettes[theme][p.name]};\n`;
+      if (p.name === 'turn-bar-text') {
+        Object.entries(PICKERLESS).forEach(([n,v])=>{ out += `  --${n}: ${v};\n`; });
+      }
+    });
+    out += '}\n\n';
+  });
+  document.getElementById('outBlock').value = out;
+}
+
+// ── buttons ──
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  tuning = tuning === 'light' ? 'dark' : 'light';
+  document.getElementById('themeToggle').textContent = tuning === 'light'
+    ? 'Tuning: LIGHT — switch to dark'
+    : 'Tuning: DARK — switch to light';
+  applyPalette(); buildPickers();
+});
+function applySection(){
+  document.querySelectorAll('#app [data-sec]').forEach(el=>{
+    el.style.display = inSection(el.dataset.sec) ? '' : 'none';
+  });
+  document.querySelectorAll('.sec-btn').forEach(b=>
+    b.classList.toggle('on', b.dataset.sec === section));
+  buildPickers();
+}
+document.getElementById('secRow').addEventListener('click', e=>{
+  const b = e.target.closest('.sec-btn');
+  if (!b) return;
+  section = b.dataset.sec;
+  applySection();
+});
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  const what = tuning === 'light'
+    ? 'Throw away your tuned LIGHT values and return to the first guess?'
+    : 'Throw away your tuned DARK values and return to the shipped dark colors?';
+  if (!confirm(what)) return;
+  palettes[tuning] = startValues(tuning); saveNow();
+  buildPickers(); applyPalette(); buildOutput();
+});
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  const blob = new Blob([document.getElementById('outBlock').value], { type:'text/css' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'palettes-tuned.css';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
+  document.getElementById('copyMsg').textContent = 'Saved to your Downloads folder.';
+  setTimeout(()=>document.getElementById('copyMsg').textContent='', 3000);
+});
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  const ta = document.getElementById('outBlock');
+  ta.select(); document.execCommand('copy');
+  document.getElementById('copyMsg').textContent = 'Copied.';
+  setTimeout(()=>document.getElementById('copyMsg').textContent='', 2000);
+});
+
+// ── boot ──
+buildSample();
+applyPalette();
+applySection();
+buildOutput();
+</script>
+</body>
+</html>
