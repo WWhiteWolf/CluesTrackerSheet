@@ -42,11 +42,18 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**The first packaging is the web version, for elyfont.com.** It has
-not been started. The elyfont.com page is already up. This app is
-not on it yet. The iPhone wrap and the Android wrap come after
-it, and each will be new rather than a copy of the original's store
-listing.
+**CTS-3 (2026-10-21).** The web version starts from Mystery Tracker.
+The page is copied in as `MysteryTracker.html` and has not been
+changed. Mystery Tracker is already on elyfont.com. The iPhone
+wrap and the Android wrap come after the web version, and each
+will be new rather than a copy of the original's store listing.
+
+**The design spec is `docs/ClueTrackerSheet-spec.md`.** The Setup
+decisions are at the top. The rest of the spec still describes
+the page as it stands.
+
+**The next session names the gameplay changes** from Mystery Clues
+Track Sheet. They have not been named yet.
 
 **Patrick's plain-language list is `docs/pending.md`.** The Word
 copy is made from it when he asks.

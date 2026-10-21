@@ -20,15 +20,18 @@ copied code works are in `docs-ref`, brought over as they stood.
 ## The desk — in `docs`
 
 - **`handoff.md`** — the opening read. Where the work stands and what is open. Stays under 400 lines.
-- **`handoff-history.md`** — this project's session archive. Newest sittings at the top. Headings are its index. Never read whole. Nothing is in it yet.
+- **`handoff-history.md`** — this project's session archive. Newest sittings at the top. Headings are its index. Never read whole.
 - **`index.md`** — this file. Which file is the home. Not a reading order.
 - **`pending.md`** — Patrick's plain-language list. The source kept current. Asked about at the end-of-session refresh. Not part of the opening read.
 - **`make-pending-docx.py`** — makes `pending.docx` from that list when Patrick asks. `python3 docs/make-pending-docx.py`. Proves the copy matches the markdown word for word. Never run on a schedule.
 - **`palettes-tuned.css`** — the tuned color values, copied from the original app. The names and their purposes live in `theme-tuner.html`.
 - **`rebuild-plan.md`** — the design of the shared engine and its wraps. The phone and the web each draw their own page. Copied from the original as it stood.
+- **`engine-comparison.md`** — how this project's engine differs from Mystery Tracker's rules. Written CTS-3, 2026-10-21. The record of that reading, not a decision.
+- **`ClueTrackerSheet-spec.md`** — the design spec, copied from the archive to be rebuilt here. The page waits on it. CTS-3, 2026-10-21.
 
 ## The app — in the project root
 
+- **`MysteryTracker.html`** — the Mystery Tracker page, copied in as the starting page. CTS-3, 2026-10-21.
 - **`clues-tracker-engine.js`** — the shared heart, copied from the original app.
 - **`clues-tracker-phone.html`** — the phone page. The name on the page is Clues Tracker Sheet.
 - **`engine-tests.html`** — the engine's tests. Open it to run them.

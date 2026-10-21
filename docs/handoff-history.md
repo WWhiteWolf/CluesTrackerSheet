@@ -15,6 +15,26 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-3 — 2026-10-21 — the web version starts from Mystery Tracker
+
+The web version starts from the older web page, not from the phone
+page. `MysteryTracker.html` was copied into this project. The
+archive stays as it was. Mystery Tracker is already on elyfont.com.
+
+The design spec was copied from the archive and renamed
+`docs/ClueTrackerSheet-spec.md`. Its title is Clues Tracker Sheet.
+The Setup decisions are written at the top of that spec. The page
+has not been changed.
+
+The page will open on the Clue Classic deck, the deck saved as
+Clue C. There is no fourth category and no numbered card names.
+Setup is one phase. Play's gate is in the spec. The gameplay
+changes from Mystery Clues Track Sheet were not named. They are
+the next session.
+
+A comparison of this project's engine and Mystery Tracker's rules
+is in `docs/engine-comparison.md`.
+
 ## CTS-1 — 2026-10-13 — the repository was started
 
 Clues Tracker Sheet got its own repository. The GitHub repository
