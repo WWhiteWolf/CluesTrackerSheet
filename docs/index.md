@@ -25,6 +25,7 @@ copied code works are in `docs-ref`, brought over as they stood.
 - **`pending.md`** — Patrick's plain-language list. The source kept current. Asked about at the end-of-session refresh. Not part of the opening read.
 - **`make-pending-docx.py`** — makes `pending.docx` from that list when Patrick asks. `python3 docs/make-pending-docx.py`. Proves the copy matches the markdown word for word. Never run on a schedule.
 - **`palettes-tuned.css`** — the tuned color values, copied from the original app. The names and their purposes live in `theme-tuner.html`.
+- **`rebuild-plan.md`** — the design of the shared engine and its wraps. The phone and the web each draw their own page. Copied from the original as it stood.
 
 ## The app — in the project root
 

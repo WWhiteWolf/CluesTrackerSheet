@@ -9,9 +9,8 @@ list and is not tracked here.
 WHAT'S NEXT
 -----------
 1. THE WEB VERSION — the first packaging. It goes on elyfont.com.
+   The elyfont.com page is already up. This app is not on it yet.
    It has not been started. The page shows Clues Tracker Sheet.
-2. GITHUB — a new repository, not a fork of the original. Not
-   started. You start it.
-3. IPHONE AND ANDROID — later, and each one new. The original
+2. IPHONE AND ANDROID — later, and each one new. The original
    app's wrappers were not copied, because they are that app's
    store identity.
