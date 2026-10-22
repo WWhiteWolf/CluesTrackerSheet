@@ -16,13 +16,18 @@ data shapes that cross page boundaries.
 
 ## Decided for this rebuild
 
-Written CTS-3, 2026-10-21, and brought current in CTS-4.
+Written CTS-3, 2026-10-21, and brought current in CTS-6.
 The Setup below is in the page. The pages after Page 3 still
 describe the rest of the page as it stood when it was copied in.
+Where those pages mention a Rules button or a Rules panel, that
+is out of date. Rules is not kept.
 
 The work is done in Clues Tracker Sheet. Mystery Tracker stays the
 archive. The starting page is the older web version, copied in as
-`MysteryTracker.html`. Mystery Tracker is already on elyfont.com.
+`MysteryTracker.html`. He renamed that file to
+`CluesTrackerSheet.html`. A missing s in that name was a typo,
+not a second rename. He added the s. On disk the working file is
+`CluesTrackerSheet.html`. Mystery Tracker is already on elyfont.com.
 This web version goes on elyfont.com.
 
 The page opens with the Clue Classic deck loaded. That deck is
@@ -62,8 +67,52 @@ count and the counts add up to less than 18, the cards not
 accounted for are on the board. A seated player with no count
 keeps the game closed. Any other split keeps the game closed.
 
-Some gameplay changes from Mystery Clues Track Sheet will come
-onto this page. Which ones have not been named yet.
+The turn runs on the engine from the phone. Once a game is going,
+a click on a card, a click on a name, and the marks in the cells
+go through the engine, so the engine knows what to do. Next and
+Undo ask the engine. The highlighted column follows the engine.
+He does not want the old page’s logic patched in beside that.
+Taking those clicks off the engine was tried in CTS-6 and he
+rejected it. The paths were put back. He played eight turns and
+it ran the way he wanted.
+
+The page keeps the old layout, with things in the same place, and
+it keeps how the marks look. The grid, the movable columns, and
+the empty columns stay. During a game the cells are drawn from
+what the engine returns. A card shown to him is an ordinary check.
+A card he showed is the word Me. There is no star and no arrow.
+
+The engine decides what the log says and when a line is written.
+The log on the page shows those lines. While a game is going, the
+page does not keep a second play log of its own. He has seen the
+log working.
+
+A House check is entered by hand. The page shows that check. When
+the check settles, which is when the pointer leaves the cell, the
+page tells the engine. The engine writes the log line then, and
+it crosses that card off the other players. He has seen the log
+line work, after nobody showed and he checked Rope.
+
+Rules is not kept. The Rules button and the rules panel are gone.
+He has seen both gone. Guide and the ? button stay. The game row
+and the turn row show messages. He has seen the messages.
+
+The name in the title and in the heading is Clues Tracker Sheet.
+The version beside the heading is Ver. 1.0. He checked both on
+the open page.
+
+The right-click is for entering the manual cell characters only.
+It is not a mark cycle. This is settled. Those characters are
+not in the page yet.
+
+Three major pieces are left. Manual cell characters. Deduction
+logic. The User Guide. The name in the Guide that still says
+Mystery Tracker is changed when the Guide is done.
+
+These also still need to be done. One sentence on the page still
+says Mystery Tracker. It is the note shown when a file is not a
+deck export. A refresh in the middle of a game still brings back
+the old saved page, not the engine’s turn.
 
 ---
 

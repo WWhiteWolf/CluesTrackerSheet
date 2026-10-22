@@ -40,48 +40,46 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**CTS-4 (2026-10-21).** Setup is in `MysteryTracker.html` and in
-Page 3 of `docs/ClueTrackerSheet-spec.md`. There are no setup
-steps. Start Game is the gate. The pages of the spec after Page 3
-still describe the copied page. Mystery Tracker is already on
-elyfont.com.
+**CTS-6 (2026-10-22) stopped here.** The turn runs on the engine
+from the phone, in `CluesTrackerSheet.html`. Once a game is going,
+a click on a card, a click on a name, and the marks in the cells
+go through the engine. Do not take those off the engine. He
+played eight turns and it ran the way he wanted. The log shows
+the lines the engine writes. A House check is entered by hand,
+and the engine writes that line. Rules is gone. Decisions are in
+`docs/Design-decisions.md`. Read that before asking him to decide
+again.
 
-**CTS-5 (2026-10-22).** The game side is underway in
-`MysteryTracker.html`. Decisions already made are in
-`docs/Design-decisions.md`. Read that before asking Patrick to
-decide again. A new decision is written there.
+The page keeps the old layout, with things in the same place.
+The grid, the movable columns, and the empty columns stay. Next
+and Undo ask the engine. The highlighted column follows the
+engine. The right-click is settled. It is for entering the manual
+cell characters only.
 
-The engine runs turn order and deductions only. The page keeps
-the layout, how marks look, a right-click, and the rules that
-belong to marking.
+**The next sitting starts with manual cell characters.** That is
+one piece. The right-click and the four characters are already
+described.
 
-Already in the page, and not to be taken out: the grid fills the
-space and stays in proportion when the viewing percentage changes,
-including the text. The column headers stay the height of their
-words. The grid does not bring up scroll bars. The card column is
-only as wide as the names need. A player column can be dragged
-during play without changing the turn order. Columns with no name
-stay visible and stay out of the turn.
+**Deduction logic** is its own sitting after that. It was named,
+and what is missing in it was not described in CTS-6.
 
-Next and Undo ask the engine. The highlighted column follows the
-engine.
+**The User Guide** comes after those two, so it describes the
+page as it will be. The name in the Guide that still says
+Mystery Tracker is changed then.
 
-**The next piece.** Once a game is going, a click on a card, a
-click on a name, and the marks drawn in the cells go through the
-engine, and a right-click on a cell does nothing. That is wider
-than the decision. Put the marking back on the page. Leave turn
-order and deductions with the engine. Do not take out the grid,
-the column moving, or the empty columns.
+The working file is `CluesTrackerSheet.html`. He renamed it from
+`MysteryTracker.html`. A missing s in that name was a typo, not
+a second rename. He added the s.
 
-The right-click is not settled. `docs/Design-decisions.md` says
-so. Do not change it until Patrick says which account stands.
+The note shown when a file is not a deck export still says
+Mystery Tracker. That still needs doing. A refresh in the middle
+of a game still brings back the old saved page, not the engine's
+turn. That can spoil a game he is in the middle of, so it is
+worth an early sitting of its own.
 
-A refresh in the middle of a game still brings back the old saved
-page, not the engine's turn.
-
-The working file is still named `MysteryTracker.html`. It should
-be `CluesTrackerSheet.html`. Patrick does the rename. The original
-in the Mystery Tracker folder stays untouched.
+Setup from CTS-4 still stands. There are no setup steps. Start
+Game is the gate. The pages of the spec after Page 3 still
+describe the copied page, except the decisions at the top.
 
 **Patrick's plain-language list is `docs/pending.md`.** The Word
 copy is made from it when he asks.

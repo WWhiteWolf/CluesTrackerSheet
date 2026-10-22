@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystery Tracker</title>
+    <title>Clues Tracker Sheet</title>
     <meta name="color-scheme" content="dark light">
     <!-- M7: NO-FLASH THEME — runs synchronously before the stylesheet is parsed,
          so the first paint is already in the right mode. Dark is the default;
@@ -532,21 +532,6 @@
             font-family: 'Lora', serif; background: rgba(0,0,0,0.18);
             padding: 0 4px; border-radius: 3px;
         }
-        /* Rules panel: textarea fills the body (no overlay-body padding) */
-        #rulesPanel .overlay-body { padding: 0; }
-        .rules-textarea {
-            flex: 1; width: 100%;
-            border: none; outline: none; resize: none;
-            background: transparent; color: var(--text);
-            font-family: 'Lora', serif; font-size: 0.98rem; line-height: 1.5;
-            padding: 12px 14px; box-sizing: border-box;
-        }
-        .rules-saved-flash {
-            display: inline-block; margin-left: 8px; font-size: 0.85rem;
-            color: var(--on-gold-dk); opacity: 0; transition: opacity 0.4s;
-        }
-        .rules-saved-flash.show { opacity: 1; }
-
         /* ── NOTES BAR (spans both panel columns) ── */
         /* M11/06: .notes-bar styles removed with the Notes panel. */
 
@@ -899,12 +884,11 @@
 <div class="page-header">
     <div class="header-left">
         <button class="btn btn-guide"    id="btnGuide"    onclick="toggleGuide()">📖 Guide</button>
-        <button class="btn btn-rules"    id="btnRules"    onclick="toggleRules()">📋 Rules</button>
         <button class="btn btn-rules"    id="btnHelpers"  onclick="toggleHelpers()">?</button>
         <button class="btn btn-darkmode" id="btnDarkMode" onclick="toggleDarkMode()" title="Toggle dark mode">☀</button>
         <span class="header-directive" id="headerDirective"></span>
     </div>
-    <h1>🔍 Mystery Tracker <span style="font-size:0.9rem;font-family:'Lora',serif;font-weight:normal;color:var(--text-muted);vertical-align:middle;">Ver. 5.0</span></h1>
+    <h1>🔍 Clues Tracker Sheet <span style="font-size:0.9rem;font-family:'Lora',serif;font-weight:normal;color:var(--text-muted);vertical-align:middle;">Ver. 1.0</span></h1>
     <div class="header-right">
         <button class="btn btn-ghost" id="btnNewGame"   onclick="newGame()">New Game</button>
         <button class="btn"           id="btnStartGame" onclick="startGame()">▶ Start Game</button>
@@ -996,16 +980,6 @@
             <div class="overlay-body" id="guideBody">
                 <!-- Guide content is injected by setGuideContent() at load. -->
             </div>
-        </div>
-
-        <!-- M6: Rules panel — paste-and-save textarea, autosaved per deck slot. -->
-        <div class="overlay-panel" id="rulesPanel">
-            <div class="overlay-head">
-                <span>📋 Game Rules<span class="rules-saved-flash" id="rulesSavedFlash">Saved</span></span>
-                <button class="overlay-close" onclick="toggleRules()">Close</button>
-            </div>
-            <textarea class="rules-textarea" id="rulesArea"
-                placeholder="Paste this game's rules here. Autosaved per deck slot."></textarea>
         </div>
 
         <!-- F1: Deductions panel — the "?" header button (btnHelpers) opens it. -->
@@ -1799,6 +1773,9 @@ function handGameToNewerRules() {
         turnChanged() {
             applyActiveTurnStyling();
             showEngineNow();
+        },
+        logChanged() {
+            renderFullLog();
         }
     });
     Engine.testing.useStorageKey('ctsWebGame');
@@ -1838,6 +1815,7 @@ function showEngineNow() {
             : ((s.players[asker] || 'Player') + "'s turn");
     }
     if (deck && view.now) deck.textContent = view.now;
+    renderFullLog();
 }
 
 function renderEngineMark(td, card, col) {
@@ -1977,8 +1955,8 @@ function renderCell(card, col) {
             case 'cross':      sym.className = 'sym-cross';    sym.textContent = '✗'; break;
             case 'asked':      sym.className = 'sym-asked';    sym.textContent = '?'; break;
             case 'showed':     sym.className = 'sym-showed';   sym.textContent = '!'; break;
-            case 'shownToMe':  sym.className = 'sym-shownme';  sym.textContent = '✓*'; sym.title = 'Shown to Me'; break;
-            case 'iShowedMe':  sym.className = 'sym-meshowed'; sym.textContent = '←Me'; sym.title = 'I showed this card to ' + getColName(col); break;
+            case 'shownToMe':  sym.className = 'sym-check';    sym.textContent = '✓'; sym.title = 'Shown to Me'; break;
+            case 'iShowedMe':  sym.className = 'sym-meshowed'; sym.textContent = 'Me'; sym.title = 'I showed this card to ' + getColName(col); break;
             default: sym.textContent = '·';
         }
         wrap.appendChild(sym);
@@ -3366,8 +3344,46 @@ function playerColorClass(playerIdx) {
     return 'pc' + (idx >= 0 ? idx % 6 : 0);
 }
 
+function renderEngineLog(list) {
+    const view = Engine.logView();
+    list.innerHTML = '';
+    const entries = view.entries || [];
+    if (!view.now && entries.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'color:var(--text-muted);font-style:italic;font-size:0.95rem;padding:6px;';
+        empty.textContent = view.empty;
+        list.appendChild(empty);
+        return;
+    }
+    if (view.now) {
+        const now = document.createElement('div');
+        now.className = 'log-entry log-live';
+        now.textContent = view.now;
+        list.appendChild(now);
+    }
+    entries.forEach(entry => {
+        const div = document.createElement('div');
+        const hot = (entry.lines || []).some(ln => ln.highlight);
+        div.className = 'log-entry' + (hot ? ' log-live' : '');
+        const title = document.createElement('div');
+        title.className = 'log-turn';
+        title.textContent = entry.title;
+        div.appendChild(title);
+        (entry.lines || []).forEach(ln => {
+            const row = document.createElement('div');
+            row.textContent = ln.text;
+            div.appendChild(row);
+        });
+        list.appendChild(div);
+    });
+}
+
 function renderFullLog() {
     const list = document.getElementById('logList');
+    if (enginePlaying()) {
+        renderEngineLog(list);
+        return;
+    }
 
     const displayEntries = liveLogEntry
         ? [liveLogEntry, ...[...gameLog].reverse()]
@@ -3919,8 +3935,6 @@ function dealAccountsForEighteen() {
 }
 
 /* M11/06: notesArea input listener removed with the Notes panel. */
-// M6: Rules textarea autosaves per-deck-slot to its own localStorage key.
-document.getElementById('rulesArea').addEventListener('input', saveRulesForCurrentDeck);
 
 // M5+: Setup wizard step (1, 2, 3, 4, or 5). Next button advances; Start Game ends Step 5.
 // M10/01: Declared here (before buildTable runs at startup) because renderCategoryBanner /
@@ -3963,8 +3977,6 @@ window.addEventListener('load', () => {
     updateDeckBarVisibility();
     updatePhaseBarText();
     updateButtonStates();
-    // M6: load Rules text for the active deck slot, inject Guide content.
-    loadRulesForCurrentDeck();
     setGuideContent();
     // M7: set the dark-mode button icon based on the current theme.
     updateDarkModeButtonIcon();
@@ -3977,11 +3989,8 @@ window.addEventListener('load', () => {
 // inside the panel or clicking the header button again to close.
 function toggleGuide() {
     const g = document.getElementById('guidePanel');
-    const r = document.getElementById('rulesPanel');
     const wasOpen = g.classList.contains('visible');
-    r.classList.remove('visible');
-    document.getElementById('btnRules')?.classList.remove('active');
-    if (typeof closeHelpersPanel === 'function') closeHelpersPanel(); // F1 optional-rules panel
+    if (typeof closeHelpersPanel === 'function') closeHelpersPanel();
     if (wasOpen) {
         g.classList.remove('visible');
         document.getElementById('btnGuide')?.classList.remove('active');
@@ -3989,54 +3998,6 @@ function toggleGuide() {
         g.classList.add('visible');
         document.getElementById('btnGuide')?.classList.add('active');
     }
-}
-function toggleRules() {
-    const g = document.getElementById('guidePanel');
-    const r = document.getElementById('rulesPanel');
-    const wasOpen = r.classList.contains('visible');
-    g.classList.remove('visible');
-    document.getElementById('btnGuide')?.classList.remove('active');
-    if (typeof closeHelpersPanel === 'function') closeHelpersPanel(); // F1 optional-rules panel
-    if (wasOpen) {
-        r.classList.remove('visible');
-        document.getElementById('btnRules')?.classList.remove('active');
-    } else {
-        r.classList.add('visible');
-        document.getElementById('btnRules')?.classList.add('active');
-        // Refresh the rules text in case the active deck changed since last open.
-        loadRulesForCurrentDeck();
-    }
-}
-
-// M6: Rules text is autosaved per-deck-slot. When no deck is active (default
-// names in use), it falls back to a shared "_default" slot.
-const RULES_KEY_PREFIX = 'mtr_rules_';
-function rulesStorageKey() {
-    const idx = (typeof lastUsedDeckIdx === 'number' && lastUsedDeckIdx >= 0)
-              ? lastUsedDeckIdx : 'default';
-    return RULES_KEY_PREFIX + idx;
-}
-function loadRulesForCurrentDeck() {
-    const ta = document.getElementById('rulesArea');
-    if (!ta) return;
-    try {
-        ta.value = localStorage.getItem(rulesStorageKey()) || '';
-    } catch (e) {
-        ta.value = '';
-    }
-}
-function saveRulesForCurrentDeck() {
-    const ta = document.getElementById('rulesArea');
-    if (!ta) return;
-    try {
-        localStorage.setItem(rulesStorageKey(), ta.value);
-        const flash = document.getElementById('rulesSavedFlash');
-        if (flash) {
-            flash.classList.add('show');
-            clearTimeout(saveRulesForCurrentDeck._t);
-            saveRulesForCurrentDeck._t = setTimeout(() => flash.classList.remove('show'), 1200);
-        }
-    } catch (e) { /* localStorage full — quietly drop */ }
 }
 
 // M6: User's Guide content — conversational, written for someone who hasn't
@@ -4102,7 +4063,7 @@ function setGuideContent() {
         <p>The narrow ∑ column between the card name and the player columns is the envelope's own column — your summation of what's in the secret answer. Just as a player's column shows what that player holds and the 🏠 column shows what the board holds, the ∑ column shows what you believe the envelope holds. You mark it by hand: clicking a cell cycles blank → red ✕ → green ✓ → blank. A green ✓ means you think the envelope holds that card; a red ✕ means it doesn't, because a player or the board holds it instead. The app never writes to this column or reads from it — the conclusion is yours. The Deductions panel (❓) can highlight a card it has worked out must be in the envelope, but it never marks this column for you — recording that conclusion here is yours to make.</p>
 
         <h3>The Deductions panel (❓)</h3>
-        <p>The ❓ button in the header opens the Deductions panel — optional help that sits beside the Guide and Rules. The app still never solves the game for you. What these helpers do is point out things your own marks already prove but that are easy to miss in the moment, and they can flag a slip — a card you've actually ruled out, a player whose hand no longer adds up — before it leads you astray. Every helper starts off; you tick the ones you want, and you can change your mind any time. None of them ever writes a mark — all you get is some color on the board and the occasional note, both of which you're free to ignore.</p>
+        <p>The ❓ button in the header opens the Deductions panel — optional help that sits beside the Guide. The app still never solves the game for you. What these helpers do is point out things your own marks already prove but that are easy to miss in the moment, and they can flag a slip — a card you've actually ruled out, a player whose hand no longer adds up — before it leads you astray. Every helper starts off; you tick the ones you want, and you can change your mind any time. None of them ever writes a mark — all you get is some color on the board and the occasional note, both of which you're free to ignore.</p>
         <p>Each one is a checkbox. Here's why you'd reach for each; the full wording is in the appendix at the very end of this guide, which you really don't have to read.</p>
         <ul>
             <li><strong>Must be part of the answer (green).</strong> When you want the cards that have been cornered into the solution to announce themselves the instant it happens.</li>
@@ -4120,8 +4081,6 @@ function setGuideContent() {
             <li>The Game Deck bar across the top of the grid holds the deck slots during Setup.</li>
             <li>In Play that same bar becomes the Directive Bar, so the deck slots aren't on screen mid-game — which is why switching variants mid-game isn't possible.</li>
         </ul>
-        <p>Each deck slot has its own Rules text area (under the 📋 Rules button in the header). Paste the rules sheet for that variant once, and they'll be there next time you load that deck.</p>
-
         <h3>If something feels stuck</h3>
         <p>The Phase Bar shows a status message when a click was rejected — that the asker can't also be the shower, say, or that a player already has ✗ on every asked card, that sort of thing. The app stops you from recording something inconsistent, but it never decides things for you. If a guard blocks you and you disagree, check the cells in question; usually the guard is right, but the underlying state is wrong, and the fix is to Undo and re-record.</p>
         <p>Have fun. The whole point is to play the game and let the page do the bookkeeping.</p>
@@ -4560,6 +4519,11 @@ function commitRoomCycle(card) {
             delete roomUndoLists[card];
         }
         logRoomMark(card, 'blank');
+    }
+    if (enginePlaying()) {
+        const engineHas = Engine.inspect().houseChecked[card] !== undefined;
+        if (engineHas !== cur) Engine.houseTap(card);
+        renderAllCells();
     }
     renderFullLog();
     autoSave();
@@ -5108,8 +5072,6 @@ function _doLoadGameDeck(idx, deck, opts) {
     renderAllCells(); renderFullLog(); renderInfoBar(); updateUndoButton();
     renderDeckSlots();
     autoSave();
-    // M6: Each deck slot has its own Rules text — refresh the textarea to match.
-    loadRulesForCurrentDeck();
     showDeckStatus(`Deck "${deck.name}" loaded — board cleared, ready to play.`, 'var(--red-lt)');
 }
 
@@ -5190,8 +5152,6 @@ function exportDeckSlot(idx) {
     const decks = getSavedDecks();
     const deck = decks[idx];
     if (!deck) return;
-    let rulesText = '';
-    try { rulesText = localStorage.getItem(RULES_KEY_PREFIX + idx) || ''; } catch (e) { /* ignore */ }
 
     const payload = {
         format:    DECK_FILE_FORMAT,
@@ -5205,8 +5165,7 @@ function exportDeckSlot(idx) {
         players:    Array.isArray(deck.players)    ? [...deck.players]    : [],
         cardCounts: Array.isArray(deck.cardCounts) ? [...deck.cardCounts] : [],
         mutedCategoryIdxs: [...(deck.mutedCategoryIdxs || [])],
-        mutedCards:        [...(deck.mutedCards || [])],
-        rules:     rulesText
+        mutedCards:        [...(deck.mutedCards || [])]
     };
 
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -5323,14 +5282,6 @@ function commitImport(slotIdx) {
         };
         decks[slotIdx] = newDeck;
         setSavedDecks(decks);
-        // Rules text rides along (per-slot key).
-        try {
-            if (typeof data.rules === 'string' && data.rules.length) {
-                localStorage.setItem(RULES_KEY_PREFIX + slotIdx, data.rules);
-            } else {
-                localStorage.removeItem(RULES_KEY_PREFIX + slotIdx);
-            }
-        } catch (e) { /* ignore */ }
         _pendingImport = null;
         renderDeckSlots();
         showDeckStatus(`Imported "${newDeck.name}" into slot ${slotIdx + 1}. Click the slot to load it.`, 'var(--red-lt)');
@@ -5580,21 +5531,17 @@ function onStructureChanged() {
 //   Read-only and decoration-only: never writes a mark, never touches
 //   game data. Deleting this whole block (plus the "?" header button
 //   and the #helpersPanel div) removes the feature without affecting
-//   default play — the two guarded calls in toggleGuide/toggleRules
-//   become no-ops.
+//   default play — the guarded call in toggleGuide becomes a no-op.
 // ═══════════════════════════════════════════════════════════════════
 
-// Panel toggle — mirrors toggleRules(); the three header panels are
+// Panel toggle. The header panels are
 // mutually exclusive (they share the Log column's space).
 function toggleHelpers() {
     const g = document.getElementById('guidePanel');
-    const r = document.getElementById('rulesPanel');
     const h = document.getElementById('helpersPanel');
     const wasOpen = h.classList.contains('visible');
     g.classList.remove('visible');
-    r.classList.remove('visible');
     document.getElementById('btnGuide')?.classList.remove('active');
-    document.getElementById('btnRules')?.classList.remove('active');
     if (wasOpen) {
         h.classList.remove('visible');
         document.getElementById('btnHelpers')?.classList.remove('active');
@@ -5604,7 +5551,7 @@ function toggleHelpers() {
     }
 }
 
-// Called (guarded) by toggleGuide/toggleRules so the panels stay
+// Called (guarded) by toggleGuide so the panels stay
 // mutually exclusive.
 function closeHelpersPanel() {
     document.getElementById('helpersPanel')?.classList.remove('visible');
@@ -5616,9 +5563,7 @@ function closeHelpersPanel() {
 // auto-closes; the user closes it, or Guide/Rules replaces it.
 function openHelpersPanel() {
     document.getElementById('guidePanel')?.classList.remove('visible');
-    document.getElementById('rulesPanel')?.classList.remove('visible');
     document.getElementById('btnGuide')?.classList.remove('active');
-    document.getElementById('btnRules')?.classList.remove('active');
     document.getElementById('helpersPanel')?.classList.add('visible');
     document.getElementById('btnHelpers')?.classList.add('active');
 }

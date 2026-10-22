@@ -15,6 +15,85 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-6 — 2026-10-22 — the game runs on the phone engine
+
+Patrick said the previous session’s work was committed. He
+renamed the page himself, from `MysteryTracker.html` to
+`CluesTrackerSheet.html`. A missing s in that name was a typo,
+not a second rename. He added the s. On disk the working file is
+`CluesTrackerSheet.html`. The title
+and the heading were set to Clues Tracker Sheet. The version
+beside the heading was set to Ver. 1.0. It had been Ver. 5.0,
+and that was the only Ver. 5.0 on the page. He had the page open
+and said those changes were in.
+
+He does not want the old page’s logic patched in beside the
+engine. The visible page stays the old page, with things in the
+same place. The logic is the engine from the phone. Once a game
+is going, a click on a card, a click on a name, and the marks in
+the cells go through the engine, so the engine knows what to do.
+Next and Undo ask the engine. The highlighted column follows the
+engine.
+
+A wrong edit took those clicks off the engine and drew the cells
+from the page. He stopped it. The paths were put back. He then
+played eight turns, and it ran the way he wanted. The grid, the
+movable columns, and the empty columns were not taken out.
+
+A card shown to him is an ordinary check. A card he showed is the
+word Me. There is no star and no arrow. During a game the cells
+are drawn from what the engine returns.
+
+The log was not working. The engine was already writing the
+lines. The log on the page was still the page’s own list, so the
+lines never arrived. The page’s log was joined to the engine.
+The engine decides what is written and when. While a game is
+going, the page does not keep a second play log. He said the log
+was working and looking good.
+
+One line was missing. After nobody answered his three questions,
+he checked Rope in the House column, the card he saw on the
+board, and that was not in the log. The House check stays a mark
+he enters. The page shows that check. When the check settles,
+which is when the pointer leaves the cell, the page tells the
+engine. The engine writes the log line then, and it crosses that
+card off the other players. He said that works.
+
+He is not keeping Rules. The Rules button and the rules panel at
+the side were taken out. Guide and the ? button stay. The guide
+sentence that pointed at the Rules button was taken out with
+them. A saved deck no longer carries a rules text. He has seen
+the button and the panel gone.
+
+He had said the game row and the turn row were not showing
+messages or notes. Later he saw the messages there.
+
+He settled the right-click. It is for entering the manual cell
+characters only. It is not a mark cycle.
+
+Three major pieces are left. Manual cell characters, deduction
+logic, and the User Guide. The name in the Guide that still says
+Mystery Tracker is changed when the Guide is done. These also
+still need to be done. One sentence still says Mystery Tracker,
+the note shown when a file is not a deck export. A refresh in the
+middle of a game still brings back the old saved page, not the
+engine’s turn.
+
+He also said an edit waits until the plan has been explained and
+he has said Go.
+
+CTS-6 stopped here. The next sitting starts with manual cell
+characters, one piece. Deduction logic is its own sitting after
+that, because what is missing in it was not described here. The
+User Guide comes after those two. The note that still says Mystery Tracker
+when a file is not a deck export still needs doing. A refresh in
+the middle of a game is worth an early sitting of its own,
+because it can spoil a game he is in the middle of.
+
+The decisions are in `docs/Design-decisions.md` and at the top of
+`docs/ClueTrackerSheet-spec.md`. His plain-language list is
+`docs/pending.md`.
+
 ## CTS-4 — 2026-10-21 — Setup is in the web version
 
 Patrick has no interest in an iPhone version on the App Store.

@@ -8,13 +8,15 @@ The setup decisions already written under “Decided for this rebuild” in `doc
 
 The work is in the Clues Tracker Sheet folder. The original Mystery Tracker page stays as it was, in the Mystery Tracker folder.
 
-The working page was copied from MysteryTracker.html. It should be named CluesTrackerSheet.html. That rename has not been done. On disk the working file is still called MysteryTracker.html.
+The working page was copied from MysteryTracker.html. He renamed it to CluesTrackerSheet.html. A missing s in that name was a typo, not a second rename. He added the s. On disk the working file is CluesTrackerSheet.html.
 
 ## What the engine is for
 
-The engine runs the turn order and the deductions. That is all it runs.
+The engine from the phone runs the turn and the deductions. Once a game is going, a click on a card, a click on a name, and the marks in the cells go through the engine, so the engine knows what to do. Next and Undo ask the engine. The highlighted column follows the engine. He does not want the old page’s logic patched in beside that. He played eight turns and it ran the way he wanted.
 
-The page keeps the layout. The page keeps how marks look, a right-click, and the rules that belong to marking. The engine does not take those over.
+Taking those clicks off the engine is the wrong reading. It was tried in CTS-6 and he rejected it. The paths were put back.
+
+The page keeps the old page’s layout, with things in the same place, and it keeps how the marks look. The logic is the engine’s. The grid, the movable columns, and the empty columns stay.
 
 ## The page
 
@@ -31,6 +33,12 @@ The card column is only as wide as the card names need. A player’s name stays 
 Columns with no name stay on the page, looking as they do before a name is entered. They are left out of play and out of the turn order.
 
 Changes already made to the grid, to moving columns, and to leaving empty columns on the page stay. They are not taken out.
+
+The name in the title and in the heading is Clues Tracker Sheet. The version beside the heading is Ver. 1.0.
+
+Rules is not kept. The Rules button and the rules panel at the side are gone. He has seen both gone. Guide and the ? button stay.
+
+The game row and the turn row show messages and notes. He has seen the messages.
 
 ## Columns and whose turn it is
 
@@ -52,12 +60,22 @@ When another player shows him a card, that is an ordinary check in that player�
 
 When he shows a card, the word Me is written in the asking player’s column. There is no arrow.
 
-A card seen on the board is marked the new way. One tap keeps the mark. A second tap clears it. It is written in the log only when the turn ends. The only time he can mark a board card is on his own turn, when he is in a room that has a card, after he has asked his three cards and nobody can show. There is no other way to see that card.
+During a game the cells are drawn from what the engine returns. The page’s own drawer, used outside that, shows an ordinary check and the word Me.
 
-Up to four small characters can be typed in a grid cell. They are characters, not marks. They are shown in the corner of the cell. The sheet does not use them to decide anything. Taking a turn back does not remove them. They are not written in the log.
+A card seen on the board is marked by hand in the House column. One tap keeps the mark. A second tap clears it. The page shows that check. When the check settles, which is when the pointer leaves the cell, the page tells the engine. The engine writes the log line then, and it crosses that card off the other players. He has seen the log line work. The only time he can mark a board card is on his own turn, when he is in a room that has a card, after he has asked his three cards and nobody can show. There is no other way to see that card.
+
+Up to four small characters can be typed in a grid cell. They are characters, not marks. They are shown in the corner of the cell. The sheet does not use them to decide anything. Taking a turn back does not remove them. They are not written in the log. The right-click is for entering these characters only. It is not a mark cycle. This is settled. The characters are not in the page yet.
+
+## The log
+
+The engine decides what the log says and when a line is written. The log on the page shows those lines. While a game is going, the page does not keep a second play log of its own. He has seen the log working, including a House check after nobody showed.
+
+## Still to do
+
+Three major pieces are left. Manual cell characters, entered by right-click only. Deduction logic. The User Guide. The name in the Guide that still says Mystery Tracker is changed when the Guide is done.
+
+These also still need to be done. One sentence still says Mystery Tracker, the note shown when a file is not a deck export. A refresh in the middle of a game still brings back the old saved page, not the engine’s turn.
 
 ## Not settled
-
-On one day he said the right-click cycle, blank then a cross then a check, is not part of the new sheet, and that the Summary column and the cell notes take its place. Later he said the right-click marking was not to be changed. Those two have not been settled between them. Do not change the right-click until he says which one stands.
 
 A wrong accusation was not settled in this work. Do not ask about it unless two writings still disagree and this file has not settled it.
