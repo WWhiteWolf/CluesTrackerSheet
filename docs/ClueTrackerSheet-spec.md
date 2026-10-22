@@ -16,21 +16,20 @@ data shapes that cross page boundaries.
 
 ## Decided for this rebuild
 
-Written CTS-3, 2026-10-21. These are the decisions already given.
-They are not yet in the page. The pages below still describe the
-page as it stands.
+Written CTS-3, 2026-10-21, and brought current in CTS-4.
+The Setup below is in the page. The pages after Page 3 still
+describe the rest of the page as it stood when it was copied in.
 
 The work is done in Clues Tracker Sheet. Mystery Tracker stays the
 archive. The starting page is the older web version, copied in as
 `MysteryTracker.html`. Mystery Tracker is already on elyfont.com.
 This web version goes on elyfont.com.
 
-The page opens in Setup with the Clue Classic deck loaded. That
-deck is the one saved as Clue C on 2026-05-26. Saved decks can be
-loaded at that point. The deck can still be edited, in the
-same way it is edited now. Categories, cards, players, and counts
-are not locked out. No cards are added or removed. Only the
-default card names can be edited.
+The page opens with the Clue Classic deck loaded. That deck is
+the one saved as Clue C on 2026-05-26. Saved decks can be loaded.
+A saved deck is held to the same shape: three categories and 21
+cards. No cards are added or removed. Rows do not move up or
+down. There are no muted cards and no unused categories.
 
 The categories and cards are:
 
@@ -40,32 +39,31 @@ The categories and cards are:
 - rooms — Ballroom, Billiard Room, Conservatory, Dining Room,
   Hall, Kitchen, Library, Lounge, Study
 
-There is no fourth category, and there are no cards with
-numbers for names. That is true of the opening deck and of a
-saved deck. Rows do not move up or down.
+Category names cannot be changed. The name of any card can be
+changed. There is no fourth category, and there are no cards with
+numbers for names.
 
-Setup is one phase. Player names and card counts are entered.
-Then Me is selected, and Me's cards are checked. Play starts the
-game. Next and Undo are not needed during Setup.
+There are no setup steps. Before the game starts, card names,
+player names, card counts, and Me can all be changed, in any
+order. Me's cards are checked in Me's column. Start Game is the
+gate. After the game starts, those edits close. New Game is how
+you come back to them. Next and Undo run the game. They do not
+walk a setup.
 
 Play waits until one seat is Me, and at least two players are
-seated, counting yourself. The deck shape stays the default, even
-for a saved deck, so the categories are not counted and the cards
-in them are not counted. The deck is always 21 cards. The three cards in the answer
-envelope are fixed. The number of cards on the board is not
+seated, counting yourself, and Me's cards are checked. If Me has
+a card count, the checks must match it. If Me has no count, at
+least two cards are checked. The deck is always 21 cards. The
+three cards in the answer envelope are fixed. The other 18 go to
+the players or the board. The number of cards on the board is not
 entered on its own. If the players' card counts add up to 18,
-no cards are on the board. If the players' card counts are even
-and do not add up to 18, the cards not accounted for in the
-players' hands are on the board. If the counts are not an even
-split and do not add up to 18, Play stays closed.
-
-Setup will not stay the five-phase wizard. Phases 1, 2, and 3 are
-not required steps. Those phases today shape the grid, name the
-categories, and name the cards.
+no cards are on the board. If every seated player has the same
+count and the counts add up to less than 18, the cards not
+accounted for are on the board. A seated player with no count
+keeps the game closed. Any other split keeps the game closed.
 
 Some gameplay changes from Mystery Clues Track Sheet will come
-onto this page. Which ones have not been named yet. That is the
-next session. The page has not been changed.
+onto this page. Which ones have not been named yet.
 
 ---
 
@@ -74,7 +72,7 @@ next session. The page has not been changed.
 Index of the spec. One linked block per other page:
 
 - **B1.1** → Page 2: App Launch & Auto-Save
-- **B1.2** → Page 3: Setup Wizard
+- **B1.2** → Page 3: Setup
 - **B1.3** → Page 4: Me Column Lifecycle
 - **B1.4** → Page 5: Turn Sequence
 - **B1.5** → Page 6: Reveal Popups
@@ -343,224 +341,67 @@ what New Game resets Page 15's muted sets to (**B15.1**).
 
 ---
 
-## Page 3 — Setup Wizard
+## Page 3 — Setup
 
-The Setup Wizard walks the user through five short steps to prepare
-a game:
+There are no setup steps. Before Start Game, the edits below are
+all open, in any order. After the game starts, they close. New
+Game opens them again.
 
-1. shape the grid
-2. name the categories
-3. name the cards
-4. name the players
-5. pick "Me" + check held cards
+The opening deck is the three categories and 21 cards named in
+the decided section. Category names are shown and cannot be
+edited. Nothing is muted. Rows do not move. No cards are added
+or removed.
 
-Pressing Next moves forward; Undo moves back. Each step remembers
-its own state so the user can navigate freely without losing work.
+- **B3.1** Card name input
+- **B3.2** Player name and card count
+- **B3.3** Me selection
+- **B3.4** Me's cards
+- **B3.5** Start Game
+- **B3.6** New Game
 
-The 12 blocks below describe how the wizard does all of this:
+**B3.1 · Card name input.** Each card name can be changed before
+the game starts. The card's records move with the new name. An
+empty name is refused, and the old name stays. After the game
+starts, the names are plain text.
 
-- **B3.1** Next-press in Setup
-- **B3.2** Undo-press in Setup
-- **B3.3** Banner Move (Step 1 only)
-- **B3.4** Category Name Input (Step 2)
-- **B3.5** Card Name Input (Step 3)
-- **B3.6** Player Name + Card Count Inputs (Step 4)
-- **B3.7** Right-click menus during Setup
-- **B3.8** Per-step snapshots
-- **B3.9** Undo Typing memory
-- **B3.10** Phase-bar hint per Setup step
-- **B3.11** Tab navigation rules
-- **B3.12** Empty-column and muted-row hide rule
+**B3.2 · Player name and card count.** Each of the six columns
+has a name and a count. The count takes digits only, two at
+most. An empty count shows a question mark. Both can be changed
+before the game starts. After the game starts, both are locked.
 
-**B3.1 · Next-press in Setup.** Advances the wizard by one step.
-Does the following in order:
+**B3.3 · Me selection.** A right-click on a named column header,
+before the game starts, offers "I am [name]". That column
+becomes Me.
 
-- captures the current step's full state into a saved slot keyed
-  by the step number being left
-- increments the step counter
-- if a saved slot exists for the new step (the user has been
-  there before this session), restores it; otherwise clears the
-  Undo Typing memory so the new step starts fresh
-- refreshes the phase-bar hint, button states (**B2.9**), and
-  column-hide rules
+**B3.4 · Me's cards.** Before the game starts, clicks in Me's
+column check the cards Me holds. A click in any other column is
+refused until the game starts. If Me has a card count, the
+checks cannot go past it. If Me has no count, there is no
+ceiling here. Start Game still wants at least two checks in
+that case.
 
-The wizard stops at Step 5; from there the Start Game button (not
-the Next button) leaves Setup.
+**B3.5 · Start Game.** Stays closed until all of these are true.
 
-**Before advancing from Step 4 to Step 5:** the player-count check
-runs before the snapshot capture. If fewer than 2 player name boxes
-are filled in, the Next button refuses to advance and shows the
-status message "At least 2 player names are required." The user
-stays on Step 4. Once the user has advanced to Step 5, the name
-inputs are disabled (B3.6 — active in Step 4 only) so the named
-count can't drop back below 2 later.
+- One column is Me.
+- At least two players are named.
+- Me's checks match Me's count, or are at least two when Me has
+  no count.
+- The players' counts add up to 18, or every seated player has
+  the same count and the total is under 18.
 
-**B3.2 · Undo-press in Setup.** Same shape as Next-press (B3.1) but
-in reverse. Does the following in order:
+A seated player with no count keeps it closed. Any other split
+keeps it closed. Counts that add up to 18 leave the board empty.
+An even split under 18 leaves the rest on the board. The three
+envelope cards are already set aside, so this is the deck of 21.
 
-- captures the current step's full state into its saved slot
-- decrements the step counter
-- if a saved slot exists for the destination step, restores it;
-  otherwise clears the Undo Typing memory
-- refreshes the phase-bar text, button states (**B2.9**), Me
-  styling, and column-hide rules
+Next does nothing before the game starts. After Start Game, Next
+and Undo run the turns.
 
-Refuses to go below Step 1.
+**B3.6 · New Game.** Clears the game and opens the edits again.
+That is the way back to them.
 
-**Leaving Step 5 with Me already picked:** opens a two-tap
-confirmation popup first. On confirm, the Step-5 cleanup (see B4.4)
-runs before the standard setup-undo above.
-
-**B3.3 · Banner Move (Step 1).** Triggered by the right-click menu
-on a category banner — Step 1 only. The banner sits at the top edge
-of a category, between it and the category above. Two menu items:
-
-- **Move Up** — the banner moves up by one card-row. The last card
-  of the category above transfers to the top of this category.
-- **Move Down** — the banner moves down by one card-row. The first
-  card of this category transfers to the bottom of the category
-  above.
-
-Each move is available only when it wouldn't empty a category: if the
-category losing the card has just one card left, that move is greyed
-out. The first category's banner can't move at all — there's no
-category above it to trade a card with.
-
-The total card count stays at 30; only the boundary shifts. The
-table redraws to reflect the new shape.
-
-**B3.4 · Category Name Input (Step 2).** Each category banner
-becomes an editable name box in Step 2 only. When the user leaves
-the box or presses Enter:
-
-- **If the box has text** — the in-memory category name updates to
-  that text. The rename is pushed onto the Undo Typing memory and
-  the grid header redraws.
-- **If the box is empty** — the existing (or generic) name is kept.
-
-**B3.5 · Card Name Input (Step 3).** Same pattern as Category Name
-but for individual card name cells, live only in Step 3. The rename
-updates the card name in its category's card list, then carries the
-card's records over to the new name in one pass:
-
-- the cell-history file for every player column
-- the mute set
-- the house-checked set
-
-It also drops the old name from the list of cards that could still be
-the secret answer.
-
-The rename is also pushed onto the Undo Typing memory.
-
-**B3.6 · Player Name + Card Count Inputs (Step 4).** Each player
-column header has two boxes: a player name and, in parentheses, a
-card-count box. Both are active in Step 4 only.
-
-Typing in the player-name box re-triggers:
-
-- Me-column detection
-- the inactive-column styling
-- the column-hide rule
-
-Typing in the card-count box stores the number and updates the
-count shown in the header. Only digits are accepted, and the box
-holds at most two; an empty box shows "?".
-
-Either box's edit is pushed onto the Undo Typing memory.
-
-**B3.7 · Right-click menus during Setup.** Two handlers cover the
-right-click menus: one serves the category banners and card names,
-the other serves the player column headers in Step 5. What each menu
-offers depends on the current step and what was clicked:
-
-- **Step 1, on a banner:** Move Up / Move Down (B3.3).
-- **Step 2, on a banner:** Mute / Activate the whole category.
-- **Step 3, on a card name:** one item that mutes the card — or
-  activates it, if it's already muted — plus an item that mutes this
-  card and every card below it in the same category.
-- **Step 5, on a player column header:** "🙋 I am [player name]" to
-  claim that column as Me (see Page 4). If the column is already Me,
-  the item instead shows a disabled note saying so.
-
-Each menu item flips the appropriate set. Mute toggles are NOT pushed
-onto the Undo Typing memory — they're captured by the per-step
-snapshot instead. So pressing Undo Typing won't reverse a mute, but
-pressing Undo (to step back) will bring back the prior step's mute
-state.
-
-**B3.8 · Per-step snapshots.** The snapshot system has two parts:
-
-- **Capture** — copies the current step's state (categories and
-  cards, both mute sets, and the Undo Typing memory) into a single
-  record.
-- **Restore** — takes one of those records and writes every field
-  back into live state, then redraws the table and re-renders the
-  cells.
-
-Used by Next and Undo to remember and bring back each step's
-last-left state.
-
-Player names and card counts are deliberately NOT in the snapshot.
-They're only editable in Step 4, so the DOM input boxes own them
-outright. Capturing them per step would let a stale Step-5 snapshot
-clobber later edits made back in Step 4.
-
-**B3.9 · Undo Typing memory.** A per-step stack of typing edits the
-user can reverse one at a time. Each of these edits gets pushed onto
-the current step's stack:
-
-- category rename (Step 2)
-- card rename (Step 3)
-- player name change (Step 4)
-- card-count change (Step 4)
-
-Pressing the Undo Typing button pops the latest entry and reverses
-just that one edit. The stack travels with each step's save slot,
-so edits made on a prior step are still undoable after returning to
-that step. The Undo Typing button is visible only in Steps 2, 3,
-and 4.
-
-**B3.10 · Phase-bar hint per Setup step.** The phase bar shows a
-one-line hint reflecting the current step (not full instructions —
-the User's Guide carries the long form):
-
-- Step 1: "Right-click a category banner to shape the grid."
-- Step 2: "Change the name of any category. Right-click to mute."
-- Step 3: "Change the name of any card. Right-click to mute."
-- Step 4: "Enter player names and card counts."
-- Step 5: "Right-click your column header. Click your cards."
-
-**B3.11 · Tab navigation rules.** Goes through every button, input
-box, and other clickable thing on the page and decides whether Tab
-can reach it, based on the current step:
-
-- **Reachable by Tab** — the input boxes belonging to the current
-  step.
-- **Locked out** — everything else.
-
-A separate keypress catcher wraps focus inside the step: Tab on the
-last input loops back to the first, Shift+Tab on the first jumps to
-the last. The result: focus never escapes into the browser's own
-toolbars and menus.
-
-**B3.12 · Empty-column and muted-row hide rule.** Runs after every
-step change. Enters "hide mode" when the game phase is Play, or
-when the phase is Setup and the current step is 5 or higher. In
-hide mode, these all disappear:
-
-- empty-named player columns
-- muted categories (banner row plus all their card rows)
-- rows for muted cards
-
-**Within-page connectors.** B3.1 ↔ B3.2. Both call B3.8 to capture
-and restore step state. B3.7 → B3.3 and the mute toggles. B3.9 is
-fed by B3.4, B3.5, B3.6. B3.10, B3.11, B3.12 all run after a step
-change.
-
-**Off-page connectors.** B3.1, B3.2 → Page 4 across the Step 4 ↔
-Step 5 boundary. B3.2 → Page 12. B3.7 → Page 15. B3.12 → Page 15.
-B3.1, B3.2, and every change to B3.9's memory end with a button
-refresh (**B2.9**); B2.9 in turn re-applies B3.11 and reads B3.9.
+**Off-page.** Start Game moves into Page 4 and Page 5. Undo
+during play is Page 12.
 
 ---
 

@@ -17,9 +17,7 @@ the App Store, and it can still be changed on its own.
 
 The rebuilt engine, the phone page, the tests, the fonts, and the
 theme tuner were copied as they stood. The page shows Clues Tracker
-Sheet. The iPhone and Android
-wrappers were not copied. They carry the original app's store
-identity.
+Sheet.
 
 The chain is CTS. Patrick named it on 2026-10-13. Nothing here
 is a Y-session. Those stay with the original.
@@ -42,18 +40,16 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**CTS-3 (2026-10-21).** The web version starts from Mystery Tracker.
-The page is copied in as `MysteryTracker.html` and has not been
-changed. Mystery Tracker is already on elyfont.com. The iPhone
-wrap and the Android wrap come after the web version, and each
-will be new rather than a copy of the original's store listing.
+**CTS-4 (2026-10-21).** The work is the web version. Setup is in
+`MysteryTracker.html` and in Page 3 of `docs/ClueTrackerSheet-spec.md`.
+There are no setup steps. Start Game is the gate. The pages of
+the spec after Page 3 still describe the rest of the page as it
+stood when it was copied in. Mystery Tracker is already on
+elyfont.com.
 
-**The design spec is `docs/ClueTrackerSheet-spec.md`.** The Setup
-decisions are at the top. The rest of the spec still describes
-the page as it stands.
-
-**The next session names the gameplay changes** from Mystery Clues
-Track Sheet. They have not been named yet.
+**The next session is the game side.** The gameplay changes from
+Mystery Clues Track Sheet have not been named. The aim is the
+best of Mystery Tracker and Mystery Clues Track Sheet.
 
 **Patrick's plain-language list is `docs/pending.md`.** The Word
 copy is made from it when he asks.

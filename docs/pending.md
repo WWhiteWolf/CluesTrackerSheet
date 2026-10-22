@@ -8,12 +8,14 @@ list and is not tracked here.
 
 WHAT'S NEXT
 -----------
-1. THE WEB VERSION — the first packaging. It goes on elyfont.com.
-   Mystery Tracker is already on elyfont.com. The starting page
-   is copied in as MysteryTracker.html and has not been changed.
-   The Setup decisions are in ClueTrackerSheet-spec.md. The
-   gameplay changes from Mystery Clues Track Sheet are the next
-   session. They have not been named yet.
-2. IPHONE AND ANDROID — later, and each one new. The original
-   app's wrappers were not copied, because they are that app's
-   store identity.
+1. THE GAME SIDE — the next session. Setup is already in the
+   web page. The gameplay changes from Mystery Clues Track Sheet
+   have not been named. The aim is the best of Mystery Tracker
+   and Mystery Clues Track Sheet.
+
+NICE TO HAVE
+------------
+1. IPHONE AND ANDROID — these may never happen. There is no
+   interest in an iPhone version on the App Store. Patrick
+   prefers to use the Mac. The work stays on the web version
+   for now.

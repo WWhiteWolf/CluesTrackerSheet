@@ -1119,12 +1119,9 @@
 // ═══════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════
-// ── M2: FIXED 4×30 GRID WITH ACTIVE/MUTED STATE ──
-// Always 4 categories, always 30 cards total. Banners movable (resize categories).
-// Each row (banner or card) has independent active/muted state.
-// Default: 9/9/9/3 split, Cat 4 banner + cards 28-30 muted.
-const MAX_CATEGORIES   = 4;
-const TOTAL_CARDS      = 30;
+// Three categories, 21 cards. Nothing is muted, and rows do not move.
+const MAX_CATEGORIES   = 3;
+const TOTAL_CARDS      = 21;
 // M10/09 — Player count is a single config knob. All player loops, init arrays,
 //   and snapshot length checks read from MAX_PLAYERS, so expanding to Master
 //   Detective's 10 players (Item #7) only requires changing this number
@@ -1133,17 +1130,15 @@ const TOTAL_CARDS      = 30;
 const MAX_PLAYERS      = 6;
 const CAT_CSS_CLASSES  = ['cat-1','cat-2','cat-3','cat-4'];
 function defaultCategories() {
-    const make = (start, count) => Array.from({length:count}, (_,i) => 'Card ' + (start + i));
     return [
-        { name:'Category 1', cards: make(1,  9) },
-        { name:'Category 2', cards: make(10, 9) },
-        { name:'Category 3', cards: make(19, 9) },
-        { name:'Category 4', cards: make(28, 3) }
+        { name:'Suspects', cards:['Mr. Green','Col. Mustard','Dr. Orchid','Mrs. Peacock','Prof. Plum','Miss Scarlett'] },
+        { name:'Weapons', cards:['Candlestick','Dagger','Lead Pipe','Revolver','Rope','Wrench'] },
+        { name:'Rooms', cards:['Ballroom','Billiard Room','Conservatory','Dining Room','Hall','Kitchen','Library','Lounge','Study'] }
     ];
 }
 let CATEGORIES = defaultCategories();
-let mutedCategoryIdxs = new Set([3]);                  // Cat 4 muted by default
-let mutedCards        = new Set(['Card 28','Card 29','Card 30']); // last 3 muted by default
+let mutedCategoryIdxs = new Set();
+let mutedCards        = new Set();
 let ALL_CARDS = [];
 function rebuildAllCards() { ALL_CARDS = CATEGORIES.flatMap(c => c.cards); }
 // M11/18: which category does this card belong to? Returns -1 if not found.
@@ -1163,7 +1158,7 @@ function isRowActive(card) {
 }
 function activeCategoryCount() { return CATEGORIES.filter((_,i) => isCategoryActive(i)).length; }
 
-// Force CATEGORIES into the fixed shape: exactly 4 categories, exactly 30 cards total.
+// Force CATEGORIES into the fixed shape: exactly 3 categories, exactly 21 cards total.
 // Pads with generic Card N names if short; trims tails if long. Empty categories get 1 card minimum.
 function normalizeCategoryShape() {
     while (CATEGORIES.length < MAX_CATEGORIES) CATEGORIES.push({ name:'Category ' + (CATEGORIES.length + 1), cards:[] });
@@ -1611,13 +1606,13 @@ function renderCategoryBanner(td, catIdx) {
         input.maxLength = 24;
         input.className = 'cat-name-input';
         input.spellcheck = false;
-        input.title = 'Click to rename this category (max 24 chars)';
+        input.title = 'Category name';
         // M10/Cleanup: Belt-and-suspenders — suppress the input's own browser context
         // menu directly. The event still bubbles up to the row's contextmenu handler
         // (which decides whether to open OUR menu based on the active setup step).
         input.addEventListener('contextmenu', e => e.preventDefault());
-        // M10/01: Strict per-step lockout — only editable in Step 2.
-        if (setupStep !== 2) input.disabled = true;
+        // Category names stay as they are. Only a card's name can be changed.
+        input.disabled = true;
         // M5+: if still using the generic default name, render it as a placeholder so it vanishes on focus.
         const isGeneric = /^Category \d+$/.test(cat.name);
         if (isGeneric) { input.value = ''; input.placeholder = cat.name; }
@@ -1666,8 +1661,6 @@ function renderCardLabel(th, card) {
         // M10/Cleanup: Belt-and-suspenders — suppress the input's own browser
         // context menu directly; let the bubbled event reach the row handler.
         input.addEventListener('contextmenu', e => e.preventDefault());
-        // M10/01: Strict per-step lockout — only editable in Step 3.
-        if (setupStep !== 3) input.disabled = true;
         // M5+: if this card still has its generic default name, render it as a placeholder.
         const isGeneric = /^Card \d+$/.test(card);
         if (isGeneric) { input.value = ''; input.placeholder = card; }
@@ -2007,14 +2000,14 @@ function applyAnswerLock() {
 //   rows from the grid and switch the table into spacious mode so the remaining
 //   active rows + text are ~30% bigger.
 function applyBlankColLock() {
-    const hideMode = (gamePhase === 'play') || (gamePhase === 'setup' && setupStep >= 5);
+    const hideMode = (gamePhase === 'play');
     const names    = getPlayerNames();
     for (let c = 0; c < MAX_PLAYERS; c++) {
         const th = document.getElementById('th' + c);
         const tds = document.querySelectorAll(`td[data-col="${c}"]`);
         const blankByName = !names[c];
         const inactiveInPlay = gamePhase === 'play' && !turnOrder.includes(c);
-        const isInactive = inactiveInPlay || (gamePhase === 'setup' && setupStep >= 5 && blankByName);
+        const isInactive = inactiveInPlay || (gamePhase === 'play' && blankByName);
         if (isInactive) {
             if (th) { th.classList.add('col-blank-locked'); th.classList.toggle('col-hidden', hideMode); }
             tds.forEach(td => { td.classList.add('col-blank-locked'); td.classList.toggle('col-hidden', hideMode); });
@@ -2311,7 +2304,7 @@ function onNameChange() {
 }
 function startGame() {
     const mc = findMeCol();
-    if (mc < 0) { showStatus('In Step 5, right-click your own player column to pick yourself as Me first.', 'var(--red-lt)'); return; }
+    if (mc < 0) { showStatus('Right-click your own player column to pick yourself as Me first.', 'var(--red-lt)'); return; }
     if (!meCardClicksOk(mc)) {
         const n = playerCardCounts[mc];
         showStatus((typeof n === 'number')
@@ -2321,6 +2314,10 @@ function startGame() {
     }
     const order = buildTurnOrder();
     if (order.length < 2) { showStatus('Enter at least 2 player names.', 'var(--red-lt)'); return; }
+    if (!dealAccountsForEighteen()) {
+        showStatus('The players\' card counts and the board must account for 18 cards.', 'var(--red-lt)');
+        return;
+    }
 
     meCol     = mc;
     turnOrder = order;
@@ -2437,7 +2434,7 @@ function onCellClick(e) {
 
     // ── SETUP: only Me column, toggle ✓ ──
     if (gamePhase === 'setup') {
-        if (meCol < 0) { showStatus('In Step 5, right-click your own player column to pick yourself as Me first.', 'var(--red-lt)'); return; }
+        if (meCol < 0) { showStatus('Right-click your own player column to pick yourself as Me first.', 'var(--red-lt)'); return; }
         if (col !== meCol) { showStatus('During setup, only your "Me" column can be marked.', 'var(--red-lt)'); return; }
         const s = cellState[card][col];
         if (s.check) {
@@ -2918,25 +2915,9 @@ function removeMarksForTurn(turn) {
 }
 
 function undoStage() {
-    // ── Setup phase: Undo restores the previous step's last-left snapshot. ──
+    // Undo runs the game. Before the game starts there is no step to go back to.
     if (gamePhase === 'setup') {
-        if (setupStep <= 1) {
-            showStatus('Nothing more to undo.', 'var(--gold-dk)');
-            return;
-        }
-        // M11/16: Step 5 owns the Me selection ephemerally. If the user is leaving
-        //   Step 5 with Me already picked, warn before clearing it (and any cards
-        //   they marked on the Me column).
-        if (setupStep === 5 && meCol >= 0) {
-            modalConfirm({
-                title: 'Leave Step 5?',
-                message: 'Going back will clear your <strong>Me</strong> pick and any cards you marked. Are you sure?',
-                okLabel: 'Undo', confirmTwoTap: true,
-                onConfirm: () => _doSetupUndoFromStep5()
-            });
-            return;
-        }
-        _doSetupUndo();
+        showStatus('Nothing more to undo.', 'var(--gold-dk)');
         return;
     }
 
@@ -3080,41 +3061,8 @@ function _doPlayUndo(inProgressNow) {
 // NEXT PLAYER
 // ═══════════════════════════════════════════════════════════════════
 function nextPlayer() {
-    // M5+: in setup, Next advances the wizard step (no game state change).
-    if (gamePhase === 'setup') {
-        if (setupStep < 5) {
-            // M12/02: gate Step 4 → Step 5 transition on at least 2 named
-            //   players. Was previously checked at Start Game, which let the
-            //   user waste effort in Step 5 picking Me and held cards before
-            //   being told they're short of players. Once past this gate,
-            //   name inputs are disabled (setupStep !== 4) so they can't be
-            //   erased back below 2.
-            if (setupStep === 4) {
-                const namedCount = getHeaderNames().filter(n => (n || '').trim().length > 0).length;
-                if (namedCount < 2) {
-                    showStatus('At least 2 player names are required.', 'var(--red-lt)');
-                    return;
-                }
-            }
-            // M11/14: capture the step we're leaving as its snapshot, then restore
-            //   the destination step's snapshot if it exists (re-entry). On first
-            //   forward visit there's no snapshot, so we clear the typing stack
-            //   to start the step's typing history fresh.
-            stepSnapshots[setupStep] = captureStepSnapshot();
-            setupStep++;
-            if (stepSnapshots[setupStep]) {
-                restoreStepSnapshot(stepSnapshots[setupStep]);
-            } else {
-                clearTypingUndo();
-            }
-            updatePhaseBarText();
-            updateButtonStates();
-            // M10/05: entering Step 5 hides any empty player columns.
-            applyBlankColLock();
-            autoSave();
-        }
-        return;
-    }
+    // Next runs the game. It does not walk a setup.
+    if (gamePhase === 'setup') return;
     if (gamePhase !== 'play') return;
 
     const askerCol   = getCurrentCol();
@@ -3515,9 +3463,9 @@ function applySnapshot(d) {
         if (!CATEGORIES.length) CATEGORIES = defaultCategories();
     }
     normalizeCategoryShape();
-    // Restore muted state (default to none if absent)
-    mutedCategoryIdxs = new Set(Array.isArray(d.mutedCategoryIdxs) ? d.mutedCategoryIdxs : []);
-    mutedCards        = new Set(Array.isArray(d.mutedCards)        ? d.mutedCards        : []);
+    // This version has no muted cards and no unused categories.
+    mutedCategoryIdxs = new Set();
+    mutedCards        = new Set();
     // F4: card counts + player-out state + summary marks
     // (M11/01: cell notes removed)
     if (Array.isArray(d.playerCardCounts) && d.playerCardCounts.length === MAX_PLAYERS) {
@@ -3637,8 +3585,8 @@ function _doNewGame(opts) {
     }
     localStorage.removeItem('clueTrackerV6');
     CATEGORIES = defaultCategories();
-    mutedCategoryIdxs = new Set([3]);
-    mutedCards        = new Set(['Card 28','Card 29','Card 30']);
+    mutedCategoryIdxs = new Set();
+    mutedCards        = new Set();
     rebuildAllCards();
     initState();
     gameLog=[]; turnOrder=[]; turnStep=0; turnCount=1; meCol=-1; meOriginalName=''; gamePhase='setup';
@@ -3765,17 +3713,7 @@ function updatePhaseBarText() {
         pre.textContent = '⚙️ Setup';
         if (hdr)   hdr.textContent   = '';
         if (dkDir) dkDir.textContent = '';
-        if (setupStep <= 1) {
-            dir.innerHTML = '— Step 1: Right-click a category banner to shape the grid.';
-        } else if (setupStep === 2) {
-            dir.innerHTML = '— Step 2: Change the name of any category. Right-click to mute.';
-        } else if (setupStep === 3) {
-            dir.innerHTML = '— Step 3: Change the name of any card. Right-click to mute.';
-        } else if (setupStep === 4) {
-            dir.innerHTML = '— Step 4: Enter player names and card counts.';
-        } else {
-            dir.innerHTML = '— Step 5: Right-click your column header. Click your cards.';
-        }
+        dir.textContent = '— Change card names, enter players, choose Me, then start the game.';
     } else {
         // M12/03 — Option B split:
         //   Phase Bar     = identity context (turn number + whose turn it is).
@@ -3831,26 +3769,22 @@ function updateTabIndexes() {
         // Block everything first…
         setAll(focusable, -1);
 
-        // M10/01: STRICT per-step input lockouts — also disable inputs to block click-edit.
-        // Each step unlocks ONLY its own inputs; all others are disabled.
+        // Category names stay fixed. Card names, player names, and card
+        // counts can all be edited until the game starts.
         document.querySelectorAll('input.cat-name-input').forEach(el => {
-            el.disabled = (setupStep !== 2);
+            el.disabled = true;
         });
         document.querySelectorAll('input.card-name-input').forEach(el => {
-            el.disabled = (setupStep !== 3);
+            el.disabled = false;
         });
         for (let i = 1; i <= MAX_PLAYERS; i++) {
             const ph = document.getElementById('p'+i+'h');
             const cc = document.getElementById('p'+i+'c');
-            if (ph) ph.disabled = (setupStep !== 4);
-            if (cc) cc.disabled = (setupStep !== 4);
+            if (ph) ph.disabled = false;
+            if (cc) cc.disabled = false;
         }
 
-        // …then re-enable Tab order ONLY for the inputs the current step asks the user to fill.
-        if (setupStep === 2)      setAll('input.cat-name-input', 0);
-        else if (setupStep === 3) setAll('input.card-name-input', 0);
-        else if (setupStep === 4) setAll('input.ph, input.cc', 0);
-        // Steps 1 and 5: nothing to type — all focusables stay at -1, all inputs stay disabled.
+        setAll('input.card-name-input, input.ph, input.cc', 0);
     } else {
         // Play phase — restore browser-default Tab order.
         setAll(focusable, 0);
@@ -3865,34 +3799,33 @@ function updateButtonStates() {
     const btnStart      = document.getElementById('btnStartGame');
     const inPlay        = (gamePhase === 'play');
     if (btnUndo) {
-        // Setup: Undo = anti-Next, enabled when there's a prior step to return to.
-        const setupCan = (gamePhase === 'setup') && setupStep > 1;
+        // Undo runs the game. It stays quiet until a turn can be taken back.
         const playCan  = inPlay && (pendingAsked.length > 0 || committedAsked.length > 0
                                    || pendingShowed.length > 0 || pendingShownMe.length > 0
                                    || pendingIShowed.length > 0 || hasMarksForTurn(turnCount)
                                    || turnCount > 1);
-        btnUndo.disabled = !(setupCan || playCan);
+        btnUndo.disabled = !playCan;
     }
     if (btnUndoTyping) {
-        // Visible only in setup steps 2/3/4 (steps where typing happens).
-        const typingStepNow = (gamePhase === 'setup') && (setupStep >= 2 && setupStep <= 4);
-        btnUndoTyping.style.display = typingStepNow ? '' : 'none';
-        btnUndoTyping.disabled = !typingStepNow || (typingUndoStack.length === 0);
+        // Typing can be taken back while the edits are still open.
+        const typingNow = (gamePhase === 'setup');
+        btnUndoTyping.style.display = typingNow ? '' : 'none';
+        btnUndoTyping.disabled = !typingNow || (typingUndoStack.length === 0);
     }
     if (btnNext) {
-        // Active in play; in setup, active until we reach Step 5 (where Start Game takes over)
-        btnNext.disabled = inPlay ? false : (setupStep >= 5);
+        // Next runs the game. Start Game is the way out of the open edits.
+        btnNext.disabled = !inPlay;
     }
     updateTabIndexes();
     if (btnStart) {
-        // Only on Step 5, with Me set and Me's cards clicked: exactly the
-        // typed card count, or at least 2 when no count is typed (guards
-        // against starting before marking your hand).
+        // Me is chosen, Me's cards are checked, at least two players are
+        // named, and the players' counts plus the board account for 18.
         if (inPlay) {
             btnStart.disabled = true;
         } else {
             const me = findMeCol();
-            btnStart.disabled = (setupStep < 5) || (me < 0) || !meCardClicksOk(me);
+            const namedCount = getHeaderNames().filter(n => (n || '').trim().length > 0).length;
+            btnStart.disabled = (me < 0) || !meCardClicksOk(me) || namedCount < 2 || !dealAccountsForEighteen();
         }
     }
 }
@@ -3915,6 +3848,26 @@ function meCardClicksOk(me) {
     const checks = meSetupCheckCount(me);
     const n = playerCardCounts[me];
     return (typeof n === 'number') ? (checks === n) : (checks >= 2);
+}
+
+// The deck is 21 cards. Three are the envelope. The other 18 are the
+// players' counts and whatever is left for the board. Counts that add
+// up to 18 leave the board empty. An even split under 18 leaves the
+// rest on the board. Anything else keeps the game closed.
+function dealAccountsForEighteen() {
+    const names = getHeaderNames();
+    const counts = [];
+    for (let i = 0; i < MAX_PLAYERS; i++) {
+        if (!(names[i] || '').trim()) continue;
+        const n = playerCardCounts[i];
+        if (typeof n !== 'number') return false;
+        counts.push(n);
+    }
+    if (counts.length < 2) return false;
+    const sum = counts.reduce((s, n) => s + n, 0);
+    if (sum === 18) return true;
+    if (sum < 18 && counts.every(n => n === counts[0])) return true;
+    return false;
 }
 
 /* M11/06: notesArea input listener removed with the Notes panel. */
@@ -4050,27 +4003,21 @@ function setGuideContent() {
         <p>This Mystery Tracker unburdens the user playing deduction style games by auto-filling the many boxes on an expansive scoresheet for tracking all the clues.</p>
         <p>As the game unfolds, you record who asked about which cards, who showed, and who passed. The app keeps that history tidy and out of your head, so you can focus on the deductions.</p>
         <p>One thing it does <em>not</em> do is figure out the answer for you. It records observations; the conclusions are still yours to draw. That's the design.</p>
-        <p>This app is designed to be used with a variety of games of up to 4 categories and up to 30 cards. The category and card names can be whatever you want — for example, Who, What, and Where, as in Clue.</p>
+        <p>This version uses three categories and 21 cards. Before the game starts, a card's name, the player names, the card counts, and Me can all be changed, in any order.</p>
 
         <h3>Setting up a new game</h3>
-        <p>You walk through five short steps. The Phase Bar at the top tells you that you are in the Setup and which step you're on.</p>
+        <p>There are no steps. The grid is already Suspects, Weapons, and Rooms, 21 cards in all. Change whatever you need, then start the game. After that, New Game is how you come back to these edits.</p>
         <ul>
-            <li><strong>Step 1 — Shape the grid.</strong> If the default 9/9/9/3 split is what you need, just tap Next. Otherwise, right-click anywhere across the <strong>category grid-wide banner section</strong> (the colored band that stretches across the player columns, not the narrow category-name cell) to move that banner up or down. Keep adjusting until each category has the right number of cards under it for the game you're playing. Muting happens in later steps — Step 1 is just about getting the rows where you want them. Tap Next when finished.</li>
-            <li><strong>Step 2 — Categories.</strong> Type each category name (e.g. Suspects, Weapons, Rooms). Tab moves to the next. If your game uses fewer than four categories, right-click the unused banner and pick <strong>🔇 Mute this category</strong> — its whole row greys out and is ignored from there on. (Right-click again and pick 🔊 Activate to bring it back.) Tap Next when finished.</li>
-            <li><strong>Step 3 — Cards.</strong> Type each card name. Tab moves to the next. To leave a card out of the game, right-click it and pick <strong>🔇 Mute this card</strong>. To trim a whole tail (say, Rooms 10-16 when your game has only 9 rooms), right-click the first card you want gone and pick <strong>🔇 Mute this card and all below</strong>. Tap Next when finished.</li>
-            <li><strong>Step 4 — Players.</strong> Enter each player's name in the column headers in board order from left to right. The column order matches the turn order during play. In the parentheses, enter how many cards that player was dealt (leave it blank if you don't know — it shows "?"). Tab moves you to the next column. Tap Next when all players are seated.</li>
-            <li><strong>Step 5 — Pick "Me" and check your cards.</strong> Right-click on your own column header and choose <strong>"🙋 I am [your name]"</strong> — that column turns green and is now your "Me" column. Then click the boxes in your Me column for each card you're holding. A ✓ will appear in that box. If you typed your card count back in Step 4, the app won't let you check more cards than that, and the ▶ Start Game button stays greyed out until the number you've checked matches your count. (Left your count blank? Just check at least two.) When you are finished, tap ▶ Start Game.</li>
-            <li><strong>Undo —</strong> If at any point you want to go back a step or more, tap Undo.</li>
-            <li><strong>Start Game —</strong> After finishing the setup, tap Start Game and the app goes to the Game page.</li>
+            <li><strong>Cards.</strong> Change the name of any card.</li>
+            <li><strong>Players.</strong> Enter each player's name in the column headers in board order from left to right. The column order matches the turn order during play. In the parentheses, enter how many cards that player was dealt (leave it blank if you don't know — it shows "?").</li>
+            <li><strong>Me.</strong> Right-click on your own column header and choose <strong>"🙋 I am [your name]"</strong> — that column turns green and is now your "Me" column. Then click the boxes in your Me column for each card you're holding. A ✓ will appear in that box. If you typed your card count, the app won't let you check more cards than that, and the ▶ Start Game button stays greyed out until the number you've checked matches your count. (Left your count blank? Just check at least two.) At least two player names are required.</li>
+            <li><strong>Start Game —</strong> Tap Start Game and the app goes to the game. It stays closed until the players' counts add up to 18, or are an even split with the rest on the board. With the three envelope cards, that is the deck of 21. The edits above close. Next and Undo then run the game.</li>
         </ul>
 
         <h3>Right-click menus</h3>
-        <p>A right-click brings up a small menu depending on what you click <em>and</em> which Setup step you're on. Each step shows only the choices that belong to that step.</p>
+        <p>During Setup, a right-click is used to choose Me. In play, a right-click marks a player out, or cycles a mark on a cell.</p>
         <ul>
-            <li><strong>Category banner — Step 1</strong> — move the banner up or down by one row to set the grid shape.</li>
-            <li><strong>Category banner — Step 2</strong> — mute or activate that whole category.</li>
-            <li><strong>Card name — Step 3</strong> — mute or activate one card, or mass-mute that card and every card below it in the same category.</li>
-            <li><strong>Player header — Step 5</strong> — pick that player as your "Me" column.</li>
+            <li><strong>Player header — before the game starts</strong> — pick that player as your "Me" column.</li>
             <li><strong>Player header — Play</strong> — mark that player out of the game (quit or wrong accusation).</li>
             <li><strong>Any player cell — Play</strong> — cycle a manual mark on that cell: <strong>blank → ✗ → ✓ → return-to-auto → blank …</strong> Manual marks are treated as facts by the deduction engine (a manual ✓ propagates ✗ across the rest of the row) and are recorded in the Log. Not available on your own Me column.</li>
         </ul>
@@ -4144,7 +4091,7 @@ function setGuideContent() {
             <li><strong>Last card standing (green).</strong> When every card in a category but one is ruled out, the survivor must be that category's secret card. Its name turns green.</li>
             <li><strong>Fencing (red).</strong> Every show between two other players proves the shower holds at least one of the cards asked that turn. Once enough of those proofs — each about different cards — pin down all of a player's unseen cards, the rest of their column must be cards they don't hold, tinted red.</li>
         </ul>
-        <p><strong>A few shared rules.</strong> Hand fully known, Must hold, and Fencing all need to know how many cards a player was dealt; without that count typed in, they stay quiet for that player. Your own column is skipped — it's settled the moment you start. Muted rows are ignored. And if the marks ever contradict a rule, it colors nothing.</p>
+        <p><strong>A few shared rules.</strong> Hand fully known, Must hold, and Fencing all need to know how many cards a player was dealt; without that count typed in, they stay quiet for that player. Your own column is skipped — it's settled the moment you start. And if the marks ever contradict a rule, it colors nothing.</p>
         <p><strong>Where the color lands.</strong> Some helpers tint a card's name on the left — green for "in the answer," red for "ruled out" — because the fact is about the card itself. Others tint cells inside one player's column — a quiet red for a card they can't hold, a quiet green for one they must — because the fact is about that one player.</p>
         <p><strong>Asking "why?"</strong> Right-click a tinted card name during play and a small note tells you why it's colored — which player holds it, which show gave it away and when, or that it's the last card left in its category. The note works it out on the spot and clears itself after a few seconds. (Column-cell tints don't have this — a right-click there is how you cycle a mark by hand.)</p>
         <p><strong>The fencing notes.</strong> While Fencing is on, an area under the checkboxes posts the few facts that don't show anywhere else on the board. When it pins down a player's whole hand it names what's now known — for example "Eve holds: Plum, Rope and Hall (turns 1, 2 and 3)." If the marks can't all be true it says so in red, and flashes a brief warning in case the panel is closed. When there's nothing to report it reads "Nothing definite yet."</p>
@@ -4331,6 +4278,7 @@ function onCardCountChange(col) {
     playerCardCounts[col] = v === '' ? null : parseInt(v, 10);
     refreshCardCountDisplays();
     updatePhaseBarText();
+    updateButtonStates();
     autoSave();
 }
 function refreshCardCountDisplays() {
@@ -5064,16 +5012,9 @@ function _doLoadGameDeck(idx, deck, opts) {
     summaryMarks = {};
     roomChecked  = new Set();
 
-    // 3) Set the muted layout FROM THE DECK. A deck saved after M11/28 carries its own
-    //    mutedCategoryIdxs + mutedCards (mutedCards by name — they match this deck's cards).
-    //    Old decks have neither field; fall back to the built-in default (Cat 4 + last 3).
-    if (Array.isArray(deck.mutedCategoryIdxs) || Array.isArray(deck.mutedCards)) {
-        mutedCategoryIdxs = new Set(Array.isArray(deck.mutedCategoryIdxs) ? deck.mutedCategoryIdxs : []);
-        mutedCards        = new Set(Array.isArray(deck.mutedCards)        ? deck.mutedCards        : []);
-    } else {
-        mutedCategoryIdxs = new Set([3]);
-        mutedCards        = new Set(['Card 28','Card 29','Card 30']);
-    }
+    // 3) Nothing is muted in this version.
+    mutedCategoryIdxs = new Set();
+    mutedCards        = new Set();
 
     // 4) M10/03: Restore player names ONLY when caller asks for it.
     //    loadGameDeck() shows a "Load saved names?" checkbox in the popup and passes
@@ -5406,17 +5347,8 @@ function updateDeckBarVisibility() {
 // M2: CONTEXT MENU — Right-click banners or card rows during setup
 // ═══════════════════════════════════════════════════════════════════
 function onContextMenu(e, target) {
-    if (gamePhase !== 'setup') return; // banners/cards locked in play
-    // M10/Cleanup: split menus by step so each setup step shows ONLY what belongs there.
-    //   Step 1 → banner moves (up/down) only.
-    //   Step 2 → category mute/activate only.
-    //   Step 3 → card mute + mass-mute only.
-    //   Other steps → no menu.
-    const k = target.kind;
-    if (k === 'banner' && setupStep !== 1 && setupStep !== 2) return;
-    if (k === 'card'   && setupStep !== 3) return;
-    e.preventDefault();
-    showCtxMenu(e.clientX, e.clientY, target);
+    // Banners and cards have no setup menu. Rows do not move, and nothing is muted.
+    return;
 }
 
 let _ctxTarget = null, _ctxX = 0, _ctxY = 0;
@@ -5510,12 +5442,7 @@ window.addEventListener('load', () => {
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Tab') return;
         if (gamePhase !== 'setup') return;
-        let selector;
-        if (setupStep === 2)      selector = 'input.cat-name-input';
-        else if (setupStep === 3) selector = 'input.card-name-input';
-        else if (setupStep === 4) selector = 'input.ph, input.cc';
-        else                      return;
-        const inputs = [...document.querySelectorAll(selector)].filter(el => !el.disabled);
+        const inputs = [...document.querySelectorAll('input.card-name-input, input.ph, input.cc')].filter(el => !el.disabled);
         if (inputs.length === 0) return;
         const idx = inputs.indexOf(document.activeElement);
         if (idx === -1) return;
@@ -5533,7 +5460,6 @@ window.addEventListener('load', () => {
         th.addEventListener('contextmenu', e => {
             // M10/01: During SETUP, offer "I am this suspect" — ONLY in Step 5 (Me-pick step).
             if (gamePhase === 'setup') {
-                if (setupStep !== 5) return; // Step 4 enters names; Step 5 picks Me
                 const phEl = document.getElementById('p' + (col + 1) + 'h');
                 const name = phEl && phEl.value.trim();
                 if (!name) return; // empty column — nothing to mark as Me
@@ -5576,52 +5502,7 @@ window.addEventListener('load', () => {
 });
 
 function buildCtxItems(t) {
-    // M10/Cleanup: Menu contents are now driven by both target.kind AND the active
-    // setup step, so moving (Step 1) and muting (Step 2/3) never share a menu.
-    const items = [];
-    if (t.kind === 'banner') {
-        if (setupStep === 1) {
-            // Step 1 — shape the grid: banner moves only.
-            items.push({ label:'⤴ Move banner up 1 row',
-                         disabled: t.catIdx === 0 || CATEGORIES[t.catIdx - 1].cards.length <= 1,
-                         stayOpen: true,
-                         action:() => moveBannerUp(t.catIdx) });
-            items.push({ label:'⤵ Move banner down 1 row',
-                         disabled: t.catIdx === 0 || CATEGORIES[t.catIdx].cards.length <= 1,
-                         stayOpen: true,
-                         action:() => moveBannerDown(t.catIdx) });
-        } else if (setupStep === 2) {
-            // Step 2 — name + mute/activate categories.
-            const active = isCategoryActive(t.catIdx);
-            items.push({ label: active ? '🔇 Mute this category' : '🔊 Activate this category',
-                         action:() => toggleCategoryActive(t.catIdx) });
-        }
-    } else if (t.kind === 'card' && setupStep === 3) {
-        // Step 3 — name + mute/activate cards (and mass-mute the tail).
-        const active = isCardActive(t.card);
-        items.push({ label: active ? '🔇 Mute this card' : '🔊 Activate this card',
-                     action:() => toggleCardActive(t.card) });
-        items.push({ label:'🔇 Mute this card and all below (in this category)',
-                     action:() => muteCardAndBelow(t.card) });
-    }
-    return items;
-}
-
-// M10/01: Mute the given card AND every card after it within the same category.
-function muteCardAndBelow(card) {
-    let catIdx = -1, cardIdxInCat = -1;
-    for (let i = 0; i < CATEGORIES.length; i++) {
-        const idx = CATEGORIES[i].cards.indexOf(card);
-        if (idx >= 0) { catIdx = i; cardIdxInCat = idx; break; }
-    }
-    if (catIdx < 0) return;
-    let n = 0;
-    for (let j = cardIdxInCat; j < CATEGORIES[catIdx].cards.length; j++) {
-        const c = CATEGORIES[catIdx].cards[j];
-        if (!mutedCards.has(c)) { mutedCards.add(c); n++; }
-    }
-    onStructureChanged();
-    showStatus(n === 0 ? 'Already all muted.' : `Muted ${n} card${n === 1 ? '' : 's'} from "${card}" down.`, 'var(--red-lt)');
+    return [];
 }
 
 // ── Helpers (setup only) ──
@@ -5629,40 +5510,6 @@ function focusCategoryName(catIdx) {
     const td = document.querySelector(`tr.cat-row[data-cat-idx="${catIdx}"] td`);
     const input = td && td.querySelector('input.cat-name-input');
     if (input) { input.focus(); input.select(); }
-}
-
-// ── Banner movement: shift one card across a category boundary ──
-function moveBannerUp(catIdx) {
-    // Banner X moves up 1 → takes the last card from category X-1 and prepends it to X
-    if (catIdx === 0) return;
-    const prev = CATEGORIES[catIdx - 1];
-    const curr = CATEGORIES[catIdx];
-    if (prev.cards.length <= 1) { showStatus('Category ' + (catIdx) + ' would have zero cards.', 'var(--red-lt)'); return; }
-    const card = prev.cards.pop();
-    curr.cards.unshift(card);
-    onStructureChanged();
-}
-function moveBannerDown(catIdx) {
-    // Banner X moves down 1 → takes the first card from category X and appends it to X-1
-    if (catIdx === 0) return;
-    const prev = CATEGORIES[catIdx - 1];
-    const curr = CATEGORIES[catIdx];
-    if (curr.cards.length <= 1) { showStatus('Category ' + (catIdx + 1) + ' would have zero cards.', 'var(--red-lt)'); return; }
-    const card = curr.cards.shift();
-    prev.cards.push(card);
-    onStructureChanged();
-}
-
-// ── Active/muted toggles ──
-function toggleCategoryActive(catIdx) {
-    if (mutedCategoryIdxs.has(catIdx)) mutedCategoryIdxs.delete(catIdx);
-    else                                mutedCategoryIdxs.add(catIdx);
-    onStructureChanged();
-}
-function toggleCardActive(cardName) {
-    if (mutedCards.has(cardName)) mutedCards.delete(cardName);
-    else                          mutedCards.add(cardName);
-    onStructureChanged();
 }
 
 function onStructureChanged() {

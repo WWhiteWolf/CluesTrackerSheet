@@ -15,6 +15,36 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-4 — 2026-10-21 — Setup is in the web version
+
+Patrick has no interest in an iPhone version on the App Store.
+He prefers to use the Mac. The iPhone and Android wraps may
+never happen. They are a nice-to-have on the pending list, and
+the handoff no longer mentions them. The work is the web version.
+
+Setup is in `MysteryTracker.html`. There are no setup steps.
+The opening deck is three categories and 21 cards. Nothing is
+muted, rows do not move, and category names stay as they are.
+Any card name can be changed. Before the game starts, card
+names, player names, card counts, and Me can all be changed,
+in any order. Start Game closes those edits. New Game opens
+them again. Next and Undo run the game.
+
+Start Game also waits until the 18 cards are accounted for.
+Three cards are the envelope, so the deck is 21. Counts that
+add up to 18 leave the board empty. An even split under 18
+leaves the rest on the board. A named player with no count
+keeps the game closed, and so does any other split.
+
+The Setup decisions and Page 3 of
+`docs/ClueTrackerSheet-spec.md` match the page. The pages after
+Page 3 still describe the rest of the page as it stood when it
+was copied in. A few of them still mention the old steps.
+
+The next session is the game side. The gameplay changes from
+Mystery Clues Track Sheet have not been named. The aim is the
+best of Mystery Tracker and Mystery Clues Track Sheet.
+
 ## CTS-3 — 2026-10-21 — the web version starts from Mystery Tracker
 
 The web version starts from the older web page, not from the phone
