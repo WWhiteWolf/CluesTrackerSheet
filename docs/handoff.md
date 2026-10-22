@@ -40,16 +40,48 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**CTS-4 (2026-10-21).** The work is the web version. Setup is in
-`MysteryTracker.html` and in Page 3 of `docs/ClueTrackerSheet-spec.md`.
-There are no setup steps. Start Game is the gate. The pages of
-the spec after Page 3 still describe the rest of the page as it
-stood when it was copied in. Mystery Tracker is already on
+**CTS-4 (2026-10-21).** Setup is in `MysteryTracker.html` and in
+Page 3 of `docs/ClueTrackerSheet-spec.md`. There are no setup
+steps. Start Game is the gate. The pages of the spec after Page 3
+still describe the copied page. Mystery Tracker is already on
 elyfont.com.
 
-**The next session is the game side.** The gameplay changes from
-Mystery Clues Track Sheet have not been named. The aim is the
-best of Mystery Tracker and Mystery Clues Track Sheet.
+**CTS-5 (2026-10-22).** The game side is underway in
+`MysteryTracker.html`. Decisions already made are in
+`docs/Design-decisions.md`. Read that before asking Patrick to
+decide again. A new decision is written there.
+
+The engine runs turn order and deductions only. The page keeps
+the layout, how marks look, a right-click, and the rules that
+belong to marking.
+
+Already in the page, and not to be taken out: the grid fills the
+space and stays in proportion when the viewing percentage changes,
+including the text. The column headers stay the height of their
+words. The grid does not bring up scroll bars. The card column is
+only as wide as the names need. A player column can be dragged
+during play without changing the turn order. Columns with no name
+stay visible and stay out of the turn.
+
+Next and Undo ask the engine. The highlighted column follows the
+engine.
+
+**The next piece.** Once a game is going, a click on a card, a
+click on a name, and the marks drawn in the cells go through the
+engine, and a right-click on a cell does nothing. That is wider
+than the decision. Put the marking back on the page. Leave turn
+order and deductions with the engine. Do not take out the grid,
+the column moving, or the empty columns.
+
+The right-click is not settled. `docs/Design-decisions.md` says
+so. Do not change it until Patrick says which account stands.
+
+A refresh in the middle of a game still brings back the old saved
+page, not the engine's turn.
+
+The working file is still named `MysteryTracker.html`. It should
+be `CluesTrackerSheet.html`. Patrick does the rename. The original
+in the Mystery Tracker folder stays untouched.
 
 **Patrick's plain-language list is `docs/pending.md`.** The Word
 copy is made from it when he asks.

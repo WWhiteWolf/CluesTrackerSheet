@@ -27,6 +27,7 @@ copied code works are in `docs-ref`, brought over as they stood.
 - **`palettes-tuned.css`** — the tuned color values, copied from the original app. The names and their purposes live in `theme-tuner.html`.
 - **`rebuild-plan.md`** — the design of the shared engine and its wraps. The phone and the web each draw their own page. Copied from the original as it stood.
 - **`engine-comparison.md`** — how this project's engine differs from Mystery Tracker's rules. Written CTS-3, 2026-10-21. The record of that reading, not a decision.
+- **`Design-decisions.md`** — the decisions already made for this page. Look here before asking Patrick to decide again. A new decision is written in this file. Setup that was already written stays in `ClueTrackerSheet-spec.md`.
 - **`ClueTrackerSheet-spec.md`** — the design spec, copied from the archive to be rebuilt here. The page waits on it. CTS-3, 2026-10-21.
 
 ## The app — in the project root

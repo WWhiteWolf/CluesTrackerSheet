@@ -25,7 +25,7 @@
            via `body.light`. Both modes use the same variable names so every
            component using var(--bg), var(--surface), etc. flips automatically. */
         :root {
-            --ui-zoom: 0.9;  /* single source for page zoom; body height divides by this so it still fills the screen */
+            --ui-zoom: 1;    /* the browser's own viewing percentage is the zoom */
             /* DARK MODE — mobile palette */
             --bg:         #1a1410;
             --bg2:        #242018;
@@ -197,7 +197,7 @@
             font-family:'Lora',Georgia,serif;
             background:var(--bg);
             background-image: var(--body-bg-pattern);
-            color:var(--text); height:calc(100vh / var(--ui-zoom)); padding:8px;
+            color:var(--text); height:100vh; padding:8px;
             user-select:none; -webkit-user-select:none;
             display:flex; flex-direction:column; overflow:hidden;
         }
@@ -228,14 +228,14 @@
         /* ── LAYOUT ── */
         .outer-layout {
             display:grid;
-            grid-template-columns:auto 460px;
+            grid-template-columns:minmax(0, 1fr) 460px;
             grid-template-rows:minmax(0, 1fr);
             gap:8px;
             flex:1; min-height:0;          /* fill remaining space below the bars; no hardcoded height — stable across zoom */
         }
-        .table-col  { grid-column:1; grid-row:1; overflow-y:auto; display:flex; flex-direction:column; }
-        .table-wrap { flex:1; background:var(--grid-field); border:1.5px solid var(--gold); border-radius:var(--radius); overflow-y:auto; box-shadow:var(--shadow); }
-        table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        .table-col  { grid-column:1; grid-row:1; overflow:hidden; display:flex; flex-direction:column; }
+        .table-wrap { flex:1; min-height:0; background:var(--grid-field); border:1.5px solid var(--gold); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+        table { width:100%; max-width:100%; border-collapse:collapse; font-size:0.85rem; table-layout:fixed; }
         /* Info Bar retired — Game Log now spans the full right side. */
         /* M11/06: Notes row removed — right-col now spans both rows of .outer-layout
            so the Log (and the Guide / Rules overlays) reclaim the freed vertical space. */
@@ -256,17 +256,22 @@
         /* ── TABLE ── */
 
 
-        thead th { background:var(--gold-dk); color:var(--on-gold-dk); padding:8px 4px; font-family:'Playfair Display',serif; font-size:0.92rem; border:1px solid #7a5010; text-align:center; white-space:nowrap; }
+        thead th { background:var(--gold-dk); color:var(--on-gold-dk); padding:6px 4px; font-family:'Playfair Display',serif; font-size:0.92rem; border:1px solid #7a5010; text-align:center; white-space:nowrap; height:auto; }
         thead th:not(:first-child) { cursor:pointer; }
         thead th:not(:first-child):hover { filter:brightness(1.15); }
         /* During play, disabled inputs pass clicks through to th */
         thead th input.ph:disabled { pointer-events:none; }
-        thead th:first-child { text-align:left; padding-left:8px; min-width:124px; width:124px; }
+        thead th:first-child { text-align:left; padding-left:8px; width:12%; }
+        thead th:nth-child(n+4) { width:13.333%; overflow:hidden; }
+        thead th.in-play { cursor:grab; }
+        thead th.drag-col, td.drag-col { outline:2px solid var(--gold); outline-offset:-2px; }
+        thead th.drag-col { position:relative; z-index:3; cursor:grabbing; }
+        td.drag-col { position:relative; z-index:2; }
         thead th.me-col { background:var(--green) !important; border-color:#145228 !important; }
         thead th.col-inactive { opacity:0.25; }
         td.col-inactive { opacity:0.2; background:var(--col-inactive-bg) !important; }
         td.col-blank-locked, thead th.col-blank-locked { opacity:0.12; background:var(--col-blank-locked-bg) !important; }
-        thead th input.ph { background:transparent; border:none; border-bottom:1px dashed rgba(245,237,224,0.4); color:var(--on-gold-dk); width:80px; font-family:'Lora',serif; font-size:0.92rem; text-align:center; outline:none; }
+        thead th input.ph { background:transparent; border:none; border-bottom:1px dashed rgba(245,237,224,0.4); color:var(--on-gold-dk); flex:1 1 auto; width:0; min-width:0; font-family:'Lora',serif; font-size:0.92rem; text-align:center; outline:none; overflow:hidden; text-overflow:ellipsis; }
         thead th input.ph::placeholder { color:rgba(245,237,224,0.5); font-style:italic; }
         thead th input.ph:focus { border-bottom-color:var(--on-gold-dk); }
         thead th input.ph:disabled { opacity:1; cursor:default; border-bottom-color:transparent; }
@@ -277,7 +282,7 @@
            ellipsis. Without this the plain-text render in Play widened the cell
            and pushed it into the Σ column. Setup-mode input already capped at
            width:100%, so it stayed bounded — but plain text didn't. */
-        .cat-row td.cat-cell { text-align:center; width:124px; max-width:124px; min-width:124px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .cat-row td.cat-cell { text-align:center; width:12%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .cat-row td.cat-cell .cat-name-input { min-width:0; width:100%; max-width:100%; padding:0 2px; }
         .cat-row td.cat-blank { cursor:default; padding:0; }
         .cat-1 { background:var(--cat1-bg) !important; color:var(--cat1-text) !important; border-top:2px solid var(--red); }
@@ -289,7 +294,7 @@
         .cat-weapons  { background:var(--cat-weapons-bg); color:var(--blue);  border-top:2px solid var(--blue); }
         .cat-rooms    { background:var(--cat-rooms-bg); color:var(--green); border-top:2px solid var(--green); }
 
-        tbody tr th { text-align:left; padding:1px 7px; font-weight:normal; font-size:0.95rem; color:var(--text); background:var(--row-th-bg); border-right:2px solid var(--border); border-bottom:1px solid var(--grid-line); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:124px; }
+        tbody tr th { text-align:left; padding:1px 7px; font-weight:normal; font-size:0.95rem; color:var(--text); background:var(--row-th-bg); border-right:2px solid var(--border); border-bottom:1px solid var(--grid-line); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         tbody tr th.th-muted { opacity:0.4; }
 
         /* Editable card name input during setup */
@@ -303,7 +308,7 @@
         .card-name-input:focus { border-bottom-color:var(--gold); background:var(--active-turn-bg); }
         /* M10/01: locked inputs (wrong setup step) — dim and not-allowed */
         .card-name-input:disabled, .cat-name-input:disabled { opacity:0.55; cursor:not-allowed; border-bottom-style:dotted; pointer-events:none; }
-        tbody tr td { text-align:center; padding:1px 2px; border:1px solid var(--grid-line); width:60px; min-width:60px; max-width:60px; height:22px; cursor:pointer; font-size:0.88rem; transition:background 0.1s; user-select:none; }
+        tbody tr td { text-align:center; padding:1px 2px; border:1px solid var(--grid-line); height:22px; cursor:pointer; font-size:0.88rem; transition:background 0.1s; user-select:none; }
         tbody tr td:hover { background:var(--row-hover-bg) !important; }
         /* MT#2 — alternating row bands dropped, in BOTH themes (Patrick).
            They were invisible in the dark theme (the band and the panel were
@@ -756,10 +761,11 @@
               sits inline next to the player name as "Pat (5)". The name box holds
               the person playing; the parentheses hold how many cards they were dealt. */
         thead th .header-inner {
-            display:flex; align-items:center; justify-content:center; gap:4px;
+            display:flex; align-items:center; justify-content:center; gap:2px;
+            width:100%; min-width:0; overflow:hidden;
         }
         thead th input.cc {
-            width:44px; background:transparent; border:none;
+            width:2.2em; flex:0 0 auto; background:transparent; border:none;
             border-bottom:1px dashed rgba(245,237,224,0.4);
             color:var(--on-gold-dk); font-family:'Lora',serif; font-size:0.9rem;
             text-align:center; outline:none; padding:0;
@@ -773,7 +779,7 @@
                player columns keep the same geometry when crossing Setup → Play.
                Without this, a short count (or a missing one showing '?') would
                shrink the column and let the Card column absorb the slack. */
-            min-width:44px; text-align:center; box-sizing:border-box;
+            min-width:2.2em; text-align:center; box-sizing:border-box;
         }
         thead th.in-play .header-inner input.cc { display:none; }
         thead th.in-play .header-inner .cc-display { display:inline; }
@@ -876,13 +882,13 @@
         .ctx-disabled:hover { background:transparent; border-left-color:transparent; }
 
         /* ── M1 V5.0: SUMMARY COLUMN (∑) — narrow, 1-char wide; behavior in M4/M5 ── */
-        thead th.sum-col { background:var(--gold); color:var(--on-gold-dk); border-left:2px solid var(--gold); border-right:2px solid #9a6e2a96; width:22px; min-width:22px; max-width:22px; cursor:default; font-size:0.95rem; padding:4px 1px; }
-        td.sum-col { background:var(--surface) !important; border-left:2px solid var(--gold); border-right:2px solid #9a6e2a96; width:22px; min-width:22px; max-width:22px; cursor:default; padding:2px 1px; }
+        thead th.sum-col { background:var(--gold); color:var(--on-gold-dk); border-left:2px solid var(--gold); border-right:2px solid #9a6e2a96; width:4%; cursor:default; font-size:0.95rem; padding:4px 1px; }
+        td.sum-col { background:var(--surface) !important; border-left:2px solid var(--gold); border-right:2px solid #9a6e2a96; cursor:default; padding:2px 1px; }
         td.sum-col:hover { background:var(--surface) !important; }
 
         /* ── M11/03: ROOM COLUMN — 2-player variant face-down-cards tracker ── */
-        thead th.room-col { background:var(--gold); color:var(--on-gold-dk); border-left:2px solid #9a6e2a96; border-right:2px solid var(--gold); width:24px; min-width:24px; max-width:24px; cursor:default; font-size:0.9rem; padding:4px 1px; }
-        td.room-col { background:var(--surface) !important; border-left:2px solid #9a6e2a96; border-right:2px solid var(--gold); width:24px; min-width:24px; max-width:24px; cursor:pointer; padding:2px 1px; text-align:center; vertical-align:middle; }
+        thead th.room-col { background:var(--gold); color:var(--on-gold-dk); border-left:2px solid #9a6e2a96; border-right:2px solid var(--gold); width:4%; cursor:default; font-size:0.9rem; padding:4px 1px; }
+        td.room-col { background:var(--surface) !important; border-left:2px solid #9a6e2a96; border-right:2px solid var(--gold); cursor:pointer; padding:2px 1px; text-align:center; vertical-align:middle; }
         td.room-col:hover { background:var(--bg2) !important; }
         .room-check { color:var(--mark-check-fg); font-size:1rem; font-weight:700; line-height:1; }
 
@@ -1034,6 +1040,7 @@
     </div>
 </div>
 
+<script src="clues-tracker-engine.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════════
 // 🕯 CLUE TRACKER — Ver. 3.1
@@ -1570,6 +1577,7 @@ function buildTable() {
                 td.addEventListener('click', onCellClick);
                 td.addEventListener('contextmenu', e => {
                     e.preventDefault();
+                    if (enginePlaying()) return;
                     // M11/01: Right-click on a player×card cell drives the manual
                     // mark cycle (blank → ✗ → ✓ → return-to-auto-state → blank …).
                     // Game mode only, and never on the Me column.
@@ -1593,6 +1601,8 @@ function buildTable() {
             tbody.appendChild(row);
         });
     });
+    requestRowSize();
+    applyPlayerColOrder();
 }
 
 // Render a category banner — editable input in setup, plain text in play.
@@ -1754,11 +1764,186 @@ function updateCategoryBanners() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// NEWER RULES — the turn, once the game has started
+// ═══════════════════════════════════════════════════════════════════
+// The page still gathers the players and the cards. Start Game
+// hands that started game to the newer rules. From then on, a tap
+// on a card, a tap on a name, and Next follow those rules, and the
+// sheet draws the marks they return.
+
+let engineShowerArm = -1;
+
+function enginePlaying() {
+    return gamePhase === 'play'
+        && typeof Engine !== 'undefined'
+        && Engine.inspect().gameInProgress;
+}
+
+// Whose column the turn belongs to, read from the engine the same
+// way the phone page reads it. During a guess it stays on the
+// asker. Otherwise it is whoever the engine's turn step names.
+function engineAskerCol() {
+    if (typeof Engine === 'undefined') return -1;
+    const s = Engine.inspect();
+    if (!s.gameInProgress || !s.activePlayers.length) return -1;
+    if (s.pendingAskerCol >= 0) return s.pendingAskerCol;
+    return s.activePlayers[s.turnStep % s.activePlayers.length];
+}
+
+function handGameToNewerRules() {
+    const names = getPlayerNames();
+    const mine = ALL_CARDS.filter(card =>
+        cellState[card] && cellState[card][meCol] && cellState[card][meCol].check);
+    Engine.connect({
+        status(msg) { showStatus(msg, 'var(--red-lt)'); },
+        turnChanged() {
+            applyActiveTurnStyling();
+            showEngineNow();
+        }
+    });
+    Engine.testing.useStorageKey('ctsWebGame');
+    Engine.testing.reset({
+        categories: CATEGORIES.map(c => ({ name: c.name, cards: c.cards.slice() })),
+        players: [0, 1, 2, 3, 4, 5].map(i => names[i] || ''),
+        meSlot: meCol,
+        myCards: mine.slice(),
+        activePlayers: turnOrder.slice(),
+        turnCount: 0,
+        turnStep: 0,
+        gamePhase: 'asking',
+        gameInProgress: true
+    });
+    mine.forEach(card => Engine.testing.placeMark(card, meCol, 'check'));
+    ALL_CARDS.forEach(card => {
+        if (!mine.includes(card)) Engine.testing.placeMark(card, meCol, 'cross');
+    });
+    Engine.testing.setTurn(1);
+    engineShowerArm = -1;
+    renderAllCells();
+    showEngineNow();
+    applyActiveTurnStyling();
+}
+
+function showEngineNow() {
+    const view = Engine.logView();
+    const s = Engine.inspect();
+    const prefix = document.getElementById('phasePrefix');
+    const directive = document.getElementById('phaseDirective');
+    const deck = document.getElementById('deckBarDirective');
+    const asker = engineAskerCol();
+    if (prefix) prefix.textContent = 'Game · Turn ' + s.turnCount;
+    if (directive) {
+        directive.textContent = asker === s.meSlot
+            ? 'Your turn'
+            : ((s.players[asker] || 'Player') + "'s turn");
+    }
+    if (deck && view.now) deck.textContent = view.now;
+}
+
+function renderEngineMark(td, card, col) {
+    const inner = td.querySelector('.cell-inner');
+    if (!inner) return;
+    const marks = Engine.visibleMarks(card, col);
+    const glyph = {
+        check: ['✓', 'sym-check'],
+        cross: ['✗', 'sym-cross'],
+        asked: ['?', 'sym-asked'],
+        showed: ['!', 'sym-showed'],
+        ishowed: ['Me', 'sym-meshowed']
+    };
+    inner.innerHTML = '';
+    td.classList.toggle('cell-check', marks.some(m => m.type === 'check'));
+    td.classList.toggle('cell-cross', marks.some(m => m.type === 'cross') && !marks.some(m => m.type === 'check'));
+    marks.forEach(m => {
+        const look = glyph[m.type];
+        if (!look) return;
+        const wrap = document.createElement('span');
+        wrap.className = 'mk';
+        const sym = document.createElement('span');
+        sym.className = look[1];
+        sym.textContent = look[0];
+        wrap.appendChild(sym);
+        inner.appendChild(wrap);
+    });
+    const note = Engine.cellNote(card, col);
+    if (note) {
+        const n = document.createElement('span');
+        n.className = 'cell-note';
+        n.textContent = note;
+        inner.appendChild(n);
+    }
+}
+
+function openEngineCardPicker(title, intro, cards, onPick) {
+    const wrapper = document.createElement('div');
+    const lead = document.createElement('div');
+    lead.style.marginBottom = '12px';
+    lead.textContent = intro;
+    wrapper.appendChild(lead);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; justify-content:center;';
+    cards.forEach(card => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-gold';
+        btn.style.cssText = 'font-size:1rem; padding:8px 16px;';
+        btn.textContent = card;
+        btn.onclick = () => { hideModal(); onPick(card); };
+        row.appendChild(btn);
+    });
+    wrapper.appendChild(row);
+    showModal({ title: title, body: wrapper, buttons: [{ label: 'Cancel', action: hideModal }] });
+}
+
+function playHeaderThroughEngine(col) {
+    const road = Engine.headerTap(col);
+    if (!road || road.road === 'refused') {
+        renderAllCells();
+        showEngineNow();
+        return;
+    }
+    if (road.road === 'correct') {
+        if (engineShowerArm !== col) {
+            engineShowerArm = col;
+            showStatus('Tap that player again to take back the show.', 'var(--red-lt)');
+            return;
+        }
+        engineShowerArm = -1;
+        Engine.correctShower();
+        renderAllCells();
+        showEngineNow();
+        return;
+    }
+    engineShowerArm = -1;
+    if (road.road === 'shownme') {
+        openEngineCardPicker('Shown to you', 'Which card did they show you?', road.cards, card => {
+            Engine.confirmShownMe(card);
+            renderAllCells();
+            showEngineNow();
+        });
+        return;
+    }
+    if (road.road === 'ishowed') {
+        openEngineCardPicker('You showed', 'Which card did you show?', road.cards, card => {
+            Engine.confirmIShowed(card);
+            renderAllCells();
+            showEngineNow();
+        });
+        return;
+    }
+    renderAllCells();
+    showEngineNow();
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // RENDER CELL
 // ═══════════════════════════════════════════════════════════════════
 function renderCell(card, col) {
     const td = document.querySelector(`td[data-card="${CSS.escape(card)}"][data-col="${col}"]`);
     if (!td) return;
+    if (enginePlaying()) {
+        renderEngineMark(td, card, col);
+        return;
+    }
     const s = cellState[card][col];
     const inner = td.querySelector('.cell-inner');
     inner.innerHTML = '';
@@ -2006,11 +2191,10 @@ function applyBlankColLock() {
         const th = document.getElementById('th' + c);
         const tds = document.querySelectorAll(`td[data-col="${c}"]`);
         const blankByName = !names[c];
-        const inactiveInPlay = gamePhase === 'play' && !turnOrder.includes(c);
-        const isInactive = inactiveInPlay || (gamePhase === 'play' && blankByName);
-        if (isInactive) {
-            if (th) { th.classList.add('col-blank-locked'); th.classList.toggle('col-hidden', hideMode); }
-            tds.forEach(td => { td.classList.add('col-blank-locked'); td.classList.toggle('col-hidden', hideMode); });
+        const outOfTurn = gamePhase === 'play' && !blankByName && !turnOrder.includes(c);
+        if (outOfTurn) {
+            if (th) { th.classList.add('col-blank-locked'); th.classList.remove('col-hidden'); }
+            tds.forEach(td => { td.classList.add('col-blank-locked'); td.classList.remove('col-hidden'); });
         } else {
             if (th) { th.classList.remove('col-blank-locked'); th.classList.remove('col-hidden'); }
             tds.forEach(td => { td.classList.remove('col-blank-locked'); td.classList.remove('col-hidden'); });
@@ -2034,118 +2218,43 @@ function applyBlankColLock() {
     // M11/09 REVERTED — spacious mode dropped. Hide-mode still controls the
     //   column / row hiding above; just no font/height bump anymore.
 
-    // M11/21: re-fit the page now that the visible rows/columns are settled
-    //   (this is the common end-point of every grid refresh, incl. the Step-5
-    //   mute hide and the Play-phase column hide).
-    requestFit();
+    requestRowSize();
 }
 
-// ── M11/21: AUTO-FIT ──────────────────────────────────────────────────
-// Size the whole page to the window by computing --ui-zoom rather than
-// hard-coding it. We pick the largest zoom that still keeps the grid AND the
-// fixed right-hand panel fully on screen — top-to-bottom and side-to-side —
-// so more players size down to fit and fewer players size up to fill, all in
-// proportion. Natural sizes are measured at zoom 1 because Firefox's CSS zoom
-// makes offset/rect reads unreliable at other zooms (the item-19 lesson).
-//
-// The top bars (header, phase bar, Game Deck bar) get TALLER when squeezed
-// narrow — their buttons wrap to a second line — which would push the grid
-// into a scroll. So the width budget also caps the zoom so those bars always
-// stay on one line; chrome height then stays put and the grid always fits.
-//
-// requestFit() coalesces the many refresh calls in one user action into a
-// single fit on the next frame, after the DOM has settled.
-let _fitPending = false;
-function requestFit() {
-    if (_fitPending) return;
-    _fitPending = true;
-    requestAnimationFrame(() => { _fitPending = false; fitToWindow(); });
+
+function requestRowSize() {
+    if (requestRowSize.pending) return;
+    requestRowSize.pending = true;
+    requestAnimationFrame(() => {
+        requestRowSize.pending = false;
+        sizeGridRows();
+    });
 }
 
-// One-line width of a bar: force no-wrap, read the content width, restore.
-function _noWrapWidth(el) {
-    if (!el || el.offsetParent === null) return 0;   // missing or hidden
-    const pWS = el.style.whiteSpace, pFW = el.style.flexWrap;
-    el.style.whiteSpace = 'nowrap';
-    el.style.flexWrap   = 'nowrap';
-    const w = el.scrollWidth;
-    el.style.whiteSpace = pWS;
-    el.style.flexWrap   = pFW;
-    return w;
-}
-
-function fitToWindow() {
-    const root  = document.documentElement;
+function sizeGridRows() {
+    const wrap = document.querySelector('.table-wrap');
     const table = document.getElementById('clueTable');
-    const wrap  = document.querySelector('.table-wrap');
-    if (!table || !wrap) return;
-
-    // Measure at zoom 1 (true CSS pixels). Done synchronously so the
-    // intermediate state never paints — no flash.
-    root.style.setProperty('--ui-zoom', '1');
-    // Clear any prior fill heights so we measure the grid's NATURAL size.
-    table.querySelectorAll('tbody tr').forEach(r => { r.style.height = ''; });
-
-    // Natural grid width: let the table shrink to its content, read, restore.
-    const prevW = table.style.width;
-    table.style.width = 'max-content';
-    const natTableW = table.offsetWidth;
-    table.style.width = prevW;
-
-    const winW = window.innerWidth, winH = window.innerHeight;
-
-    // Available vs needed, measured at zoom 1. This folds in the header, bars,
-    // every border/padding and the right-panel width automatically — no
-    // by-hand tally — so the fit lands without leaving a stray scrollbar.
-    //   available = the visible window the grid sits in (the .table-wrap box)
-    //   needed    = the grid's full natural size
-    // At zoom z the window CSS-size becomes win/z while the grid stays fixed,
-    // so the exact-fit zoom is win / (win + needed − available).
-    const availH = wrap.clientHeight;
-    const needH  = table.offsetHeight;
-    const availW = wrap.clientWidth;
-    const needW  = natTableW;
-
-    const zHeight = winH / (winH + needH - availH);
-    const zWidth  = winW / (winW + needW - availW);
-
-    // Capture the card rows and their NATURAL heights now (still at zoom 1, so
-    // the reads are reliable) — used below to fill any leftover vertical space.
-    // Header and category banners are excluded so only the card rows grow.
-    const cardRows  = [...table.querySelectorAll('tbody tr')]
-        .filter(r => !r.classList.contains('cat-row') && r.offsetParent !== null);
-    const cardNatH  = cardRows.map(r => r.getBoundingClientRect().height);
-
-    // Keep the top bars on ONE line — a wrapped bar grows taller and would push
-    // the grid into a scroll, breaking the height fit.
-    const PAD_X = 16;
-    const barsW = Math.max(
-        _noWrapWidth(document.querySelector('.page-header')),
-        _noWrapWidth(document.getElementById('setupBanner')),
-        _noWrapWidth(document.getElementById('deckBar'))
-    ) + PAD_X;
-    const zBars = barsW > PAD_X ? winW / barsW : Infinity;
-
-    const zRaw   = Math.min(zHeight, zWidth, zBars);
-    // Loose safety guard only — does NOT constrain normal use (the user sets
-    // their own comfort with browser zoom); just stops a pathological extreme.
-    const capped = Math.min(zRaw, 1.6);             // what limits the grid size
-    const z = Math.max(0.6, capped * 0.99);         // hairline safety
-    root.style.setProperty('--ui-zoom', String(z));
-
-    // Fill leftover vertical space. When something OTHER than height limited the
-    // size (width, the bars, or the cap), the grid is shorter than the window.
-    // Spread the surplus across the CARD rows only so the grid reaches the
-    // bottom — no dead band — while the header and banners stay their natural
-    // height. Surplus at zoom z, from the zoom-1 measurements:
-    //   (winH/z − winH) + (availH − needH)
-    const surplus = (winH / z - winH) + (availH - needH);
-    if (surplus > 4 && cardRows.length) {
-        const add = (surplus * 0.98) / cardRows.length;   // 0.98 avoids a scrollbar
-        cardRows.forEach((r, i) => { r.style.height = (cardNatH[i] + add) + 'px'; });
+    if (!wrap || !table) return;
+    const head = table.querySelector('thead tr');
+    const cats = [...table.querySelectorAll('tbody tr.cat-row')];
+    const cards = [...table.querySelectorAll('tbody tr:not(.cat-row)')];
+    if (!head || !cards.length) return;
+    head.style.height = '';
+    cats.forEach(r => { r.style.height = ''; });
+    cards.forEach(r => { r.style.height = ''; });
+    const used = head.getBoundingClientRect().height
+        + cats.reduce((sum, r) => sum + r.getBoundingClientRect().height, 0);
+    const spare = wrap.clientHeight - used;
+    if (spare <= 0) return;
+    const each = spare / cards.length;
+    cards.forEach(r => { r.style.height = each + 'px'; });
+    const extra = table.getBoundingClientRect().height - wrap.clientHeight;
+    if (extra > 0) {
+        const tighter = (spare - extra - 1) / cards.length;
+        if (tighter > 0) cards.forEach(r => { r.style.height = tighter + 'px'; });
     }
 }
-window.addEventListener('resize', requestFit);
+window.addEventListener('resize', requestRowSize);
 
 function applyActiveTurnStyling() {
     document.querySelectorAll('td.active-turn').forEach(td => td.classList.remove('active-turn'));
@@ -2257,10 +2366,9 @@ function buildTurnOrder() {
 }
 
 function getCurrentCol() {
-    // Safety: rebuild turnOrder from names if somehow empty during play
-    if (turnOrder.length === 0 && gamePhase === 'play') {
-        turnOrder = buildTurnOrder();
-        turnStep  = 0;
+    if (gamePhase === 'play') {
+        const col = engineAskerCol();
+        if (col >= 0) return col;
     }
     if (turnOrder.length === 0) return 0;
     return turnOrder[turnStep % turnOrder.length];
@@ -2333,7 +2441,7 @@ function startGame() {
     }
     for (let c = 0; c < MAX_PLAYERS; c++) {
         const th = document.getElementById('th' + c);
-        if (th) th.classList.add('in-play');
+        if (th && turnOrder.includes(c)) th.classList.add('in-play');
     }
     refreshCardCountDisplays();
     applyPlayerOutBadges();
@@ -2367,6 +2475,8 @@ function startGame() {
     renderInfoBar();
     showStatus('Game started! Good luck 🔍', 'var(--red-lt)');
     autoSave();
+    handGameToNewerRules();
+    applyPlayerColOrder();
 }
 
 function editSetup() {
@@ -2399,6 +2509,7 @@ function _doEditSetup() {
     });
 
     gamePhase = 'setup';
+    applyPlayerColOrder();
     for (let i = 1; i <= MAX_PLAYERS; i++) {
         const elH = document.getElementById('p' + i + 'h');
         const elC = document.getElementById('p' + i + 'c');
@@ -2455,6 +2566,13 @@ function onCellClick(e) {
         updateUndoButton();
         updateButtonStates();   // Start Game gate tracks Me's click count live
         autoSave(); return;
+    }
+
+    if (enginePlaying()) {
+        Engine.cellTap(card, col);
+        renderAllCells();
+        showEngineNow();
+        return;
     }
 
     const currentCol = getCurrentCol();
@@ -2561,7 +2679,112 @@ function onCellClick(e) {
 
 // ═══════════════════════════════════════════════════════════════════
 // ── Clicking a player name header cell = mark showed (commits immediately) ──
+// Player columns can be dragged by their headings during play.
+// The drag changes where a column sits. It does not change whose
+// turn comes next — that stays the order the names were typed.
+const PLAYER_COL_ORDER_KEY = 'ctsPlayerColOrder';
+let playerColOrder = (function () {
+    try {
+        const saved = JSON.parse(localStorage.getItem(PLAYER_COL_ORDER_KEY));
+        if (Array.isArray(saved) && saved.length === MAX_PLAYERS &&
+            [...Array(MAX_PLAYERS).keys()].every(n => saved.includes(n))) return saved;
+    } catch (e) {}
+    return [...Array(MAX_PLAYERS).keys()];
+})();
+let swallowHeaderClick = false;
+
+function savePlayerColOrder() {
+    try { localStorage.setItem(PLAYER_COL_ORDER_KEY, JSON.stringify(playerColOrder)); } catch (e) {}
+}
+
+function playerColumnCells(col) {
+    const th = document.getElementById('th' + col);
+    const tds = [...document.querySelectorAll('#cardBody td[data-col="' + col + '"]')];
+    return th ? [th, ...tds] : tds;
+}
+
+function applyPlayerColOrder() {
+    const order = (gamePhase === 'play') ? playerColOrder : [...Array(MAX_PLAYERS).keys()];
+    const header = document.getElementById('headerRow');
+    if (header) {
+        order.forEach(col => {
+            const th = document.getElementById('th' + col);
+            if (th) header.appendChild(th);
+        });
+    }
+    document.querySelectorAll('#cardBody tr[data-card]').forEach(row => {
+        order.forEach(col => {
+            const td = row.querySelector('td[data-col="' + col + '"]');
+            if (td) row.appendChild(td);
+        });
+    });
+}
+
+function seatUnderPointer(x, dragCol) {
+    for (let i = 0; i < playerColOrder.length; i++) {
+        const col = playerColOrder[i];
+        if (col === dragCol) continue;
+        const th = document.getElementById('th' + col);
+        if (!th) continue;
+        const r = th.getBoundingClientRect();
+        if (x >= r.left && x < r.right) return i;
+    }
+    return -1;
+}
+
+function wirePlayerColumnDrag() {
+    const header = document.getElementById('headerRow');
+    if (!header || header.dataset.dragWired) return;
+    header.dataset.dragWired = '1';
+    let drag = null;
+
+    header.addEventListener('pointerdown', e => {
+        if (gamePhase !== 'play' || e.button !== 0) return;
+        const th = e.target.closest('th');
+        if (!th || !th.id || !th.id.startsWith('th')) return;
+        const col = parseInt(th.id.slice(2), 10);
+        if (isNaN(col)) return;
+        drag = { col, anchorX: e.clientX, moved: false, cells: playerColumnCells(col), pointerId: e.pointerId };
+        try { th.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+
+    header.addEventListener('pointermove', e => {
+        if (!drag || e.pointerId !== drag.pointerId) return;
+        const dx = e.clientX - drag.anchorX;
+        if (!drag.moved) {
+            if (Math.abs(dx) < 6) return;
+            drag.moved = true;
+            drag.cells.forEach(c => c.classList.add('drag-col'));
+        }
+        drag.cells.forEach(c => { c.style.transform = 'translateX(' + dx + 'px)'; });
+        const idx = playerColOrder.indexOf(drag.col);
+        const seat = seatUnderPointer(e.clientX, drag.col);
+        if (seat >= 0 && seat !== idx) {
+            playerColOrder.splice(idx, 1);
+            playerColOrder.splice(seat, 0, drag.col);
+            drag.cells.forEach(c => { c.style.transform = ''; });
+            drag.anchorX = e.clientX;
+            applyPlayerColOrder();
+        }
+    });
+
+    const finish = e => {
+        if (!drag || (e && e.pointerId !== drag.pointerId)) return;
+        const didMove = drag.moved;
+        drag.cells.forEach(c => { c.style.transform = ''; c.classList.remove('drag-col'); });
+        drag = null;
+        if (!didMove) return;
+        savePlayerColOrder();
+        swallowHeaderClick = true;
+        setTimeout(() => { swallowHeaderClick = false; }, 0);
+    };
+    header.addEventListener('pointerup', finish);
+    header.addEventListener('pointercancel', finish);
+}
+wirePlayerColumnDrag();
+
 document.getElementById('headerRow').addEventListener('click', e => {
+    if (swallowHeaderClick) { swallowHeaderClick = false; return; }
     if (gamePhase !== 'play') return;
     // Find the th — target could be text node or input inside
     let th = e.target;
@@ -2572,6 +2795,11 @@ document.getElementById('headerRow').addEventListener('click', e => {
 
     // Block inactive columns (not in turnOrder)
     if (!turnOrder.includes(col)) return;
+
+    if (enginePlaying()) {
+        playHeaderThroughEngine(col);
+        return;
+    }
 
     // Tapping any header other than the armed one cancels a pending shower-undo confirm.
     if (showerUndoArmed !== -1 && showerUndoArmed !== col) clearShowerUndoArm();
@@ -2977,224 +3205,37 @@ function _doSetupUndoFromStep5() {
 }
 
 function _playPhaseUndoEntry() {
-    const inProgressNow = pendingAsked.length > 0 || committedAsked.length > 0 ||
-                          pendingShowed.length > 0 || pendingShownMe.length > 0 ||
-                          pendingIShowed.length > 0 || hasMarksForTurn(turnCount);
-
-    if (!inProgressNow && turnCount <= 1) {
+    const s = Engine.inspect();
+    const atStart = s.turnCount <= 1 && s.gamePhase === 'asking' && s.pendingCards.length === 0;
+    if (atStart) {
         showStatus('Nothing more to undo.', 'var(--gold-dk)');
         return;
     }
-
-    const title   = inProgressNow ? 'Undo this turn' : 'Previous turn';
-    const message = inProgressNow
-        ? `Clear all marks placed on turn ${turnCount}?`
-        : `Roll back to turn ${turnCount - 1}? All marks placed on turn ${turnCount - 1} will be removed and the turn pointer will step back one player.`;
-    const okLabel = inProgressNow ? 'Undo' : 'Roll back';
-
+    const midTurn = !(s.gamePhase === 'asking' && s.pendingCards.length === 0);
     modalConfirm({
-        title, message, okLabel, confirmTwoTap: true,
-        onConfirm: () => _doPlayUndo(inProgressNow)
+        title: midTurn ? 'Undo this turn' : 'Previous turn',
+        message: midTurn
+            ? `Clear all marks placed on turn ${s.turnCount}?`
+            : `Roll back to turn ${s.turnCount - 1}?`,
+        okLabel: midTurn ? 'Undo' : 'Roll back',
+        confirmTwoTap: true,
+        onConfirm: () => {
+            Engine.undoTap();
+            renderAllCells();
+            applyActiveTurnStyling();
+            showEngineNow();
+            updateButtonStates();
+        }
     });
 }
 
-function _doPlayUndo(inProgressNow) {
-    // M11/35: removeMarksForTurn only handles cellState marks. Room ✓s, manual
-    //   override metadata, and the matching gameLog entries are separate state.
-    //   Scrub them here for whichever turn we're undoing (current if in-progress,
-    //   else the previous turn that's about to become current).
-    const undoTurn = inProgressNow ? turnCount : (turnCount - 1);
-    gameLog.forEach(e => {
-        if (e.turn !== undoTurn) return;
-        if (e.room) {
-            const card = e.roomCard;
-            roomChecked.delete(card);
-            delete roomUndoLists[card];
-            delete roomCycleSnapshot[card];
-        }
-        if (e.manual) {
-            const cs = cellState[e.manualCard] && cellState[e.manualCard][e.playerIdx];
-            if (cs) {
-                cs.manualStage    = undefined;
-                cs.manualSnapshot = null;
-                cs.manualUndoList = null;
-            }
-        }
-    });
-    gameLog = gameLog.filter(e => !((e.room || e.manual) && e.turn === undoTurn));
-
-    if (inProgressNow) {
-        // Step 1: clear everything placed in the current turn — back to start of this turn
-        removeMarksForTurn(turnCount);
-    } else {
-        // Step 2: nothing in this turn — rewind to the previous turn
-        turnCount--;
-        removeMarksForTurn(turnCount);
-        // M13/01: remove the last NORMAL turn entry — e.out entries (Quit /
-        //   Wrong Accusation) are permanent and survive the rollback.
-        for (let i = gameLog.length - 1; i >= 0; i--) {
-            if (!gameLog[i].out) { gameLog.splice(i, 1); break; }
-        }
-        turnStep = (turnStep - 1 + turnOrder.length) % turnOrder.length;
-        let safety = 0;
-        while (isPlayerOut(turnOrder[turnStep]) && safety < turnOrder.length) {
-            turnStep = (turnStep - 1 + turnOrder.length) % turnOrder.length;
-            safety++;
-        }
-    }
-    clearPending();
-    committedAsked = []; committedAskedUndo = [];
-    pendingShowed  = []; committedShowedUndo = [];
-    pendingShownMe = []; pendingIShowed = []; committedAltUndo = [];
-    liveLogEntry = null;
-    applyColLock(false);
-    document.querySelectorAll('td.asked-has-card, td.pending-ask, td.pending-show, td.pending-shownme').forEach(td => {
-        td.classList.remove('asked-has-card','pending-ask','pending-show','pending-shownme');
-    });
-    renderAllCells(); renderFullLog();
-    applyActiveTurnStyling(); updateStage(); updateUndoButton(); applyPlayLocks(); renderInfoBar();
-    showStatus(inProgressNow ? 'Undo: back to start of this turn.' : `Undo: rewound to turn ${turnCount}.`, 'var(--text)');
-    autoSave();
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// NEXT PLAYER
-// ═══════════════════════════════════════════════════════════════════
 function nextPlayer() {
-    // Next runs the game. It does not walk a setup.
-    if (gamePhase === 'setup') return;
-    if (gamePhase !== 'play') return;
-
-    const askerCol   = getCurrentCol();
-    const askerName  = getCurrentPlayerName();
-    const isMe       = (askerCol === meCol);
-    const askedCards = committedAsked.map(p => p.card);
-    const showerCol  = pendingShowed.length > 0 ? pendingShowed[0].col : -1;
-    const showerName = showerCol >= 0 ? getColName(showerCol) : '';
-
-    // GUARD #3 (mobile parity): "nobody showed" sequence guard.
-    // If there's a committed guess and no shower has been recorded, walk the ring
-    // from asker+1. If any non-asker, non-Out player has ✓ on an asked card, they're
-    // obligated to show — reject Next instead of auto-✗-ing everyone.
-    const noShowYet = showerCol === -1 && pendingShownMe.length === 0 && pendingIShowed.length === 0;
-    if (askedCards.length > 0 && noShowYet) {
-        const askerIdx = turnOrder.indexOf(askerCol);
-        const n        = turnOrder.length;
-        if (askerIdx >= 0) {
-            for (let i = 1; i < n; i++) {
-                const c = turnOrder[(askerIdx + i) % n];
-                if (c === askerCol)      continue;
-                if (isQuit(c)) continue;
-                const mustShow = askedCards.some(card =>
-                    cellState[card] && cellState[card][c] && cellState[card][c].check
-                );
-                if (mustShow) {
-                    showStatus(`${getColName(c)} must show first — they have a confirmed card.`, 'var(--red-lt)');
-                    return;
-                }
-            }
-        }
-    }
-
-    // Save snapshot for undo BEFORE changes
-    // Include asked undo entries + showed/auto-X entries from header click
-    const cellChangesBefore = [...committedAskedUndo, ...committedShowedUndo, ...committedAltUndo];
-    const snapSolutionCards = new Set(solutionCards);
-    const snapTurnStep      = turnStep;
-    const snapTurnCount     = turnCount;
-
-    // Apply showed marks (skip if already committed via header click)
-    pendingShowed.forEach(p => {
-        if (!p.committed) {
-            cellChangesBefore.push({ card: p.card, col: p.col, old: { ...cellState[p.card][p.col], marks:[...(cellState[p.card][p.col].marks||[])] } });
-            markCell(p.card, p.col, 'showed');
-            renderCell(p.card, p.col);
-        }
-        // If committed, already applied and already in committedShowedUndo
-    });
-
-    // #9: Shown-to-me needs no marks here — the Me-as-shower popup already
-    // applied the ✓ + ✓* and the passer auto-✗s when the card was picked.
-    // pendingShownMe still feeds the log entry and solution flags below.
-
-    // Apply I-showed — skip if already committed, mark in asker's column
-    pendingIShowed.forEach(p => {
-        if (!p.committed) {
-            // p.col is already the askerCol (set in onCellClick)
-            const s = cellState[p.card][p.col];
-            cellChangesBefore.push({ card: p.card, col: p.col, old: { ...s, marks:[...(s.marks||[])] } });
-            markCell(p.card, p.col, 'iShowedMe');
-            renderCell(p.card, p.col);
-        }
-        // No auto-X — showing a card doesn't tell us who else has it
-    });
-
-    // ── AUTO ✗ ── (only if not already applied via header click)
-    const specificCardShown = pendingShownMe.length > 0 || pendingIShowed.length > 0;
-    if (askedCards.length > 0) {
-        if (committedShowedUndo.length === 0 && !specificCardShown) {
-            const n = turnOrder.length;
-            askedCards.forEach(card => {
-                if (showerCol === -1) {
-                    // Nobody showed → ✗ everyone EXCEPT the asker (and Out players)
-                    turnOrder.forEach(c => {
-                        if (c === askerCol) return;
-                        if (isQuit(c)) return; // M5: skip Out players
-                        applyAutoX(card, c, cellChangesBefore);
-                    });
-                } else {
-                    // ✗ players who passed between asker and shower (skip Out players)
-                    const askerIdx = turnOrder.indexOf(askerCol);
-                    if (askerIdx === -1) return;
-                    let i = (askerIdx + 1) % n;
-                    let steps = 0;
-                    while (turnOrder[i] !== showerCol && steps < n) {
-                        if (!isQuit(turnOrder[i])) {
-                            applyAutoX(card, turnOrder[i], cellChangesBefore);
-                        }
-                        i = (i + 1) % n;
-                        steps++;
-                    }
-                }
-            });
-        }
-    }
-
-    // Build log entry — finalize the live entry.
-    // M11/24: log every turn, including "no-guess" turns where the player
-    //   didn't reach a room. renderFullLog renders an empty asked[] as
-    //   "— did not reach a room."
-    gameLog.push({
-        turn: turnCount, playerIdx: askerCol, player: askerName, isMe,
-        asked: askedCards, showerName,
-        shownMe:  pendingShownMe.map(p => ({ card: p.card, player: p.player })),
-        iShowed:  pendingIShowed.map(p => ({ card: p.card, toPlayer: p.toPlayer })),
-    });
-    liveLogEntry = null; // clear live entry
-    renderFullLog();
-
-    // Update solution flags
-    updateSolutionFlags([...askedCards, ...pendingShownMe.map(p=>p.card), ...pendingIShowed.map(p=>p.card)]);
-
-    // Push undo snapshot — replace the partial one if the guess auto-commit pushed one
-    if (undoStack.length > 0 && undoStack[undoStack.length - 1].partial) {
-        undoStack.pop(); // remove the partial snapshot
-    }
-    pushUndo({ turnStep: snapTurnStep, turnCount: snapTurnCount, cellChanges: cellChangesBefore, solutionCards: snapSolutionCards });
-
-    clearPending();
-    turnStep = (turnStep + 1) % turnOrder.length;
-    // M5: skip past any players who are Out
-    let advanceSafety = 0;
-    while (isPlayerOut(turnOrder[turnStep % turnOrder.length]) && advanceSafety < turnOrder.length) {
-        turnStep = (turnStep + 1) % turnOrder.length;
-        advanceSafety++;
-    }
-    turnCount++;
-    applyActiveTurnStyling(); applyPlayLocks();
-    updateStage(); updateUndoButton();
-    renderInfoBar();
-    autoSave();
+    if (gamePhase !== 'play' || !enginePlaying()) return;
+    Engine.nextTap();
+    renderAllCells();
+    applyActiveTurnStyling();
+    showEngineNow();
+    updateButtonStates();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3526,7 +3567,10 @@ function applySnapshot(d) {
             const el = document.getElementById('p'+i+'h'); if(el) el.disabled=true;
             const ec = document.getElementById('p'+i+'c'); if(ec) ec.disabled=true;
         }
-        for(let c=0;c<6;c++){ const th=document.getElementById('th'+c); if(th) th.classList.add('in-play'); }
+        for(let c=0;c<6;c++){
+            const th=document.getElementById('th'+c);
+            if(th && (getPlayerNames()[c] || '').trim()) th.classList.add('in-play');
+        }
         document.getElementById('setupBanner').classList.add('game-on');
     } else {
         for(let i=1;i<=6;i++){
@@ -3544,6 +3588,7 @@ function applySnapshot(d) {
     updateCardLabels();
     updateCategoryBanners();
     renderAllCells(); renderFullLog(); renderSolutionFlags(); renderInfoBar(); updateUndoButton();
+    applyPlayerColOrder();
 }
 
 // Manual Save / Load buttons retired — autoSave runs on every state change,
@@ -3714,6 +3759,8 @@ function updatePhaseBarText() {
         if (hdr)   hdr.textContent   = '';
         if (dkDir) dkDir.textContent = '';
         dir.textContent = '— Change card names, enter players, choose Me, then start the game.';
+    } else if (enginePlaying()) {
+        showEngineNow();
     } else {
         // M12/03 — Option B split:
         //   Phase Bar     = identity context (turn number + whose turn it is).
@@ -3799,11 +3846,12 @@ function updateButtonStates() {
     const btnStart      = document.getElementById('btnStartGame');
     const inPlay        = (gamePhase === 'play');
     if (btnUndo) {
-        // Undo runs the game. It stays quiet until a turn can be taken back.
-        const playCan  = inPlay && (pendingAsked.length > 0 || committedAsked.length > 0
-                                   || pendingShowed.length > 0 || pendingShownMe.length > 0
-                                   || pendingIShowed.length > 0 || hasMarksForTurn(turnCount)
-                                   || turnCount > 1);
+        let playCan = false;
+        if (inPlay && enginePlaying()) {
+            const s = Engine.inspect();
+            const atStart = s.turnCount <= 1 && s.gamePhase === 'asking' && s.pendingCards.length === 0;
+            playCan = !atStart;
+        }
         btnUndo.disabled = !playCan;
     }
     if (btnUndoTyping) {
@@ -3920,8 +3968,7 @@ window.addEventListener('load', () => {
     setGuideContent();
     // M7: set the dark-mode button icon based on the current theme.
     updateDarkModeButtonIcon();
-    // M11/21: final fit once the restored game / deck is fully on screen.
-    requestFit();
+    requestRowSize();
 });
 
 // Stub placeholders for Guide / Rules / Dark Mode — wired up in M6 / M7
