@@ -22,6 +22,22 @@ entered by hand, and the engine writes that line. Rules is
 gone. The messages on the game row and the turn row are
 showing.
 
+DONE IN CTS-7, 2026-10-22
+-------------------------
+A refresh in the middle of a game brings back the engine’s turn.
+The marks, the log, the highlighted column, and Next and Undo
+come from the engine. The summary marks stay with the page.
+When no game is going, setup stays as it was. New Game clears
+the engine’s save, so that game does not come back. He has seen
+this work.
+
+A tap at the wrong point puts a hint or a warning on the game
+row. The page writes those words. They show whether or not the
+engine is running the turn. He has seen the warnings showing.
+
+The note shown when a file is not a deck export now says Clues
+Tracker Sheet.
+
 WHAT'S NEXT
 -----------
 1. MANUAL CELL CHARACTERS — up to four small characters in a
@@ -32,12 +48,6 @@ WHAT'S NEXT
 
 3. USER GUIDE. The name in the Guide that still says Mystery
    Tracker is changed when the Guide is done.
-
-4. ONE SENTENCE STILL SAYS MYSTERY TRACKER — the note shown
-   when a file is not a deck export. This needs to be done.
-
-5. A REFRESH IN THE MIDDLE OF A GAME — still brings back the
-   old saved page, not the engine's turn. This needs to be done.
 
 NICE TO HAVE
 ------------

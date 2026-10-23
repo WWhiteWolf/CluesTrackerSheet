@@ -40,7 +40,7 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**CTS-6 (2026-10-22) stopped here.** The turn runs on the engine
+**CTS-7 (2026-10-22) stopped here.** The turn runs on the engine
 from the phone, in `CluesTrackerSheet.html`. Once a game is going,
 a click on a card, a click on a name, and the marks in the cells
 go through the engine. Do not take those off the engine. He
@@ -71,11 +71,20 @@ The working file is `CluesTrackerSheet.html`. He renamed it from
 `MysteryTracker.html`. A missing s in that name was a typo, not
 a second rename. He added the s.
 
-The note shown when a file is not a deck export still says
-Mystery Tracker. That still needs doing. A refresh in the middle
-of a game still brings back the old saved page, not the engine's
-turn. That can spoil a game he is in the middle of, so it is
-worth an early sitting of its own.
+A refresh in the middle of a game brings back the engine’s turn.
+The marks, the log, the highlighted column, and Next and Undo
+come from the engine. The summary marks stay with the page.
+When no game is going, setup stays as it was. New Game clears
+the engine’s save, so that game does not come back. He has seen
+this work.
+
+A tap at the wrong point puts a hint or a warning on the game
+row. The page writes those words. They show whether or not the
+engine is running the turn. The turn line leaves the warning
+there until it clears. He has seen the warnings showing.
+
+The note shown when a file is not a deck export now says Clues
+Tracker Sheet.
 
 Setup from CTS-4 still stands. There are no setup steps. Start
 Game is the gate. The pages of the spec after Page 3 still

@@ -32,7 +32,7 @@ copied code works are in `docs-ref`, brought over as they stood.
 
 ## The app — in the project root
 
-- **`MysteryTracker.html`** — the Mystery Tracker page, copied in as the starting page. CTS-3, 2026-10-21.
+- **`CluesTrackerSheet.html`** — the Clues Tracker Sheet page.
 - **`clues-tracker-engine.js`** — the shared heart, copied from the original app.
 - **`clues-tracker-phone.html`** — the phone page. The name on the page is Clues Tracker Sheet.
 - **`engine-tests.html`** — the engine's tests. Open it to run them.

@@ -15,6 +15,37 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-7 — 2026-10-22 — the refresh, the warnings, and the deck note
+
+He took the refresh before the cell characters, so a live game
+would not be put back the old way.
+
+On a refresh during a game, the page had been reading its own
+save from the moment Start Game was pressed. The engine’s later
+turn was written beside that save and was never read back. The
+load now reads the engine’s save when the page save says a game
+is going. The marks, the log, the highlighted column, and Next
+and Undo come from the engine. The summary marks stay with the
+page. When no game is going, setup stays as it was. New Game
+clears the engine’s save, so that game does not come back.
+
+He tried a refresh in a game and said it was working good.
+
+A tap at the wrong point had stopped putting a warning on the
+game row. The highlighted name still turned red. The page writes
+those warnings. They are not part of the engine, and they show
+whether or not the engine is running the turn. The turn line
+leaves the warning there until it clears. He has seen the
+warnings showing.
+
+The note shown when a file is not a deck export now says Clues
+Tracker Sheet. The index names the working page as
+`CluesTrackerSheet.html`.
+
+Cell characters are still the next piece. The name in the Guide
+that still says Mystery Tracker is changed when the Guide is
+done.
+
 ## CTS-6 — 2026-10-22 — the game runs on the phone engine
 
 Patrick said the previous session’s work was committed. He

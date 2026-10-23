@@ -40,6 +40,8 @@ Rules is not kept. The Rules button and the rules panel at the side are gone. He
 
 The game row and the turn row show messages and notes. He has seen the messages.
 
+A tap at the wrong point puts a hint or a warning on the game row, so he can see what is wrong. The page writes those words. They are not part of the engine, and they show whether or not the engine is running the turn. The turn line leaves the warning there until it clears. The highlighted name still shows whose turn it is. He has seen the warnings showing.
+
 ## Columns and whose turn it is
 
 Each player column can be moved as a whole during play. Moving it changes only where it sits.
@@ -70,11 +72,13 @@ Up to four small characters can be typed in a grid cell. They are characters, no
 
 The engine decides what the log says and when a line is written. The log on the page shows those lines. While a game is going, the page does not keep a second play log of its own. He has seen the log working, including a House check after nobody showed.
 
+## A refresh
+
+A refresh in the middle of a game brings back the engine’s turn. The marks, the log, the highlighted column, and Next and Undo come from the engine. The summary marks stay with the page. When no game is going, setup stays as it was. New Game clears the engine’s save, so that game does not come back. He has seen this work.
+
 ## Still to do
 
 Three major pieces are left. Manual cell characters, entered by right-click only. Deduction logic. The User Guide. The name in the Guide that still says Mystery Tracker is changed when the Guide is done.
-
-These also still need to be done. One sentence still says Mystery Tracker, the note shown when a file is not a deck export. A refresh in the middle of a game still brings back the old saved page, not the engine’s turn.
 
 ## Not settled
 

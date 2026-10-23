@@ -16,7 +16,7 @@ data shapes that cross page boundaries.
 
 ## Decided for this rebuild
 
-Written CTS-3, 2026-10-21, and brought current in CTS-6.
+Written CTS-3, 2026-10-21, and brought current in CTS-7.
 The Setup below is in the page. The pages after Page 3 still
 describe the rest of the page as it stood when it was copied in.
 Where those pages mention a Rules button or a Rules panel, that
@@ -97,6 +97,13 @@ Rules is not kept. The Rules button and the rules panel are gone.
 He has seen both gone. Guide and the ? button stay. The game row
 and the turn row show messages. He has seen the messages.
 
+A tap at the wrong point puts a hint or a warning on the game
+row, so he can see what is wrong. The page writes those words.
+They are not part of the engine, and they show whether or not
+the engine is running the turn. The turn line leaves the warning
+there until it clears. The highlighted name still shows whose
+turn it is. He has seen the warnings showing.
+
 The name in the title and in the heading is Clues Tracker Sheet.
 The version beside the heading is Ver. 1.0. He checked both on
 the open page.
@@ -105,14 +112,16 @@ The right-click is for entering the manual cell characters only.
 It is not a mark cycle. This is settled. Those characters are
 not in the page yet.
 
+A refresh in the middle of a game brings back the engine’s turn.
+The marks, the log, the highlighted column, and Next and Undo
+come from the engine. The summary marks stay with the page.
+When no game is going, setup stays as it was. New Game clears
+the engine’s save, so that game does not come back. He has seen
+this work.
+
 Three major pieces are left. Manual cell characters. Deduction
 logic. The User Guide. The name in the Guide that still says
 Mystery Tracker is changed when the Guide is done.
-
-These also still need to be done. One sentence on the page still
-says Mystery Tracker. It is the note shown when a file is not a
-deck export. A refresh in the middle of a game still brings back
-the old saved page, not the engine’s turn.
 
 ---
 
@@ -212,8 +221,14 @@ loading. Does the following in order:
 
 - removes leftover storage records from earlier app versions
 - loads the saved deck-slot list and renders the deck buttons
-- decides what to restore: a saved in-progress game takes priority;
-  otherwise, if a last-used deck is remembered, it's loaded back
+- decides what to restore. When the saved page says a game is
+  going, the engine’s save is read first. The marks, the log,
+  the highlighted column, and Next and Undo come from the engine.
+  The summary marks still come from the page save. When the saved
+  page is still in setup, that setup is restored and the engine’s
+  save is not opened. If there is no saved page, a remembered
+  deck is loaded. New Game clears the engine’s save, so a later
+  refresh does not bring that game back
 - prepares the deck-bar visibility, phase-bar text, button states
   (**B2.9**), Rules text, and Guide content so the on-screen state
   matches what was just restored
@@ -234,6 +249,10 @@ The following come back exactly as saved:
 - the list of cards that could still be the secret answer
 - the summary-column marks
 - the house-checked card list
+
+When a game is going, the marks, the log, and the turn painted
+on screen come from the engine’s save. The summary marks in
+this record are the ones that come back.
 
 The on-screen table is redrawn and every cell refreshed. Per-step
 Setup snapshots are wiped — those don't survive a page reload.

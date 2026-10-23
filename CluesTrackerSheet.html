@@ -1764,10 +1764,10 @@ function engineAskerCol() {
     return s.activePlayers[s.turnStep % s.activePlayers.length];
 }
 
-function handGameToNewerRules() {
-    const names = getPlayerNames();
-    const mine = ALL_CARDS.filter(card =>
-        cellState[card] && cellState[card][meCol] && cellState[card][meCol].check);
+// The page paints what the engine reports. The engine's own save
+// uses one key, set here, so a refresh can read the same record
+// Start Game writes.
+function attachEngine() {
     Engine.connect({
         status(msg) { showStatus(msg, 'var(--red-lt)'); },
         turnChanged() {
@@ -1779,6 +1779,13 @@ function handGameToNewerRules() {
         }
     });
     Engine.testing.useStorageKey('ctsWebGame');
+}
+
+function handGameToNewerRules() {
+    const names = getPlayerNames();
+    const mine = ALL_CARDS.filter(card =>
+        cellState[card] && cellState[card][meCol] && cellState[card][meCol].check);
+    attachEngine();
     Engine.testing.reset({
         categories: CATEGORIES.map(c => ({ name: c.name, cards: c.cards.slice() })),
         players: [0, 1, 2, 3, 4, 5].map(i => names[i] || ''),
@@ -1809,7 +1816,9 @@ function showEngineNow() {
     const deck = document.getElementById('deckBarDirective');
     const asker = engineAskerCol();
     if (prefix) prefix.textContent = 'Game · Turn ' + s.turnCount;
-    if (directive) {
+    // A hint or warning owns this line until it clears. The turn
+    // name comes back then. It must not wipe the warning.
+    if (directive && !gameRowMessage) {
         directive.textContent = asker === s.meSlot
             ? 'Your turn'
             : ((s.players[asker] || 'Player') + "'s turn");
@@ -1876,7 +1885,7 @@ function playHeaderThroughEngine(col) {
     const road = Engine.headerTap(col);
     if (!road || road.road === 'refused') {
         renderAllCells();
-        showEngineNow();
+        showPlayHint('header', col);
         return;
     }
     if (road.road === 'correct') {
@@ -2547,8 +2556,13 @@ function onCellClick(e) {
     }
 
     if (enginePlaying()) {
-        Engine.cellTap(card, col);
+        if (!turnOrder.includes(col)) return;
+        const took = Engine.cellTap(card, col);
         renderAllCells();
+        if (!took) {
+            showPlayHint('cell');
+            return;
+        }
         showEngineNow();
         return;
     }
@@ -3614,6 +3628,15 @@ function applySnapshot(d) {
 function autoSave() {
     localStorage.setItem('clueTrackerV6', JSON.stringify(getSnapshot()));
 }
+
+// New Game leaves the page save behind already. The engine's save
+// has to go too, or a refresh would open that game again.
+function clearEngineSave() {
+    if (typeof Engine === 'undefined') return;
+    Engine.testing.useStorageKey('ctsWebGame');
+    Engine.testing.reset();
+    try { localStorage.removeItem('ctsWebGame'); } catch (e) {}
+}
 function newGame() {
     // M5+: ask whether to keep the same players or start with fresh names.
     // Two two-tap buttons; right-to-left layout puts "Same Players" on the right as the primary.
@@ -3645,6 +3668,7 @@ function _doNewGame(opts) {
         keptCounts = [...playerCardCounts];
     }
     localStorage.removeItem('clueTrackerV6');
+    clearEngineSave();
     CATEGORIES = defaultCategories();
     mutedCategoryIdxs = new Set();
     mutedCards        = new Set();
@@ -3733,16 +3757,90 @@ function _renderScrollingStatus(el, msg, color, key, onCleared) {
         }, totalMs);
     });
 }
+// True while a hint or warning owns the game row. The turn line
+// waits. The page writes these words. They do not come from the engine.
+let gameRowMessage = false;
+
 function showStatus(msg, color) {
     // M11/13: Game status messages now overwrite the phaseDirective text in
     //   place. The directive comes back automatically via updatePhaseBarText()
     //   when the status timer clears (or immediately if msg is empty).
     const el = document.getElementById('phaseDirective');
     if (!el) return;
+    gameRowMessage = !!msg;
     _renderScrollingStatus(el, msg, color, 'status', () => {
+        gameRowMessage = false;
         el.style.color = '';
         updatePhaseBarText();
     });
+}
+
+// A tap at the wrong point. The words are the page's, in a game
+// the engine is running and in one it is not. The engine still
+// decides whether the tap counts.
+function showPlayHint(where, col) {
+    const s = Engine.inspect();
+    if (!s.gameInProgress || s.accusationResult !== null) return;
+    const asker = engineAskerCol();
+    const nCats = s.categories.filter(c => c.cards.length > 0).length;
+    const asked = s.pendingCards || [];
+    const whose = (asker === s.meSlot) ? 'your own' : "the current player's";
+
+    if (where === 'cell') {
+        if (s.gamePhase === 'asking') {
+            showStatus('Click a card in the current player\'s column to mark Asked.', 'var(--red-lt)');
+            return;
+        }
+        if (s.gamePhase === 'showing') {
+            showStatus("Click the name at the top of the column of the player who showed — the popup will ask which card.", 'var(--red-lt)');
+            return;
+        }
+        showStatus('Tap Next to continue.', 'var(--red-lt)');
+        return;
+    }
+
+    if (s.playerOutKind && s.playerOutKind[col] === 'quit') {
+        showStatus(`${getColName(col)} is Out (Quit) — they can't show a card.`, 'var(--red-lt)');
+        return;
+    }
+    if (s.gamePhase === 'waiting') {
+        showStatus('Tap Next to continue.', 'var(--red-lt)');
+        return;
+    }
+    if (s.gamePhase === 'asking' || asked.length < nCats) {
+        const word = nCats === 1 ? 'card' : 'cards';
+        showStatus(`Click ${nCats} ${word} in ${whose} column first.`, 'var(--red-lt)');
+        return;
+    }
+    if (col === asker) {
+        showStatus(`${getColName(col)} is asking — cannot also show.`, 'var(--red-lt)');
+        return;
+    }
+    if (asked.length && asked.every(card =>
+        Engine.visibleMarks(card, col).some(m => m.type === 'cross'))) {
+        showStatus(`${getColName(col)} has ❌ on all asked cards — cannot show.`, 'var(--red-lt)');
+        return;
+    }
+    const ring = s.activePlayers;
+    const ai = ring.indexOf(asker);
+    const size = ring.length;
+    if (ai >= 0 && size > 0) {
+        const colPos = (ring.indexOf(col) - ai - 1 + size) % size;
+        for (let i = 1; i < size; i++) {
+            const c = ring[(ai + i) % size];
+            if (c === asker) continue;
+            const must = asked.some(card =>
+                Engine.visibleMarks(card, c).some(m => m.type === 'check'));
+            if (must) {
+                const mustPos = (ring.indexOf(c) - ai - 1 + size) % size;
+                if (colPos > mustPos) {
+                    showStatus(`${getColName(c)} must show first — they have a card.`, 'var(--red-lt)');
+                    return;
+                }
+                break;
+            }
+        }
+    }
 }
 // M11/12: Deck status messages now overwrite the deck-hint text in-place.
 //   When the message clears, the original hint ("← right-click Export/Delete")
@@ -3957,9 +4055,15 @@ window.addEventListener('load', () => {
     loadLastUsedDeck();
     renderDeckSlots();
 
+    attachEngine();
     const rawGame = localStorage.getItem('clueTrackerV6');
-    if (rawGame) {
-        applySnapshot(JSON.parse(rawGame));
+    const savedPage = rawGame ? JSON.parse(rawGame) : null;
+    // A game that is already going lives in the engine's save.
+    // Read that before the page save is painted, so the marks,
+    // the log, and whose turn it is come from the engine.
+    if (savedPage && savedPage.gamePhase === 'play') Engine.boot();
+    if (savedPage) {
+        applySnapshot(savedPage);
         showStatus('Previous game restored ✓', 'var(--red-lt)');
     } else if (lastUsedDeckIdx >= 0) {
         // No active game — restore last-used Game Deck (names + dividers only).
@@ -5200,7 +5304,7 @@ function importDeckFromFile() {
             catch (e) { showDeckStatus('Could not read that file — not valid JSON.', 'var(--red-lt)'); return; }
             // Validate shape. Tolerate missing optional fields but require categories.
             if (!data || data.format !== DECK_FILE_FORMAT) {
-                showDeckStatus('That .json is not a Mystery Tracker deck export.', 'var(--red-lt)');
+                showDeckStatus('That .json is not a Clues Tracker Sheet deck export.', 'var(--red-lt)');
                 return;
             }
             if (!Array.isArray(data.categories) || data.categories.length === 0) {
