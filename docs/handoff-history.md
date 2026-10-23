@@ -15,6 +15,18 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-9 — 2026-10-23 — the User Guide
+
+Patrick said the previous session’s work was committed.
+
+The writings that still described a right-click on a player’s cell as a mark cycle were brought in line with the four-character box. That is Page 8 of the spec, the sentences that still pointed at the cycle, and the handoff line that treated every page after Page 3 as the copied page. The page’s right-click was not changed.
+
+The User Guide in `CluesTrackerSheet.html` was rewritten for the page as it plays. He edited the turn sentences himself. He is satisfied with the Guide.
+
+The name in the Guide is Clues Tracker Sheet. Choosing Me stays under setup. Undo says what a tap does once a turn has started, and what a tap does at the start of a turn. Taking back a show between two players, before Next, is its own line. There is no Right-click section. The four characters are under the heading Cell Marks.
+
+He does not want the Quit feature. The Guide does not describe it. The button is still on the page, from a right-click on a column heading during a game. It was not taken out.
+
 ## CTS-8 — 2026-10-22 — deduction helpers, then cell characters
 
 Patrick said the previous session’s work was committed.

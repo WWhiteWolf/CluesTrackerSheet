@@ -20,7 +20,9 @@ Written CTS-3, 2026-10-21, and brought current in CTS-7.
 The Setup below is in the page. The pages after Page 3 still
 describe the rest of the page as it stood when it was copied in.
 Where those pages mention a Rules button or a Rules panel, that
-is out of date. Rules is not kept.
+is out of date. Rules is not kept. Where those pages describe a
+right-click on a player’s cell as a mark cycle, that does not
+stand. Page 8 is that right-click, as it stands.
 
 The work is done in Clues Tracker Sheet. Mystery Tracker stays the
 archive. The starting page is the older web version, copied in as
@@ -121,9 +123,10 @@ When no game is going, setup stays as it was. New Game clears
 the engine’s save, so that game does not come back. He has seen
 this work.
 
-One major piece is left. The User Guide. It waits for a new
-session. The name in the Guide that still says Mystery Tracker
-is changed when the Guide is done.
+The User Guide was written in CTS-9. He is satisfied with it.
+The name in the Guide is Clues Tracker Sheet. There is no
+Right-click section. The four characters are under the heading
+Cell Marks.
 
 ---
 
@@ -137,7 +140,7 @@ Index of the spec. One linked block per other page:
 - **B1.4** → Page 5: Turn Sequence
 - **B1.5** → Page 6: Reveal Popups
 - **B1.6** → Page 7: Auto-Mark Engine
-- **B1.7** → Page 8: Manual Mark Cycle
+- **B1.7** → Page 8: Characters in a cell
 - **B1.8** → Page 9: House Column
 - **B1.9** → Page 10: Σ Summary Column
 - **B1.10** → Page 11: Player Out
@@ -305,11 +308,13 @@ preserving into a single record. The record contains:
 - which players are Out and how (Quit or Wrong Accusation)
 - the summary-column marks per card
 - the house-checked card list
-- the in-progress state of a right-click mark cycle on a player cell
-  (which stage you're at, what to revert to)
 - the current setup step
 - the on/off state of each optional deduction rule (**Appendix B**)
 - the save format version (8)
+
+The characters typed in a player’s cell during a game are kept
+by the engine. Undo does not remove them. A right-click mark
+cycle is not part of this save.
 
 **Not saved:** the in-flight short-term memory that only makes sense
 while the app is running:
@@ -1085,8 +1090,8 @@ instead of calling B7.1, and it doesn't keep an undo list (the
 ✗s it places during Play are permanent).
 
 **B7.5 · Shared row sweep with undo list
-(`propagateRowCross`).** A row sweep used by both the manual-
-mark cycle commit and the house-cell commit. Goes through each
+(`propagateRowCross`).** A row sweep used by the house-cell
+commit. Goes through each
 active player column other than the source, with these skips:
 
 - Me's column
@@ -1182,182 +1187,21 @@ mark. B7.7 rebuilds the flags after marks are removed — Undo and
 the Setup Me-column clear both use it.
 
 **Off-page connectors.** Called from Pages 4 (Start Game), 5
-(turn flow), 6 (popups), 8 (manual marks), 9 (house marks). B7.8
+(turn flow), 6 (popups), 9 (house marks). B7.8
 is read by Page 9.
 
 ---
 
-## Page 8 — Manual Mark Cycle
+## Page 8 — Characters in a cell
 
-Sometimes the user knows something the auto-mark rules don't, or
-wants to correct a mark. During Play, right-clicking most
-player×card cells lets the user set the cell by hand. Each
-right-click moves the cell one step around a four-state cycle —
-the auto-mark state → blank → ✗ → ✓ → and back to the auto-mark
-state. Nothing is permanent while the user clicks: the cycle
-commits when the mouse leaves the cell. (Which cells accept
-manual marks, and the other jobs right-click does elsewhere in
-the app, are in **B8.1**.)
+A right-click on a player’s cell during a game opens a box for
+up to four characters. They show in the corner. The sheet does
+not use them. Undo does not remove them, and they are not
+written in the log. An empty column does not open the box. He
+tried it and said that works.
 
-The 6 blocks below describe the code — the user action first
-(the right-click and the commit), then the machinery behind it
-(the helpers, the per-cell memory, the log entry, and the
-engine guard).
-
-- **B8.1** Right-click handler
-- **B8.2** Mouseleave commit
-- **B8.3** Cell-snapshot routines
-- **B8.4** Per-cell cycle memory
-- **B8.5** Manual-mark log entries
-- **B8.6** Engine guard against contradicting marks
-
-**B8.1 · Right-click handler (`cycleManualMark`).** Right-click
-is the app's "do something special here" gesture. What it does
-depends on where the user clicks and on the mode.
-
-In Setup:
-
-- a category banner — move the banner up or down (Step 1), or
-  mute/activate the category (Step 2)
-- a card name — mute that card, or mass-mute (Step 3)
-- a player header — "I am [name]," picking the Me column (Step 5)
-- a deck slot — Export or Delete that deck
-
-In Play:
-
-- a player header — "Mark player Out…"
-- a player×card cell — the manual mark cycle, this page's subject
-
-The rest of this block covers only the last job — the manual mark
-cycle on a player×card cell, which exists only in Play.
-Right-clicks on a cell are ignored if the cell is in Me's column,
-the column has no player, or the row is muted (the card itself or
-its whole category). Otherwise each
-right-click moves the cell one step: blank → ✗ → ✓ → back to the
-auto-mark state.
-
-On the first right-click of a new cycle (the cell wasn't already
-mid-cycle), the handler cleans up before stepping:
-
-- undoes the row of ✗s the previous commit added, if any
-- saves a copy of the cell's current auto-mark state (the
-  snapshot) — or, if a snapshot already exists from an earlier
-  cycle, puts the cell back to that saved state
-
-Only this one cell changes on screen. The row sweep and the log
-entry wait until the mouse leaves the cell and **B8.2** commits.
-
-**B8.2 · Mouseleave commit (`commitManualCycle`).** When the
-user's mouse leaves the cell, the cycle commits. The cell's
-final ✓/✗ state is compared to the pre-cycle snapshot and is
-either changed or unchanged:
-
-- **Unchanged** — the user cycled back to where the cell
-  started. Nothing to keep: the log entry is removed and all
-  cycle memory is cleared (marker, snapshot, undo list).
-- **Changed to ✓** — runs the shared row sweep (**B7.5**),
-  putting ✗ on the rest of the row, and stores the sweep's undo
-  list on the cell. Pushes a manual-✓ log entry.
-- **Changed to ✗ or blank** — no row sweep: a ✗ or a cleared
-  cell says something about this player only, nothing about the
-  rest of the row. Pushes the matching log entry.
-
-As a safety net, a changed commit first clears any leftover undo
-list from a prior commit (in practice B8.1's first click has
-already done this).
-
-After a changed commit, the cycle marker is cleared but the
-snapshot — and the undo list, if a sweep ran — stay on the cell,
-so a future cycle can put everything back.
-
-Net: nothing is permanent until the mouse leaves the cell, and
-cycling back to the start costs nothing.
-
-**B8.3 · Cell-snapshot routines (`snapshotCell`,
-`applyCellSnapshot`, `undoEntry`).** Three short routines behind
-the manual cycle (**B8.1**, **B8.2**):
-
-- **Copy** — takes a cell's current state (flags + marks array)
-  and returns it as a record.
-- **Restore** — writes a record back into a cell, replacing
-  whatever was there.
-- **Restore one cell from an undo list** — takes one entry from a
-  propagation undo list (each entry is a record of one cell's
-  state) and restores it, then re-renders the cell.
-
-Page 9's house cycle uses only the third routine itself, to roll
-back the ✗s it spread across a row. Its own baseline is a simple
-checked/unchecked flag, so it never copies or restores its own
-cell. The copy routine still works for it behind the scenes: the
-shared row sweep (**B7.5**) uses it to build the undo list.
-
-**B8.4 · Per-cell cycle memory (`manualStage`, `manualSnapshot`,
-`manualUndoList`).** Three fields stored on the cell's state
-record alongside the regular flags and marks:
-
-- the cycle position — where the cell is in the cycle: blank, ✗,
-  or ✓ (stored as `'blank'`, `'cross'`, `'check'`). Stored as
-  `null` when the user has cycled all the way around, back to the
-  auto-mark state, with the mouse still on the cell — the cycle
-  is still open, and if the mouse leaves here, the commit runs
-  **B8.2**'s full revert. When no cycle is in progress at all,
-  the field is simply empty (`undefined`).
-- the snapshot of the cell's pre-cycle auto-mark state (captured
-  on first cycle entry, persists until the user fully reverts)
-- the propagation undo list (the cells the last commit ✗'d,
-  used to revert on the next cycle's first click)
-
-All three fields are saved with the rest of the game. So nothing
-is lost when the app is closed and reopened: a snapshot or undo
-list left on a cell is still there. Even a half-finished cycle
-comes back — the next right-click picks up where the cycle left
-off.
-
-**B8.5 · Manual-mark log entries (`logManualMark`).** Pushes a
-one-line log entry when a manual cycle commits. The Log is a
-true log: a new commit replaces only this cell's manual entry
-from the current turn (re-commits within a turn collapse to one
-entry) — manual entries from earlier turns are history and stay
-put. Only a full Undo removes them. On a revert, no new entry is
-pushed; if the current turn had one, it's removed.
-
-Each entry is a record with these parts:
-
-- `turn`: the turn number when the commit happened
-- `playerIdx` / `player`: the marked column and its player name
-- `isMe`: whether the column is Me's — always false today, since
-  Me's column refuses manual marks (**B8.1**), but the log
-  format carries the flag for every entry type
-- `manual`: true — marks the entry as manual
-- `manualAction`: `'check'`, `'cross'`, or `'blank'`
-- `manualCard`: the card name
-
-**B8.6 · Engine guard against contradicting marks (inside
-`markCell`).** Inside the
-mark pusher (B7.6), an extra check: if the target cell has an
-active manual cycle in progress and a manual mark on it, the
-auto-mark rules refuse to drop a contradicting ✓ or ✗ from any
-other source. Manual is the source of truth while a cycle is open.
-At the blank stage no manual mark exists yet, so the guard
-doesn't block — the engine may still fill the cell mid-cycle.
-Once committed and the cycle is gone, the manual mark stops
-being special: it's simply the cell's ✓ or ✗, and the engine
-treats it like one of its own — duplicates blocked by
-first-one-wins, contradictions blocked because sweeps skip
-already-marked cells.
-
-Net: while a cycle is open, the user's manual mark outranks the
-engine.
-
-**Within-page connectors.** B8.1 ↔ B8.2 (right-click cycle vs.
-mouseleave commit). B8.1 and B8.2 both use the B8.3 routines.
-B8.4 is the per-cell state both functions manipulate. B8.2 →
-B8.5 on commit.
-
-**Off-page connectors.** B8.2 → Page 7's B7.5 (propagation on
-✓ commit). B8.5 → Page 14 (log). B8.6 sits inside Page 7's
-B7.6. Page 9's house cycle uses B8.3's undo-list restore to roll
-back its spread ✗s.
+The engine stores those characters and does not use them. A
+right-click does not cycle a mark on that cell.
 
 ---
 
@@ -1451,8 +1295,8 @@ The user has seen it on the board, so it can't be the secret.
 Both read and write B9.3. B9.4 reads B9.3. B9.2 → B9.5.
 
 **Off-page connectors.** B9.2 → Page 7's B7.5 (propagation on a
-checked commit). B9.1 and B9.2 both use B8.3's undo-list restore
-to roll back spread ✗s. B9.6 → Page 7's B7.8. B9.5 → Page 14.
+checked commit). B9.1 and B9.2 roll back spread ✗s from the
+undo list. B9.6 → Page 7's B7.8. B9.5 → Page 14.
 Page 12's B12.5 → B9.3/B9.5 (Undo scrubs the undone turn's
 house marks and log entries).
 
@@ -1697,17 +1541,13 @@ Picks the right popup text and button label, then calls the
 play-undo action with the appropriate flag on two-tap confirm.
 
 **B12.5 · Play-undo action.** Removing cell marks for a turn is
-not enough — house ✓s live in their own set, and manual cycle
-bookkeeping lives on the cell. So before removing cell marks,
-it scrubs companion state for the turn being undone:
+not enough — house ✓s live in their own set. So before removing
+cell marks, it scrubs companion state for the turn being undone:
 
 - any house marks placed on that turn are pulled from the
   house-checked set, their undo lists cleared, their baselines
   deleted
-- any manual marks placed on that turn have their per-cell
-  cycle memory cleared (stage, snapshot, undo list)
-- the matching house and manual log entries are dropped from
-  the game log
+- the matching house log entries are dropped from the game log
 
 Then:
 
@@ -1724,9 +1564,9 @@ Then:
   auto-save triggered
 
 Net: every trace of the undone turn is wiped — cell marks, house
-marks, manual marks, and log entries — except permanent Quit /
+marks, and log entries — except permanent Quit /
 Wrong Accusation traces, whose log entries and quit-flagged marks
-both survive.
+both survive. The characters typed in a cell stay (Page 8).
 
 **B12.6 · Turn-mark check and turn-mark eraser.** Two separate
 functions, side by side in the code — near-identical twins:
@@ -1761,8 +1601,9 @@ eraser.
 **Off-page connectors.** B12.2 saves and restores Page 3's per-step
 snapshots (**B3.8**) and Undo Typing memory (**B3.9**). B12.3 →
 Page 4 (the same flow seen from the Me side: **B4.4**; styling
-refresh **B4.6**). B12.5 → Page 9 (house), Page 8 (manual), Page 14
-(log). B12.6's eraser rebuilds each cell's flags via Page 7's
+refresh **B4.6**). B12.5 → Page 9 (house), Page 14
+(log). Undo does not remove the characters typed in a cell
+(Page 8). B12.6's eraser rebuilds each cell's flags via Page 7's
 **B7.7**. B12.7 is fed from Page 5 by **B5.9**. Setup-undo and
 play-undo both end with an auto-save (**B2.6**) and a button
 refresh (**B2.9**). B12.6's check is also run by **B2.9**.
@@ -2180,8 +2021,8 @@ their own hide class).
 
 - muted categories don't count toward the asks-per-turn limit
 - muted rows never get swept: a row sweep runs only on the row
-  of the card that set it off — a show (Page 6), a manual ✓
-  commit (Page 8), a Mark Out Quit reveal (Page 11), or Start
+  of the card that set it off — a show (Page 6), a Mark Out
+  Quit reveal (Page 11), or Start
   Game's initial ✗ pass (Page 5) — and none of those can start
   from a muted card
 - cells in muted rows are unclickable — in hide mode the rows
@@ -2226,10 +2067,7 @@ after a show commit (Page 6), a Mark Out (Page 11), an Undo
   shownToMe:    boolean,    // player showed this card to Me
   iShowedMe:    boolean,    // Me showed this card to this player
   marks:        [Mark, …],  // mark history list (see A.2)
-  // optional manual-cycle bookkeeping (Page 8):
-  manualStage?:    'blank' | 'cross' | 'check' | undefined,
-  manualSnapshot?: PreCycleSnapshot,
-  manualUndoList?: [PropagationUndoEntry, …]
+  // Characters typed in a cell are kept by the engine (Page 8).
 }
 ```
 
@@ -2407,9 +2245,11 @@ is on the board, or which show gave it away and when. The note works
 out its answer live at click time, clears itself after five seconds,
 and any click clears it sooner.
 
-The column-cell tints (rules 4, 5, 7) have no such note — a
-right-click on a player cell is the manual mark cycle. Rules 4 and 5
-need none: the ✓s or ✗s that drive them are already on the grid.
+The column-cell tints (rules 4, 5, 7) have no such note. A
+right-click on a player’s cell opens a box for up to four
+characters. They show in the corner. The sheet does not use
+them. Rules 4 and 5 need none: the ✓s or ✗s that drive them
+are already on the grid.
 Fencing's reasoning lives off the grid, so its results are written
 into the Deductions panel instead.
 
@@ -2475,7 +2315,7 @@ untouched.
 - **Page 5**: B5.1–B5.11 (Turn Sequence)
 - **Page 6**: B6.1–B6.4 (Reveal Popups)
 - **Page 7**: B7.1–B7.9 (Auto-Mark Engine)
-- **Page 8**: B8.1–B8.6 (Manual Mark Cycle)
+- **Page 8**: Characters in a cell
 - **Page 9**: B9.1–B9.6 (House Column)
 - **Page 10**: B10.1–B10.4 (Summary Column)
 - **Page 11**: B11.1–B11.7 (Player Out)

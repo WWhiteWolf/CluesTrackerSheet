@@ -1,5 +1,5 @@
 PENDING WORK — plain-language list (Clues Tracker Sheet)
-Last updated: 2026-10-22
+Last updated: 2026-10-23
 
 This is the "what's still left" list in everyday words. Nothing here
 is urgent. The original app, Mystery Clues Track Sheet, has its own
@@ -51,11 +51,17 @@ up to four characters. They show in the corner. Undo leaves
 them, and they are not written in the log. An empty column
 does not open the box. He tried it and said that works.
 
+DONE IN CTS-9, 2026-10-23
+-------------------------
+The User Guide describes the page as it plays. He is satisfied
+with it. The name in the Guide is Clues Tracker Sheet. There
+is no Right-click section. The four characters are under the
+heading Cell Marks.
+
 WHAT'S NEXT
 -----------
-1. USER GUIDE. It waits for a new session. The name in the
-   Guide that still says Mystery Tracker is changed when the
-   Guide is done.
+1. QUIT. He does not want the Quit feature. The button is
+   still on the page. It was not taken out.
 
 NICE TO HAVE
 ------------

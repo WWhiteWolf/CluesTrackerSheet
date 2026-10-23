@@ -84,9 +84,13 @@ They start off. A tick turns one on. They only color cells, or post a note in th
 
 During a game they read the engine’s marks, the house checks, and the shows the engine has written. An undone show is left out. He looked at them and said they are working now.
 
-## Still to do
+## The User Guide
 
-One major piece is left. The User Guide. It waits for a new session. The name in the Guide that still says Mystery Tracker is changed when the Guide is done.
+The User Guide was written in CTS-9. He is satisfied with it. The name in the Guide is Clues Tracker Sheet. There is no Right-click section. Choosing Me stays under setup. The four characters are under the heading Cell Marks.
+
+## Quit
+
+He does not want the Quit feature in this app. The Guide does not describe it. The button is still on the page, from a right-click on a column heading during a game. It was not taken out in CTS-9.
 
 ## Not settled
 

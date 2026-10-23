@@ -40,13 +40,26 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**CTS-8 (2026-10-22) stopped here.** The turn runs on the engine
-from the phone, in `CluesTrackerSheet.html`. Once a game is going,
-a click on a card, a click on a name, and the marks in the cells
-go through the engine. Do not take those off the engine. He
-played eight turns and it ran the way he wanted. The log shows
-the lines the engine writes. A House check is entered by hand,
-and the engine writes that line. Rules is gone. Decisions are in
+**CTS-9 (2026-10-23) stopped here.** The User Guide in
+`CluesTrackerSheet.html` describes the page as it plays. He is
+satisfied with it. The name in the Guide is Clues Tracker Sheet.
+There is no Right-click section. Choosing Me stays under setup.
+The four characters are under the heading Cell Marks.
+
+He does not want the Quit feature. The Guide does not describe
+it. The button is still on the page, from a right-click on a
+column heading during a game.
+
+**The next sitting removes Quit from this app.** Take the
+button off the page. Do not bring it back in the Guide.
+
+The turn runs on the engine from the phone, in
+`CluesTrackerSheet.html`. Once a game is going, a click on a
+card, a click on a name, and the marks in the cells go through
+the engine. Do not take those off the engine. He played eight
+turns and it ran the way he wanted. The log shows the lines the
+engine writes. A House check is entered by hand, and the engine
+writes that line. Rules is gone. Decisions are in
 `docs/Design-decisions.md`. Read that before asking him to decide
 again.
 
@@ -65,10 +78,6 @@ one on. They only color, or post a note. They never write a mark.
 During a game they read the engine’s marks, the house checks, and
 the shows the engine has written. An undone show is left out. He
 looked at them and said they are working now.
-
-**The next sitting is the User Guide.** It waits for a new
-session, so it describes the page as it is. The name in the
-Guide that still says Mystery Tracker is changed then.
 
 The working file is `CluesTrackerSheet.html`. He renamed it from
 `MysteryTracker.html`. A missing s in that name was a typo, not
@@ -91,7 +100,9 @@ Tracker Sheet.
 
 Setup from CTS-4 still stands. There are no setup steps. Start
 Game is the gate. The pages of the spec after Page 3 still
-describe the copied page, except the decisions at the top.
+describe the copied page, except the decisions at the top and
+Page 8. Page 8 is the right-click on a player’s cell. The mark
+cycle does not stand.
 
 **Patrick's plain-language list is `docs/pending.md`.** The Word
 copy is made from it when he asks.

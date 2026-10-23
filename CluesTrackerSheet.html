@@ -4136,99 +4136,95 @@ function setGuideContent() {
     if (!body) return;
     body.innerHTML = `
         <h3>What this app is for</h3>
-        <p>This Mystery Tracker unburdens the user playing deduction style games by auto-filling the many boxes on an expansive scoresheet for tracking all the clues.</p>
-        <p>As the game unfolds, you record who asked about which cards, who showed, and who passed. The app keeps that history tidy and out of your head, so you can focus on the deductions.</p>
-        <p>One thing it does <em>not</em> do is figure out the answer for you. It records observations; the conclusions are still yours to draw. That's the design.</p>
-        <p>This version uses three categories and 21 cards. Before the game starts, a card's name, the player names, the card counts, and Me can all be changed, in any order.</p>
+        <p>Clues Tracker Sheet keeps the scoresheet while you play. As the game goes on, you record who asked about which cards, who showed, and who passed. The page holds that history, so you can keep your mind on the deductions.</p>
+        <p>It does not work out the answer for you. It records what happened. What you conclude is still yours.</p>
+        <p>The sheet has three categories and 21 cards: Suspects, Weapons, and Rooms. It opens with the Clue Classic names.</p>
 
         <h3>Setting up a new game</h3>
-        <p>There are no steps. The grid is already Suspects, Weapons, and Rooms, 21 cards in all. Change whatever you need, then start the game. After that, New Game is how you come back to these edits.</p>
+        <p>There are no steps. Change what you need, in any order, then start the game. Once the game has started, those edits close. New Game is how you come back to them.</p>
         <ul>
-            <li><strong>Cards.</strong> Change the name of any card.</li>
-            <li><strong>Players.</strong> Enter each player's name in the column headers in board order from left to right. The column order matches the turn order during play. In the parentheses, enter how many cards that player was dealt (leave it blank if you don't know — it shows "?").</li>
-            <li><strong>Me.</strong> Right-click on your own column header and choose <strong>"🙋 I am [your name]"</strong> — that column turns green and is now your "Me" column. Then click the boxes in your Me column for each card you're holding. A ✓ will appear in that box. If you typed your card count, the app won't let you check more cards than that, and the ▶ Start Game button stays greyed out until the number you've checked matches your count. (Left your count blank? Just check at least two.) At least two player names are required.</li>
-            <li><strong>Start Game —</strong> Tap Start Game and the app goes to the game. It stays closed until the players' counts add up to 18, or are an even split with the rest on the board. With the three envelope cards, that is the deck of 21. The edits above close. Next and Undo then run the game.</li>
+            <li><strong>Cards.</strong> You can change any card's name. The category names stay as they are. Cards are not added or removed.</li>
+            <li><strong>Players.</strong> Type each name in a column heading, from left to right. That order is the turn order. In the parentheses, type how many cards that player was dealt. A player with a name and no count keeps the game closed. A column with no name stays on the page and is left out of the game.</li>
+            <li><strong>Me.</strong> Right-click your own column heading and choose <strong>"🙋 I am [your name]"</strong>. That column turns green. Click the cells for the cards you hold. A ✓ appears, and the number of checks has to match your card count.</li>
+            <li><strong>Start Game.</strong> You need at least two players, counting yourself. Three cards are in the envelope. The other 18 go to the players or the board. Start Game opens when the counts add up to 18, so nothing is on the board, or when every seated player has the same count and the cards left over are on the board. Next and Undo then run the game.</li>
         </ul>
 
-        <h3>Right-click menus</h3>
-        <p>During Setup, a right-click is used to choose Me. In play, a right-click marks a player out, or cycles a mark on a cell.</p>
+        <h3>The sheet during play</h3>
+        <p>Your column starts with a ✓ for each card you hold and a ✗ for each card you do not. Every other player is crossed off the cards you hold. The first player's column is highlighted.</p>
+        <p>The line under the title shows the turn, and whose turn it is. The bar above the grid says what is happening now. A tap in the wrong place puts a hint on the turn line, and the hint stays until it clears.</p>
+        <p>During play you can drag a column by its heading. The column only changes place. The turn order does not follow the drag. The card names, the ∑ column, and the 🏠 column stay where they are.</p>
+
+        <h3>A turn</h3>
         <ul>
-            <li><strong>Player header — before the game starts</strong> — pick that player as your "Me" column.</li>
-            <li><strong>Player header — Play</strong> — mark that player out of the game (quit or wrong accusation).</li>
-            <li><strong>Any player cell — Play</strong> — cycle a manual mark on that cell: <strong>blank → ✗ → ✓ → return-to-auto → blank …</strong> Manual marks are treated as facts by the deduction engine (a manual ✓ propagates ✗ across the rest of the row) and are recorded in the Log. Not available on your own Me column.</li>
+            <li><strong>Click the asked cards.</strong> Click one card from each category in the asking player's column. A ? appears. That is three cards. Click a chosen card again to take that choice back, until someone has shown.</li>
+            <li><strong>Click the name of the player who showed.</strong> Anyone passed over on the way gets a ✗ on each asked card.</li>
+            <li><strong>When someone shows you a card,</strong> a box asks which card you were shown. After you click it a ✓ is written in that player's column for that card.</li>
+            <li><strong>When you show a card,</strong> a box asks which card you showed. After you select it, the word Me is written in the asking player's column for that card.</li>
+            <li><strong>When one other player shows another,</strong> a ! is written on each asked card in the shower's column. It means they showed one of those cards. It does not name which one. The other players are crossed off the asked cards.</li>
+            <li>To take back a show between two players before Next is pressed, click the showing player's name again, and then once more.</li>
+            <li><strong>If nobody can show,</strong> press Next. The other players are crossed off the asked cards.</li>
+            <li><strong>Next</strong> moves to the next player. The log on the right keeps the actions for each turn.</li>
+            <li><strong>Undo</strong> takes the turn back. If the turn has already started, the marks entered on it leave, and you are back at the start of that same turn. At the start of a turn, Undo takes back the turn before it. The marks from that turn leave. A note of up to four characters, typed into a cell by right-clicking it, stays in that cell. The log does not record that note.</li>
         </ul>
-
-        <h3>The Room column (🏠)</h3>
-        <p>The narrow 🏠 column to the right of the ∑ column is for the <strong>2-player variant</strong> where undealt cards sit face-down in rooms on the board. When you visit a room and peek at a card, click that card's 🏠 cell to mark it as seen. The cell shows a ✓ and the engine immediately ✗s the card across every active player column (no player holds a board card) and removes it from the list of possible secret answers (you've seen it — it can't be the answer). Click again to clear. The column is always visible, but only does anything in Play mode. It's ignored in non-variant games where no cards go to the board.</p>
-
-        <h3>Game Play</h3>
-        <p>The Game page opens where the app has automatically filled in the boxes in the grid of your column, the Me column, with √s for the cards you hold and ✗s for the cards you don't. Likewise, the app has automatically filled the boxes in the other player columns with ✗s for the cards you hold.</p>
-        <p>The first player's column is highlighted and ready for the first turn.</p>
-
-        <h3>Turn play</h3>
-        <p>Each turn follows the same shape. In the upper left, the Phase Bar shows the turn and the Directive Bar shows the play — <em>thinking</em>, <em>guessing</em>, <em>waiting</em>, <em>showed</em> — and what to do next, so you can glance up and orient yourself.</p>
-        <ul>
-            <li><strong>Click the asked cards.</strong> When a player makes a guess, click each of the asked cards in the asking player's column. A ? mark drops in.</li>
-            <li><strong>Click the shower's column header.</strong> When someone shows, click their player-header. The app records the shown cards with a ! mark on each asked card in their column and drops a ✗ on the card for every player that passed in between — those players couldn't show, so they don't hold any of the asked cards.</li>
-            <li><strong>When it's your turn to ask or to be shown,</strong> a small popup appears so you can record which card was involved. A ✓* on the shower's column captures "you saw it" and a ←Me on the asker's column captures "you showed it."</li>
-            <li><strong>Press Next.</strong> At the end of the current player's turn tap Next. The turn advances and a new entry lands in the Game Log on the right.</li>
-            <li><strong>Undo —</strong> If at any point you want to go back to the beginning of the current turn or the previous turn, tap Undo. Every mark that was entered during that turn will be erased.</li>
-        </ul>
+        <p>If a player does not get to ask, a tap on Next records that they did not ask, and the turn moves on.</p>
 
         <h3>Reading the marks</h3>
-        <p>Most marks are placed <strong>automatically</strong> as you record asks, shows, and passes. You can also add your own <strong>manual</strong> marks by right-clicking a cell in the other players' columns — useful when you've learned something the engine couldn't deduce on its own (a card was accidentally revealed, your own reasoning got there first, etc.). Right-click cycles blank → ✗ → ✓ → return-to-auto. A manual ✓ is treated as fact by the engine and propagates ✗ across the rest of the row.</p>
         <ul>
-            <li><strong>✓</strong> — this player has this card. Confirmed.</li>
-            <li><strong>✗</strong> — this player does <em>not</em> have this card. Confirmed.</li>
-            <li><strong>?</strong> — this player asked about this card on that turn.</li>
-            <li><strong>!</strong> — this player showed a card on that turn (which one is private to the asker).</li>
-            <li><strong>✓*</strong> — this player showed <em>you</em> this card on that turn.</li>
-            <li><strong>←Me</strong> — you showed this card to this player on that turn.</li>
+            <li><strong>✓</strong> — this player has this card.</li>
+            <li><strong>✗</strong> — this player does not have this card.</li>
+            <li><strong>?</strong> — this player asked about this card.</li>
+            <li><strong>!</strong> — this player showed a card on that turn. Which card stays private, unless they showed it to you.</li>
+            <li><strong>Me</strong> — you showed this card to this player.</li>
         </ul>
-        <p>Once a card carries ✓ or ✗ the app stops adding new ! marks there — the cell's state is already settled, and the ! would just be noise. The ? mark still stacks; it's useful to see who's been chasing that card.</p>
+        <p>Once a cell has a ✓ or a ✗, a ! in that cell is hidden. The ? stays, so you can still see that the card was asked about.</p>
+
+        <h3>Cell Marks</h3>
+        <p>A right-click on a player's cell during a game opens a box for up to four characters. They show in the corner. The sheet does not use them. An empty column does not open the box.</p>
 
         <h3>The Summary column</h3>
-        <p>The narrow ∑ column between the card name and the player columns is the envelope's own column — your summation of what's in the secret answer. Just as a player's column shows what that player holds and the 🏠 column shows what the board holds, the ∑ column shows what you believe the envelope holds. You mark it by hand: clicking a cell cycles blank → red ✕ → green ✓ → blank. A green ✓ means you think the envelope holds that card; a red ✕ means it doesn't, because a player or the board holds it instead. The app never writes to this column or reads from it — the conclusion is yours. The Deductions panel (❓) can highlight a card it has worked out must be in the envelope, but it never marks this column for you — recording that conclusion here is yours to make.</p>
+        <p>The narrow ∑ column is yours. It is what you believe about the ∑nvelope. A click moves the cell from nothing, to a red ✕, to a green ✓, and then back to nothing. A red ✕ means some player is known to hold that card. A green ✓ means you believe the envelope holds it. The sheet does not use these marks. The helpers can color a card, but they never mark this column for you.</p>
 
-        <h3>The Deductions panel (❓)</h3>
-        <p>The ❓ button in the header opens the Deductions panel — optional help that sits beside the Guide. The app still never solves the game for you. What these helpers do is point out things your own marks already prove but that are easy to miss in the moment, and they can flag a slip — a card you've actually ruled out, a player whose hand no longer adds up — before it leads you astray. Every helper starts off; you tick the ones you want, and you can change your mind any time. None of them ever writes a mark — all you get is some color on the board and the occasional note, both of which you're free to ignore.</p>
-        <p>Each one is a checkbox. Here's why you'd reach for each; the full wording is in the appendix at the very end of this guide, which you really don't have to read.</p>
-        <ul>
-            <li><strong>Must be part of the answer (green).</strong> When you want the cards that have been cornered into the solution to announce themselves the instant it happens.</li>
-            <li><strong>Ruled out (red).</strong> Keeps the cards already off the table settled in your mind, so you stop re-checking ones you've decided.</li>
-            <li><strong>Gave it away on a show (red).</strong> Catches a card a player let slip when they showed, without you replaying the show in your head.</li>
-            <li><strong>Hand fully known (red).</strong> Once you've found every card a player holds, stops you wondering about the rest of their column.</li>
-            <li><strong>Must hold (green).</strong> The flip side — when the ✗s have boxed a player in, shows you what they're forced to be holding.</li>
-            <li><strong>Last card standing (green).</strong> Flags a category's winner the moment everything else in it is ruled out.</li>
-            <li><strong>Fencing (red).</strong> The heavy one: works out cards a player must hold from the pattern of their shows — easiest to miss by eye — and posts a short note when it pins a hand down. Turn it on when you want the most help.</li>
-        </ul>
+        <h3>The House column</h3>
+        <p>The 🏠 column is for a card you have seen on the board. Click that card's house cell and a ✓ appears. Click again to clear it. When the pointer leaves the cell, the other players are crossed off that card, and the log records it. You see a board card on your own turn, in a room that has a card, after you have asked your three cards and nobody can show.</p>
 
-        <h3>Game Decks</h3>
-        <p>A Game Deck is the set of category and card names for a particular variant — say, classic Clue, Master Detective, or your own house mix. You can save up to four decks. Saving a deck stores all that's needed to complete Steps 1 through 4.</p>
+        <h3>The ? button</h3>
+        <p>The ? button opens seven helpers. They start off. A tick turns one on. They only color a name or a cell, or post a note. They never write a mark. During a game they read the marks, the house checks, and the shows that have been written. A show you have undone is left out. You can ignore the color.</p>
         <ul>
-            <li>The Game Deck bar across the top of the grid holds the deck slots during Setup.</li>
-            <li>In Play that same bar becomes the Directive Bar, so the deck slots aren't on screen mid-game — which is why switching variants mid-game isn't possible.</li>
+            <li><strong>Must be part of the answer</strong> — green on a card name, when nobody can hold it.</li>
+            <li><strong>Ruled out</strong> — red on a card name, when someone holds it, or it is on the board.</li>
+            <li><strong>Gave it away on a show</strong> — red on a card name, when a show leaves only one card that player can hold.</li>
+            <li><strong>Hand fully known</strong> — red down the rest of a column, once every card in that hand is found.</li>
+            <li><strong>Must hold</strong> — green on the cards a player is forced to hold.</li>
+            <li><strong>Last card standing</strong> — green on the last card left in a category.</li>
+            <li><strong>Fencing</strong> — works from the pattern of shows, tints the rest of a column red, and posts a note when it pins a hand down.</li>
         </ul>
+        <p>The fuller wording is at the end of this guide. You do not need it to play.</p>
+
+        <h3>Game decks</h3>
+        <p>A game deck is the set of card names. You can keep four. Save Current stores the names on the page. Import brings a deck in from a file. Right-click a saved deck to export it or delete it. During play that bar shows the moment you are in, and the saved decks are not on screen.</p>
+
+        <h3>If you leave and come back</h3>
+        <p>Refresh the page in the middle of a game and the game comes back: the marks, the log, the highlighted column, and Next and Undo. The summary marks stay. When no game is going, setup stays as you left it. New Game clears the saved game, so that game does not come back.</p>
+
         <h3>If something feels stuck</h3>
-        <p>The Phase Bar shows a status message when a click was rejected — that the asker can't also be the shower, say, or that a player already has ✗ on every asked card, that sort of thing. The app stops you from recording something inconsistent, but it never decides things for you. If a guard blocks you and you disagree, check the cells in question; usually the guard is right, but the underlying state is wrong, and the fix is to Undo and re-record.</p>
-        <p>Have fun. The whole point is to play the game and let the page do the bookkeeping.</p>
+        <p>The turn line tells you what was wrong. The asked cards may not all be chosen yet. The asker cannot also be the one who shows. A player crossed off every asked card cannot show. A player who is known to hold one of them has to show before anyone later in the turn. If the page is blocking a turn you believe happened, Undo and enter it again.</p>
+        <p>Have fun. The point is to play, and to let the page do the bookkeeping.</p>
 
         <h3>Appendix — what each helper means</h3>
-        <p>You don't need any of this to play; it's here for when you want to know exactly what a color is telling you. The helpers live behind the ❓ button and are all off until you switch them on. Their colors only show during play, and the panel opens on its own whenever you go into Setup. Nothing here ever changes a mark — a real ✓ or ✗, the current player's highlight, and the grey of a muted row all paint straight over any hint.</p>
-        <p>The seven helpers, in the order they appear:</p>
+        <p>You do not need this to play. The helpers live behind the ? button and stay off until you tick them. Their colors show during play. The panel opens on its own when you are in setup. Nothing here writes a mark. A real ✓ or ✗, and the highlight on the current player, paint over any hint.</p>
         <ul>
-            <li><strong>Must be part of the answer (green).</strong> When every player has been ruled out on a card's row, no one holds it — so it has to be one of the secret cards. Its name turns green. Worked out fresh each time the board redraws, so it can never show a stale answer.</li>
-            <li><strong>Ruled out (red).</strong> A card someone is confirmed to hold (a ✓ or ✓* anywhere on its row), or one you've checked onto the board in the 🏠 column, can't be a secret card. Its name turns red.</li>
-            <li><strong>Gave it away on a show (red).</strong> When a player showed someone a card and already has ✗ on every other card asked that turn, the card they showed is the only one left — they must hold it. Its name turns red. It watches every show between two other players, in the Log and in the turn you're on, so the red lands the moment a show gives a card away; a ✗ you learn later counts too. If the marks ever contradict a show, it colors nothing.</li>
-            <li><strong>Hand fully known (red).</strong> When you've marked a player as holding as many cards as they were dealt, the rest of their hand is accounted for — every other cell in their column is a card they can't hold, tinted red.</li>
-            <li><strong>Must hold (green).</strong> The reverse: when a player's column is ✗ everywhere except exactly as many cards as they were dealt, those survivors have to be their hand — each tinted green.</li>
-            <li><strong>Last card standing (green).</strong> When every card in a category but one is ruled out, the survivor must be that category's secret card. Its name turns green.</li>
-            <li><strong>Fencing (red).</strong> Every show between two other players proves the shower holds at least one of the cards asked that turn. Once enough of those proofs — each about different cards — pin down all of a player's unseen cards, the rest of their column must be cards they don't hold, tinted red.</li>
+            <li><strong>Must be part of the answer (green).</strong> When every player is ruled out on a card, no one holds it, so it is one of the secret cards. Its name turns green.</li>
+            <li><strong>Ruled out (red).</strong> A card someone holds, or a card checked in the 🏠 column, cannot be a secret card. Its name turns red.</li>
+            <li><strong>Gave it away on a show (red).</strong> When a player showed a card and already has a ✗ on every other card asked that turn, the card that is left is the one they hold. Its name turns red. It watches shows between two other players. A ✗ you learn later counts. If the marks contradict the show, it colors nothing.</li>
+            <li><strong>Hand fully known (red).</strong> When a player is marked as holding as many cards as they were dealt, every other cell in their column is tinted red.</li>
+            <li><strong>Must hold (green).</strong> When a column is crossed off everywhere except exactly as many cards as that player was dealt, those remaining cards are tinted green.</li>
+            <li><strong>Last card standing (green).</strong> When every card in a category but one is ruled out, that card's name turns green.</li>
+            <li><strong>Fencing (red).</strong> Every show between two other players proves the shower holds at least one of the cards asked. Once enough of those proofs pin down a player's unseen cards, the rest of their column is tinted red.</li>
         </ul>
-        <p><strong>A few shared rules.</strong> Hand fully known, Must hold, and Fencing all need to know how many cards a player was dealt; without that count typed in, they stay quiet for that player. Your own column is skipped — it's settled the moment you start. And if the marks ever contradict a rule, it colors nothing.</p>
-        <p><strong>Where the color lands.</strong> Some helpers tint a card's name on the left — green for "in the answer," red for "ruled out" — because the fact is about the card itself. Others tint cells inside one player's column — a quiet red for a card they can't hold, a quiet green for one they must — because the fact is about that one player.</p>
-        <p><strong>Asking "why?"</strong> Right-click a tinted card name during play and a small note tells you why it's colored — which player holds it, which show gave it away and when, or that it's the last card left in its category. The note works it out on the spot and clears itself after a few seconds. (Column-cell tints don't have this — a right-click there is how you cycle a mark by hand.)</p>
-        <p><strong>The fencing notes.</strong> While Fencing is on, an area under the checkboxes posts the few facts that don't show anywhere else on the board. When it pins down a player's whole hand it names what's now known — for example "Eve holds: Plum, Rope and Hall (turns 1, 2 and 3)." If the marks can't all be true it says so in red, and flashes a brief warning in case the panel is closed. When there's nothing to report it reads "Nothing definite yet."</p>
+        <p><strong>A few shared rules.</strong> Hand fully known, Must hold, and Fencing need the card count. Without it they stay quiet for that player. Your own column is skipped. If the marks contradict a rule, it colors nothing.</p>
+        <p><strong>Where the color lands.</strong> Some helpers tint a card's name — green when it belongs in the answer, red when it is ruled out. Others tint cells in one player's column — red for a card they cannot hold, green for one they must.</p>
+        <p><strong>Asking why.</strong> Right-click a tinted card name during play and a short note says why it is colored. The note clears itself after a few seconds. A right-click on a player's cell does not open this note. It opens the box for up to four characters.</p>
+        <p><strong>The fencing notes.</strong> While Fencing is on, a note under the checkboxes says what the grid does not. When a hand is pinned down it names the cards, for example "Eve holds: Plum, Rope and Hall (turns 1, 2 and 3)." If the marks cannot all be true, it says so. When there is nothing to report, it reads "Nothing definite yet."</p>
     `;
 }
 // M7: theme toggle. Dark is the default. Light is opt-in.
