@@ -108,9 +108,11 @@ The name in the title and in the heading is Clues Tracker Sheet.
 The version beside the heading is Ver. 1.0. He checked both on
 the open page.
 
-The right-click is for entering the manual cell characters only.
-It is not a mark cycle. This is settled. Those characters are
-not in the page yet.
+A right-click on a player’s cell during a game opens a box for
+up to four characters. They show in the corner. The sheet does
+not use them. Undo does not remove them, and they are not
+written in the log. An empty column does not open the box. He
+tried it and said that works.
 
 A refresh in the middle of a game brings back the engine’s turn.
 The marks, the log, the highlighted column, and Next and Undo
@@ -119,9 +121,9 @@ When no game is going, setup stays as it was. New Game clears
 the engine’s save, so that game does not come back. He has seen
 this work.
 
-Three major pieces are left. Manual cell characters. Deduction
-logic. The User Guide. The name in the Guide that still says
-Mystery Tracker is changed when the Guide is done.
+One major piece is left. The User Guide. It waits for a new
+session. The name in the Guide that still says Mystery Tracker
+is changed when the Guide is done.
 
 ---
 
@@ -2310,14 +2312,17 @@ stale Step-5 snapshot clobber later Step-4 edits.
 ## Appendix B — Optional Deduction Rules
 
 The optional deduction rules are a set of opt-in helpers that point
-out what the marks on the grid already imply. Each one either colors
+out what the engine’s marks already imply. Each one either colors
 the board or posts a note in the Deductions panel — none of them
 ever places a mark. Default play is unchanged: the user does all the
 recording, and the helpers only surface what follows from it.
 
 The helpers live behind the "?" header button, which opens the
 Deductions panel. Every rule starts off; the user ticks the ones
-they want.
+they want. During a game they read the engine’s marks, the house
+checks, and the shows the engine has written. An undone show is
+left out. These helpers are on this page only. The phone does not
+have them. He has seen them working (CTS-8, 2026-10-22).
 
 **The Deductions panel ("?").** The "?" button in the header opens
 the Deductions panel, a third overlay beside Guide and Rules. The

@@ -66,7 +66,7 @@ During a game the cells are drawn from what the engine returns. The page’s own
 
 A card seen on the board is marked by hand in the House column. One tap keeps the mark. A second tap clears it. The page shows that check. When the check settles, which is when the pointer leaves the cell, the page tells the engine. The engine writes the log line then, and it crosses that card off the other players. He has seen the log line work. The only time he can mark a board card is on his own turn, when he is in a room that has a card, after he has asked his three cards and nobody can show. There is no other way to see that card.
 
-Up to four small characters can be typed in a grid cell. They are characters, not marks. They are shown in the corner of the cell. The sheet does not use them to decide anything. Taking a turn back does not remove them. They are not written in the log. The right-click is for entering these characters only. It is not a mark cycle. This is settled. The characters are not in the page yet.
+Up to four small characters can be typed in a player’s cell during a game. A right-click opens the box. They are characters. They are shown in the corner of the cell. The sheet does not use them to decide anything. Taking a turn back does not remove them. They are not written in the log. An empty column does not open the box. He tried it and said that works.
 
 ## The log
 
@@ -76,9 +76,17 @@ The engine decides what the log says and when a line is written. The log on the 
 
 A refresh in the middle of a game brings back the engine’s turn. The marks, the log, the highlighted column, and Next and Undo come from the engine. The summary marks stay with the page. When no game is going, setup stays as it was. New Game clears the engine’s save, so that game does not come back. He has seen this work.
 
+## Deduction helpers
+
+The seven helpers behind the ? button stay on this page. They are not on the phone. That was already decided.
+
+They start off. A tick turns one on. They only color cells, or post a note in the panel. They never write a mark. The engine keeps writing the marks.
+
+During a game they read the engine’s marks, the house checks, and the shows the engine has written. An undone show is left out. He looked at them and said they are working now.
+
 ## Still to do
 
-Three major pieces are left. Manual cell characters, entered by right-click only. Deduction logic. The User Guide. The name in the Guide that still says Mystery Tracker is changed when the Guide is done.
+One major piece is left. The User Guide. It waits for a new session. The name in the Guide that still says Mystery Tracker is changed when the Guide is done.
 
 ## Not settled
 

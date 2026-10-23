@@ -40,7 +40,7 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**CTS-7 (2026-10-22) stopped here.** The turn runs on the engine
+**CTS-8 (2026-10-22) stopped here.** The turn runs on the engine
 from the phone, in `CluesTrackerSheet.html`. Once a game is going,
 a click on a card, a click on a name, and the marks in the cells
 go through the engine. Do not take those off the engine. He
@@ -53,19 +53,22 @@ again.
 The page keeps the old layout, with things in the same place.
 The grid, the movable columns, and the empty columns stay. Next
 and Undo ask the engine. The highlighted column follows the
-engine. The right-click is settled. It is for entering the manual
-cell characters only.
+engine. A right-click on a player’s cell during a game opens a
+box for up to four characters. They show in the corner. The
+sheet does not use them. Undo does not remove them, and they
+are not written in the log. An empty column does not open the
+box. He tried it and said that works.
 
-**The next sitting starts with manual cell characters.** That is
-one piece. The right-click and the four characters are already
-described.
+The seven deduction helpers stay on this page, behind the ?
+button. They are not on the phone. They start off. A tick turns
+one on. They only color, or post a note. They never write a mark.
+During a game they read the engine’s marks, the house checks, and
+the shows the engine has written. An undone show is left out. He
+looked at them and said they are working now.
 
-**Deduction logic** is its own sitting after that. It was named,
-and what is missing in it was not described in CTS-6.
-
-**The User Guide** comes after those two, so it describes the
-page as it will be. The name in the Guide that still says
-Mystery Tracker is changed then.
+**The next sitting is the User Guide.** It waits for a new
+session, so it describes the page as it is. The name in the
+Guide that still says Mystery Tracker is changed then.
 
 The working file is `CluesTrackerSheet.html`. He renamed it from
 `MysteryTracker.html`. A missing s in that name was a typo, not

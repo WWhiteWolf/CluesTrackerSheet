@@ -352,7 +352,8 @@
         td.pending-shownme{ outline:2px solid var(--green); outline-offset:-2px; background:var(--mark-shownme-bg) !important; }
         td.asked-has-card { outline:2px solid var(--gold); outline-offset:-2px; } /* reminder: this player has this card */
 
-        .cell-inner { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:1px 3px; height:100%; font-size:0.78rem; line-height:1; padding:1px; }
+        .cell-inner { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:1px 3px; height:100%; font-size:0.78rem; line-height:1; padding:1px; position:relative; }
+        .cell-note { position:absolute; right:1px; bottom:0; font-size:0.55rem; line-height:1; color:var(--text-muted); font-style:italic; pointer-events:none; }
         .turn-tag {
             font-size:0.55rem; vertical-align:super; line-height:1;
             color:var(--text-muted); font-family:'Lora',serif; font-weight:600;
@@ -1551,7 +1552,10 @@ function buildTable() {
                 td.addEventListener('click', onCellClick);
                 td.addEventListener('contextmenu', e => {
                     e.preventDefault();
-                    if (enginePlaying()) return;
+                    if (enginePlaying()) {
+                        openCellCharacters(card, col);
+                        return;
+                    }
                     // M11/01: Right-click on a player×card cell drives the manual
                     // mark cycle (blank → ✗ → ✓ → return-to-auto-state → blank …).
                     // Game mode only, and never on the Me column.
@@ -1859,6 +1863,26 @@ function renderEngineMark(td, card, col) {
         n.textContent = note;
         inner.appendChild(n);
     }
+}
+
+// A right-click during a game types up to four characters into that
+// cell. They sit in the corner. The engine stores them and does
+// not use them. Undo does not remove them, and they are not logged.
+function openCellCharacters(card, col) {
+    if (!enginePlaying()) return;
+    if (!turnOrder.includes(col)) return;
+    if (!isRowActive(card)) return;
+    modalPrompt({
+        title: card + ' — ' + getColName(col),
+        defaultValue: Engine.cellNote(card, col),
+        maxLength: 4,
+        placeholder: 'Up to 4 characters',
+        okLabel: 'Save',
+        onSubmit: (val) => {
+            if (val === null) return;
+            if (Engine.setCellNote(card, col, val)) renderCell(card, col);
+        }
+    });
 }
 
 function openEngineCardPicker(title, intro, cards, onPick) {
@@ -3056,15 +3080,15 @@ function applyAutoX(card, col, undoList) {
 // SOLUTION FLAGS
 // ═══════════════════════════════════════════════════════════════════
 function isSolutionCandidate(card) {
-    // M11/03: A room-checked card is on the board — definitely NOT the secret.
-    if (roomChecked.has(card)) return false;
+    // A room-checked card is on the board — definitely not the secret.
+    if (cardOnBoard(card)) return false;
     // A card is a solution candidate when every active player has ✗
-    // (nobody confirmed to have it)
+    // (nobody confirmed to have it). During a game those marks are the
+    // engine's.
     for (let i = 0; i < turnOrder.length; i++) {
         const c = turnOrder[i];
-        const s = cellState[card][c];
-        if (s.check || s.shownToMe) return false; // someone has it
-        if (!s.cross) return false; // not yet ruled out for this player
+        if (playerHasCheck(card, c)) return false;
+        if (!playerHasCross(card, c)) return false;
     }
     return true;
 }
@@ -5680,6 +5704,87 @@ function openHelpersPanel() {
 let optRules = { yesTint: false, noTint: false, showElim: false, handKnown: false, mustHold: false, lastCard: false, fencing: false };
 try { localStorage.removeItem('mtr_optrules_v1'); } catch (e) {}   // retired standalone key
 
+// During a game the helpers read the engine's marks, house checks, and
+// show log. They still only color. One read is shared for a whole
+// repaint, then dropped, so a later tick does not reuse a stale copy.
+let engineReadOn = false;
+let engineRead = null;
+
+function beginEngineRead() {
+    engineReadOn = true;
+    engineRead = (typeof Engine !== 'undefined' && enginePlaying()) ? Engine.inspect() : null;
+}
+function endEngineRead() {
+    engineReadOn = false;
+    engineRead = null;
+}
+function engineSheet() {
+    if (engineReadOn) return engineRead;
+    if (typeof Engine === 'undefined' || !enginePlaying()) return null;
+    return Engine.inspect();
+}
+
+function cardOnBoard(card) {
+    if (roomChecked.has(card)) return true;
+    const sheet = engineSheet();
+    return !!(sheet && sheet.houseChecked[card] !== undefined);
+}
+
+function playerHasCheck(card, col) {
+    const sheet = engineSheet();
+    if (sheet) {
+        const cell = (sheet.cellState[card] && sheet.cellState[card][col]) || [];
+        return cell.some(m => m.type === 'check');
+    }
+    const s = cellState[card] && cellState[card][col];
+    return !!(s && (s.check || s.shownToMe));
+}
+
+function playerHasCross(card, col) {
+    const sheet = engineSheet();
+    if (sheet) {
+        const cell = (sheet.cellState[card] && sheet.cellState[card][col]) || [];
+        return cell.some(m => m.type === 'cross');
+    }
+    const s = cellState[card] && cellState[card][col];
+    return !!(s && s.cross);
+}
+
+// Shows between two other players that are still part of the game.
+// An undone turn drops out. A show involving Me is already exact, so
+// it is left out, the same way the old log scan left those out.
+function thirdPartyShows() {
+    const sheet = engineSheet();
+    if (sheet) {
+        const live = [];
+        for (const e of sheet.turnLog) {
+            if (e.type === 'undo') {
+                for (let i = live.length - 1; i >= 0; i--) {
+                    if (live[i].turn === e.turn) live.splice(i, 1);
+                }
+                continue;
+            }
+            if (e.type !== 'turn' || e.result !== 'showed') continue;
+            if (!e.shower || e.shower === 'Me' || e.asker === 'Me') continue;
+            if (!Array.isArray(e.cards) || e.cards.length === 0) continue;
+            const col = sheet.players.indexOf(e.shower);
+            if (col < 0) continue;
+            live.push({ name: e.shower, turn: e.turn, asked: e.cards, col });
+        }
+        return live;
+    }
+    const entries = liveLogEntry ? [...gameLog, liveLogEntry] : gameLog;
+    const out = [];
+    for (const e of entries) {
+        if (!e.showerName || !Array.isArray(e.asked) || e.asked.length === 0) continue;
+        if ((e.shownMe && e.shownMe.length) || (e.iShowed && e.iShowed.length)) continue;
+        const col = turnOrder.find(c => getColName(c) === e.showerName) ?? -1;
+        if (col < 0) continue;
+        out.push({ name: e.showerName, turn: e.turn, asked: e.asked, col });
+    }
+    return out;
+}
+
 // ── Checklist — the module draws its own checkboxes into the panel.
 function buildOptRulesChecklist() {
     const body = document.getElementById('helpersBody');
@@ -5759,20 +5864,11 @@ function optRuleTintFor(card) {
 //    card), the rule draws nothing. Returns { name, turn } of the
 //    earliest give-away show, or null.
 function showElimHolderFor(card) {
-    // The turn in progress lives in liveLogEntry until Next commits it —
-    // scan it too, so the red lands the moment a show gives the card away.
-    const entries = liveLogEntry ? [...gameLog, liveLogEntry] : gameLog;
-    for (const e of entries) {
-        if (!e.showerName || !Array.isArray(e.asked) || e.asked.length < 2) continue;
-        if ((e.shownMe && e.shownMe.length) || (e.iShowed && e.iShowed.length)) continue;
-        const showerCol = turnOrder.find(c => getColName(c) === e.showerName) ?? -1;
-        if (showerCol < 0) continue;
-        const survivors = e.asked.filter(a => {
-            const s = cellState[a] && cellState[a][showerCol];
-            return !(s && s.cross);
-        });
+    for (const e of thirdPartyShows()) {
+        if (!Array.isArray(e.asked) || e.asked.length < 2) continue;
+        const survivors = e.asked.filter(a => !playerHasCross(a, e.col));
         if (survivors.length === 1 && survivors[0] === card)
-            return { name: e.showerName, turn: e.turn };
+            return { name: e.name, turn: e.turn };
     }
     return null;
 }
@@ -5796,10 +5892,9 @@ function isLastCardStanding(card) {
 // Red's test: the card is known out of the answer — some player is
 // confirmed holding it (✓ or ✓*), or it's room-checked onto the board.
 function isCardRuledOut(card) {
-    if (roomChecked.has(card)) return true;
+    if (cardOnBoard(card)) return true;
     for (let c = 0; c < MAX_PLAYERS; c++) {
-        const s = cellState[card] && cellState[card][c];
-        if (s && (s.check || s.shownToMe)) return true;
+        if (playerHasCheck(card, c)) return true;
     }
     return false;
 }
@@ -5824,8 +5919,7 @@ function handFullyKnown(col) {
     let held = 0;
     for (const card of ALL_CARDS) {
         if (!isRowActive(card)) continue;
-        const s = cellState[card] && cellState[card][col];
-        if (s && (s.check || s.shownToMe)) held++;
+        if (playerHasCheck(card, col)) held++;
     }
     return held === n;
 }
@@ -5843,8 +5937,7 @@ function mustHoldSurvivors(col) {
     let survivors = 0;
     for (const card of ALL_CARDS) {
         if (!isRowActive(card)) continue;
-        const s = cellState[card] && cellState[card][col];
-        if (!(s && s.cross)) survivors++;
+        if (!playerHasCross(card, col)) survivors++;
     }
     return survivors === n;
 }
@@ -5865,28 +5958,24 @@ function mustHoldSurvivors(col) {
 //    zero-survivor shows: { col, name, turn }.
 function computeFences() {
     if (gamePhase !== 'play' || turnOrder.length === 0) return { fences: [], contradictions: [] };
-    const entries = liveLogEntry ? [...gameLog, liveLogEntry] : gameLog;
     const fences = [];
     const contradictions = [];
-    for (const e of entries) {
-        if (!e.showerName || !Array.isArray(e.asked) || e.asked.length === 0) continue;
-        if ((e.shownMe && e.shownMe.length) || (e.iShowed && e.iShowed.length)) continue;
-        const col = turnOrder.find(c => getColName(c) === e.showerName) ?? -1;
+    for (const e of thirdPartyShows()) {
+        const col = e.col;
         if (col < 0 || col === meCol) continue;
         let explained = false;
         const survivors = [];
         for (const card of e.asked) {
             if (!isRowActive(card)) continue;        // muted card — not in the game
-            const s = cellState[card] && cellState[card][col];
-            if (s && (s.check || s.shownToMe)) { explained = true; break; }
-            if (!(s && s.cross)) survivors.push(card);
+            if (playerHasCheck(card, col)) { explained = true; break; }
+            if (!playerHasCross(card, col)) survivors.push(card);
         }
         if (explained) continue;                     // a known ✓ satisfies the show
         if (survivors.length === 0) {                // contradiction — draw nothing, report it
-            contradictions.push({ col, name: e.showerName, turn: e.turn });
+            contradictions.push({ col, name: e.name, turn: e.turn });
             continue;
         }
-        fences.push({ col, name: e.showerName, turn: e.turn, survivors });
+        fences.push({ col, name: e.name, turn: e.turn, survivors });
     }
     return { fences, contradictions };
 }
@@ -5916,8 +6005,7 @@ function fenceStatusFor(col, colFences) {
     let held = 0;
     for (const card of ALL_CARDS) {
         if (!isRowActive(card)) continue;
-        const s = cellState[card] && cellState[card][col];
-        if (s && (s.check || s.shownToMe)) held++;
+        if (playerHasCheck(card, col)) held++;
     }
     const unseen = n - held;
     if (unseen < 1) return { contradiction: true }; // fences exist but the hand is full
@@ -5970,8 +6058,7 @@ function refreshCountRuleCellTints() {
         const closed    = (st && st.closed) ? st : null;
         document.querySelectorAll(`td[data-col="${col}"]`).forEach(td => {
             const card = td.dataset.card;
-            const s = card && cellState[card] && cellState[card][col];
-            const plain = !!s && !s.check && !s.cross && isRowActive(card);
+            const plain = !!(card && isRowActive(card) && !playerHasCheck(card, col) && !playerHasCross(card, col));
             const fenceRed = !!(closed && plain && !closed.escape.has(card));
             td.classList.toggle('optrule-silent-x',     (fireRed && plain) || fenceRed);
             td.classList.toggle('optrule-silent-check', fireGreen && plain);
@@ -6083,9 +6170,14 @@ function renderFenceNotes() {
 }
 
 function refreshOptRuleTints() {
-    ALL_CARDS.forEach(applyOptRuleTint);
-    refreshCountRuleCellTints();
-    renderFenceNotes();
+    beginEngineRead();
+    try {
+        ALL_CARDS.forEach(applyOptRuleTint);
+        refreshCountRuleCellTints();
+        renderFenceNotes();
+    } finally {
+        endEngineRead();
+    }
 }
 
 // ── Hooks — wrapped from inside the module so engine code is never
@@ -6187,26 +6279,30 @@ function hideWhyTip() {
 // The explanation, recomputed fresh. Empty string = no tip
 // (card untinted, or that tint's checkbox is off).
 function whyTextFor(card) {
-    if (optRules.yesTint && isSolutionCandidate(card))
-        return 'Must be part of the answer — every player has ✗ on this row.';
-    if (optRules.lastCard && isLastCardStanding(card))
-        return 'Must be part of the answer — every other card in this category is ruled out.';
-    if (optRules.noTint && isCardRuledOut(card)) {
-        if (roomChecked.has(card)) return 'Ruled out — it’s on the board.';
-        for (let c = 0; c < MAX_PLAYERS; c++) {
-            const s = cellState[card] && cellState[card][c];
-            if (s && (s.check || s.shownToMe)) {
-                const name = getPlayerNames()[c] || ('Player ' + (c + 1));
-                return 'Ruled out — ' + name + ' holds this card.';
+    beginEngineRead();
+    try {
+        if (optRules.yesTint && isSolutionCandidate(card))
+            return 'Must be part of the answer — every player has ✗ on this row.';
+        if (optRules.lastCard && isLastCardStanding(card))
+            return 'Must be part of the answer — every other card in this category is ruled out.';
+        if (optRules.noTint && isCardRuledOut(card)) {
+            if (cardOnBoard(card)) return 'Ruled out — it’s on the board.';
+            for (let c = 0; c < MAX_PLAYERS; c++) {
+                if (playerHasCheck(card, c)) {
+                    const name = getPlayerNames()[c] || ('Player ' + (c + 1));
+                    return 'Ruled out — ' + name + ' holds this card.';
+                }
             }
         }
+        if (optRules.showElim) {
+            const hit = showElimHolderFor(card);
+            if (hit) return 'Ruled out — ' + hit.name + ' must hold this card: they showed it on turn '
+                          + hit.turn + ' and have ✗ on the other asked cards.';
+        }
+        return '';
+    } finally {
+        endEngineRead();
     }
-    if (optRules.showElim) {
-        const hit = showElimHolderFor(card);
-        if (hit) return 'Ruled out — ' + hit.name + ' must hold this card: they showed it on turn '
-                      + hit.turn + ' and have ✗ on the other asked cards.';
-    }
-    return '';
 }
 
 function showWhyTip(x, y, text) {

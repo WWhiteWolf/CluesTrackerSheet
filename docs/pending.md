@@ -38,16 +38,24 @@ engine is running the turn. He has seen the warnings showing.
 The note shown when a file is not a deck export now says Clues
 Tracker Sheet.
 
+DONE IN CTS-8, 2026-10-22
+-------------------------
+The seven deduction helpers on this page are working. They stay
+off the phone. On this page they start off, and a tick turns one
+on. They only color, or post a note. They never write a mark.
+During a game they read the engine’s marks. He looked at them
+and said they are working now.
+
+A right-click on a player’s cell during a game opens a box for
+up to four characters. They show in the corner. Undo leaves
+them, and they are not written in the log. An empty column
+does not open the box. He tried it and said that works.
+
 WHAT'S NEXT
 -----------
-1. MANUAL CELL CHARACTERS — up to four small characters in a
-   cell. The right-click is for entering them only. It is not
-   a mark cycle. They are not in the page yet.
-
-2. DEDUCTION LOGIC.
-
-3. USER GUIDE. The name in the Guide that still says Mystery
-   Tracker is changed when the Guide is done.
+1. USER GUIDE. It waits for a new session. The name in the
+   Guide that still says Mystery Tracker is changed when the
+   Guide is done.
 
 NICE TO HAVE
 ------------

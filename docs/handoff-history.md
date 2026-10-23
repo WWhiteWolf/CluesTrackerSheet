@@ -15,6 +15,30 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-8 — 2026-10-22 — deduction helpers, then cell characters
+
+Patrick said the previous session’s work was committed.
+
+The deduction options stay off the phone. That was already
+decided. On this page the seven helpers behind the ? button were
+still reading the page’s old marks, so a tick during a game had
+nothing from that game to color.
+
+They now read the engine’s marks, the house checks, and the shows
+the engine has written. They still start off. A tick turns one
+on. They only color, or post a note. They never write a mark. An
+undone show is left out. The phone was not changed.
+
+He looked at them and said they are working now.
+
+A right-click on a player’s cell during a game opens a box for
+up to four characters. They show in the corner. The sheet does
+not use them. Undo does not remove them, and they are not
+written in the log. An empty column does not open the box. The
+phone was not changed. He tried it and said that works.
+
+The User Guide waits for a new session.
+
 ## CTS-7 — 2026-10-22 — the refresh, the warnings, and the deck note
 
 He took the refresh before the cell characters, so a live game
