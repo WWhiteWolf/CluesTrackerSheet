@@ -15,6 +15,22 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-11 — 2026-10-24 — columns move in Setup
+
+Patrick said the previous session’s work was committed.
+
+Player columns move in Setup the same way they move during a game. The same arrangement is shown in both. The turn order is taken once, when Setup ends, from the order the named columns are sitting in. Empty columns stay on the page and stay out of that turn. After that, a drag during the game changes only where a column sits.
+
+A first try left the name field holding the pointer in Setup, so a real drag did not move the column. Setup now takes the pointer the way a game drag does. A press that stays still still edits the name or the card count.
+
+Settling was too jumpy at first. A column now settles into a neighbor when its center enters the middle third of that column. Crossing an edge alone does not move it. He said that is much better.
+
+Each player heading has a palm on the left of the name for starting a drag, with a light outline so it reads against the heading. He said that works very well.
+
+The design decisions and the spec were brought current. The Guide’s Players line and drag line were brought in line with the column move. He read them and said they are excellent. The phone page was not changed, and the engine file was not changed.
+
+The sitting closed here. He will commit, and he will make sure this version is what comes up when the page is loaded from his website.
+
 ## CTS-10 — 2026-10-23 — Quit is out, and the House cards count
 
 Patrick said the previous session’s work was committed.

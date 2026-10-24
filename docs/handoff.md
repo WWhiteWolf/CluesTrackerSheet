@@ -40,38 +40,29 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**CTS-10 (2026-10-23) stopped here.** Quit and a wrong
-accusation are not in this app. A right-click on a column
-heading during a game does not offer them. The Guide does not
-describe them.
+**CTS-11 (2026-10-24) stopped here.** Player columns move in
+Setup the same way they move during a game. The turn order is
+taken once, when Setup ends, from the order the named columns
+are sitting in. After that, a drag changes only where a column
+sits. A column settles when its center enters the middle third
+of a neighbor. Each heading has a palm on the left of the name
+for starting a drag. He tried these and said they work well.
+The design decisions and the spec say the same.
 
-The first deduction helper turns a card green only when every
-player has a ✗ and every House card has been checked. Until
-then that card can still be an unseen House card. The other
-helpers treat a House card as a card that player does not
-hold. Last card standing can still turn green before the House
-is full. He checked this in the browser and said it looks
-good.
+The Guide still says to type names from left to right, and that
+this order is the turn order. That line is stale. It was not
+rewritten in this sitting.
 
-The page is on elyfont.com. The public repository
-`WWhiteWolf/mystery-tracker` holds `CluesTrackerSheet.html`
-and `clues-tracker-engine.js`, and the home page links to the
-sheet. He saw it there. Someone else opens it from that site
-in a browser, on a Mac or a Windows laptop. Nothing is
-installed.
-
-He said the app is complete for now. Nothing is named for the
-next sitting.
+Quit and a wrong accusation are not in this app. The first
+deduction helper waits until every House card has been checked.
+The page is on elyfont.com. He has seen it there.
 
 The turn runs on the engine from the phone, in
 `CluesTrackerSheet.html`. Once a game is going, a click on a
 card, a click on a name, and the marks in the cells go through
-the engine. Do not take those off the engine. He played eight
-turns and it ran the way he wanted. The log shows the lines the
-engine writes. A House check is entered by hand, and the engine
-writes that line. Rules is gone. Decisions are in
-`docs/Design-decisions.md`. Read that before asking him to decide
-again.
+the engine. Do not take those off the engine. Rules is gone.
+Decisions are in `docs/Design-decisions.md`. Read that before
+asking him to decide again.
 
 The page keeps the old layout, with things in the same place.
 The grid, the movable columns, and the empty columns stay. Next
@@ -80,40 +71,19 @@ engine. A right-click on a player’s cell during a game opens a
 box for up to four characters. They show in the corner. The
 sheet does not use them. Undo does not remove them, and they
 are not written in the log. An empty column does not open the
-box. He tried it and said that works.
+box.
 
 The seven deduction helpers stay on this page, behind the ?
 button. They are not on the phone. They start off. A tick turns
 one on. They only color, or post a note. They never write a mark.
-During a game they read the engine’s marks, the house checks,
-how many cards the House holds, and the shows the engine has
-written. An undone show is left out. He checked the House rule
-in CTS-10 and said it looks good.
 
-The working file is `CluesTrackerSheet.html`. He renamed it from
-`MysteryTracker.html`. A missing s in that name was a typo, not
-a second rename. He added the s.
-
-A refresh in the middle of a game brings back the engine’s turn.
-The marks, the log, the highlighted column, and Next and Undo
-come from the engine. The summary marks stay with the page.
-When no game is going, setup stays as it was. New Game clears
-the engine’s save, so that game does not come back. He has seen
-this work.
-
-A tap at the wrong point puts a hint or a warning on the game
-row. The page writes those words. They show whether or not the
-engine is running the turn. The turn line leaves the warning
-there until it clears. He has seen the warnings showing.
-
-The note shown when a file is not a deck export now says Clues
-Tracker Sheet.
+The working file is `CluesTrackerSheet.html`.
 
 Setup from CTS-4 still stands. There are no setup steps. Start
 Game is the gate. The pages of the spec after Page 3 still
 describe the copied page, except the decisions at the top and
 Page 8. Page 8 is the right-click on a player’s cell. The mark
-cycle does not stand.
+cycle does not stand. Page 3 now covers moving columns in Setup.
 
 **Patrick's plain-language list is `docs/pending.md`.** The Word
 copy is made from it when he asks.

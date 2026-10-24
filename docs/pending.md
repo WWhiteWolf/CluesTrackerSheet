@@ -1,5 +1,5 @@
 PENDING WORK — plain-language list (Clues Tracker Sheet)
-Last updated: 2026-10-23, CTS-10
+Last updated: 2026-10-24, CTS-11
 
 This is the "what's still left" list in everyday words. Nothing here
 is urgent. The original app, Mystery Clues Track Sheet, has its own
@@ -71,9 +71,19 @@ The page is on elyfont.com. The home page there links to the
 sheet. Someone else opens it in a browser, on a Mac or a
 Windows laptop.
 
+DONE IN CTS-11, 2026-10-24
+--------------------------
+Player columns move in Setup the same way they move during a
+game. The turn order is taken once, when Setup ends, from where
+the named columns are sitting. A later drag only changes place.
+A column settles when its center enters the middle third of a
+neighbor. Each heading has a palm on the left of the name for
+starting a drag. He tried these and said they work well.
+
 WHAT'S NEXT
 -----------
-Nothing is named. He said the app is complete for now.
+The Guide still says names typed from left to right are the
+turn order. That line is stale. Nothing else is named.
 
 NICE TO HAVE
 ------------

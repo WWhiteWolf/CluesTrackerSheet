@@ -44,9 +44,13 @@ A tap at the wrong point puts a hint or a warning on the game row, so he can see
 
 ## Columns and whose turn it is
 
-Each player column can be moved as a whole during play. Moving it changes only where it sits.
+Each player column can be moved as a whole in Setup and during play. The same arrangement is shown in both. Moving it changes where it sits.
 
-The turn order stays the order the names were typed during Setup. Me’s turn comes in that order, even if Me’s column has been dragged to another place on the page.
+The turn order is taken once, when Setup ends and the game starts, from the order the named columns are sitting in. Empty columns stay on the page and stay out of that turn. After that, a drag during the game changes only where a column sits. Me’s turn comes in the order taken at Start Game, even if Me’s column has been dragged to another place on the page.
+
+A column settles into a neighbor’s seat when its center enters the middle third of that column. Crossing an edge alone does not move it.
+
+Each player heading has a palm on the left of the name. A drag can start from that palm. The name and the card count stay editable in Setup. A press that stays still on the name or the count still edits. He tried the palm and the settle, and said they work well.
 
 The card column, the summary column, and the house column stay where they are.
 

@@ -16,7 +16,7 @@ data shapes that cross page boundaries.
 
 ## Decided for this rebuild
 
-Written CTS-3, 2026-10-21, and brought current in CTS-7.
+Written CTS-3, 2026-10-21, and brought current in CTS-11.
 The Setup below is in the page. The pages after Page 3 still
 describe the rest of the page as it stood when it was copied in.
 Where those pages mention a Rules button or a Rules panel, that
@@ -80,9 +80,17 @@ it ran the way he wanted.
 
 The page keeps the old layout, with things in the same place, and
 it keeps how the marks look. The grid, the movable columns, and
-the empty columns stay. During a game the cells are drawn from
-what the engine returns. A card shown to him is an ordinary check.
-A card he showed is the word Me. There is no star and no arrow.
+the empty columns stay. Player columns can be moved in Setup and
+during play. The same arrangement is shown in both. The turn
+order is taken once, when Setup ends, from the order the named
+columns are sitting in. After that, a drag changes only where a
+column sits. A column settles into a neighbor when its center
+enters the middle third of that column. Each player heading has
+a palm on the left of the name for starting a drag. He tried
+these and said they work well. During a game the cells are drawn
+from what the engine returns. A card shown to him is an ordinary
+check. A card he showed is the word Me. There is no star and no
+arrow.
 
 The engine decides what the log says and when a line is written.
 The log on the page shows those lines. While a game is going, the
@@ -130,7 +138,12 @@ this work.
 The User Guide was written in CTS-9. He is satisfied with it.
 The name in the Guide is Clues Tracker Sheet. There is no
 Right-click section. The four characters are under the heading
-Cell Marks.
+Cell Marks. In CTS-11 the Players line and the drag line were
+brought in line with moving columns in Setup and during play.
+The order the named columns are in when the game starts is the
+turn order. A drag can start from the palm on the left of the
+name. After the game has started, a drag only changes place.
+He read those lines and said they are excellent.
 
 ---
 
@@ -445,6 +458,11 @@ starts, the names are plain text.
 has a name and a count. The count takes digits only, two at
 most. An empty count shows a question mark. Both can be changed
 before the game starts. After the game starts, both are locked.
+A palm sits on the left of the name. A player column can be
+dragged by that palm, or by the heading, in Setup and during
+play. A press that stays still on the name or the count still
+edits. The column settles into a neighbor when its center enters
+the middle third of that column.
 
 **B3.3 · Me selection.** A right-click on a named column header,
 before the game starts, offers "I am [name]". That column
@@ -465,6 +483,11 @@ that case.
   no count.
 - The players' counts add up to 18, or every seated player has
   the same count and the total is under 18.
+
+When Start Game opens the game, the turn order is the named
+columns in the order they are sitting then. Empty columns stay
+on the page and stay out of that turn. A later drag during the
+game changes only where a column sits.
 
 A seated player with no count keeps it closed. Any other split
 keeps it closed. Counts that add up to 18 leave the board empty.
