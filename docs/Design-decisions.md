@@ -88,10 +88,10 @@ During a game they read the engine’s marks, the house checks, and the shows th
 
 The User Guide was written in CTS-9. He is satisfied with it. The name in the Guide is Clues Tracker Sheet. There is no Right-click section. Choosing Me stays under setup. The four characters are under the heading Cell Marks.
 
-## Quit
+## Quit and a wrong accusation
 
-He does not want the Quit feature in this app. The Guide does not describe it. The button is still on the page, from a right-click on a column heading during a game. It was not taken out in CTS-9.
+Neither is in this app. Both were taken out in CTS-10. A right-click on a column heading during a game does not offer them. The Guide does not describe them. The spec does not describe them.
 
 ## Not settled
 
-A wrong accusation was not settled in this work. Do not ask about it unless two writings still disagree and this file has not settled it.
+A wrong accusation is settled. It is not in this app. It came out with Quit in CTS-10.

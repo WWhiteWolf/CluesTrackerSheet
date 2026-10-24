@@ -99,6 +99,10 @@ Rules is not kept. The Rules button and the rules panel are gone.
 He has seen both gone. Guide and the ? button stay. The game row
 and the turn row show messages. He has seen the messages.
 
+Quit is not kept, and a wrong accusation is not kept. A right-click
+on a column heading during a game does not mark a player out.
+The Guide does not describe either one.
+
 A tap at the wrong point puts a hint or a warning on the game
 row, so he can see what is wrong. The page writes those words.
 They are not part of the engine, and they show whether or not
@@ -143,7 +147,7 @@ Index of the spec. One linked block per other page:
 - **B1.7** → Page 8: Characters in a cell
 - **B1.8** → Page 9: House Column
 - **B1.9** → Page 10: Σ Summary Column
-- **B1.10** → Page 11: Player Out
+- **B1.10** → Page 11: Player Out is not in this app
 - **B1.11** → Page 12: Undo & State Recovery
 - **B1.12** → Page 13: Game Decks
 - **B1.13** → Page 14: Game Log
@@ -250,7 +254,6 @@ The following come back exactly as saved:
 - the current setup step
 - who's "Me" and Me's original player name
 - the game phase
-- which players are Out and how (Quit or Wrong Accusation)
 - the list of cards that could still be the secret answer
 - the summary-column marks
 - the house-checked card list
@@ -305,7 +308,6 @@ preserving into a single record. The record contains:
 - the list of cards that could still be the secret answer
 - the categories (each with its name and card list)
 - which categories and which cards are muted
-- which players are Out and how (Quit or Wrong Accusation)
 - the summary-column marks per card
 - the house-checked card list
 - the current setup step
@@ -722,15 +724,11 @@ the turn-order ring that marks every passer with ✗ on every asked
 card. Two cases trigger it:
 
 - **Someone showed:** the walk goes from the asker forward to the
-  shower. Every player in between (skipping Quit players) is a
-  passer and gets ✗ on every asked card.
+  shower. Every player in between is a passer and gets ✗ on every
+  asked card.
 - **Nobody showed:** the walk goes all the way around the ring
-  back to the asker. Every non-asker player (again skipping Quit
-  players) is a passer and gets ✗ on every asked card.
-
-Only Quit players are skipped. A player who is Out by wrong
-accusation still holds cards, so when they pass they take ✗ like
-anyone else.
+  back to the asker. Every non-asker player is a passer and gets
+  ✗ on every asked card.
 
 Each ✗ mark records the turn it was placed on. Cells that already
 have ✓, ✗, or ✓\* are skipped (first mark wins, no stacking).
@@ -745,7 +743,6 @@ incomplete — is refused with a status reminder to finish picking;
 nothing is committed. The handler runs these checks first:
 
 - the clicked column must not be the asker
-- the clicked column must not be Out (Quit)
 - the clicked column must not have ✗ on every asked card (which
   would prove they couldn't show)
 - the clicked column must not skip a player who's obligated to
@@ -784,13 +781,13 @@ button during Play. Does the following in order:
   been bypassed
 - applies any pending shower marks
 - **if no shower was clicked** (everyone passed) — every player
-  except the asker and Quit players gets ✗ on each asked card (the
+  except the asker gets ✗ on each asked card (the
   Passers-loop ✗ — see B5.5)
 - builds the final log entry for the turn (including turns where
   the asker entered no guesses)
 - pushes a full undo snapshot
 - clears all pending state
-- advances the turn step to the next player who isn't Out, and
+- advances the turn step to the next player, and
   adds 1 to the turn count — the count goes up on every turn (see
   B5.11)
 - refreshes the log, the info bar, and the stage locks and
@@ -818,8 +815,8 @@ the user. Locks are re-applied at every stage transition.
   the asked cards' cells in the other columns; on another
   player's turn, the asked cards in Me's column that Me holds.
   Every other cell is locked and silent.
-- **Header guards (see B5.6):** the asker's own header, a Quit
-  player's header, and a column with ✗ on every asked card are
+- **Header guards (see B5.6):** the asker's own header and a column
+  with ✗ on every asked card are
   all rejected with a message, as is the must-show-first rule —
   a column past a player who holds an asked card (✓) can't be
   clicked as the shower until that player shows.
@@ -993,7 +990,7 @@ remove or disable choices the shower can't possibly have:
 
 - walks the turn order from the asker forward, stopping at the
   shower
-- for every player in between (skipping Quit players), drops ✗ on
+- for every player in between, drops ✗ on
   every asked card
 
 Those players had the chance to show and didn't, so they don't
@@ -1023,7 +1020,6 @@ marks land automatically as the game unfolds. The rules are:
 - a "shown to me" mark counts as a ✓
 - Me's column is finalized at Start Game and never gets new auto-
   marks during Play
-- only Quit players are skipped (see **B5.5**)
 - a card on the board (house-checked) gets ✗ across the whole
   row, and is excluded from the secret-answer list
 
@@ -1034,7 +1030,7 @@ The 9 blocks below implement those rules:
 
 - **B7.1** Cell eligibility check (`canAutoX`)
 - **B7.2** Single-cell auto-X (`applyAutoX`)
-- **B7.3** Row sweep on a Mark-Out ✓ (`autoXRestOfRow`)
+- **B7.3** Mark-Out row sweep — not in this app
 - **B7.4** Row sweep on ✓ during Play (`applyAutoXOnCheck`)
 - **B7.5** Shared row sweep with undo list (`propagateRowCross`)
 - **B7.6** The mark pusher (`markCell`)
@@ -1063,26 +1059,13 @@ cell. Calls the eligibility check (B7.1) first.
   on the cell, records which turn placed it, and re-renders the
   cell.
 
-**B7.3 · Row sweep on a Mark-Out ✓ (`autoXRestOfRow`).** The
-row sweep used by the Mark-Out flow: when a leaving player's
-revealed card gets ✓, this sweeps the rest of that row. It:
-
-- goes through each player column other than the one that just
-  got ✓, skipping Quit players
-- for each, runs the eligibility check (B7.1) and stamps a ✗
-  where eligible
-- after the sweep, updates the secret-answer-candidate flag for
-  that card
-
-The Mark-Out flow flags every mark it places as permanent, so
-Undo never removes them — cards seen can't be unseen (see
-**B7.9**). An optional undo list can capture each ✗ for
-rollback; the Mark-Out flow doesn't use one.
+**B7.3 · Mark-Out row sweep.** Not in this app. A player is not
+marked out, so there is no sweep that runs because someone quit
+or made a wrong accusation.
 
 **B7.4 · Row sweep on ✓ during Play (`applyAutoXOnCheck`).**
 Triggered by the popup commits (B6.1, B6.2) and by Next during
-Play when applying pending shown-me marks (B5.7). A Play-phase
-variant of B7.3 with three minor differences: it skips Me's
+Play when applying pending shown-me marks (B5.7). It skips Me's
 column explicitly (redundant safety — every Me cell is already
 filled at Start Game, so the already-marked checks would block
 it anyway), it runs its own copy of the B7.1 checks (✓, ✗, ✓\*)
@@ -1095,7 +1078,6 @@ commit. Goes through each
 active player column other than the source, with these skips:
 
 - Me's column
-- players who quit
 - cells that already have ✓, ✗, or ✓\*
 
 Stamps a ✗ on every remaining cell, and hands back the list of
@@ -1176,13 +1158,11 @@ history list is a small record with these parts:
   it later — internal only, never shown on screen (0 means
   Setup or Start Game)
 - `manual` (optional): true on marks the user placed by hand
-- `quit` (optional): true on every mark the Mark-Out flow
-  places — Undo skips these, so they survive any rollback
 
 **Within-page connectors.** B7.1 is the eligibility check that
-B7.2 and B7.3 call first; B7.4 and B7.5 run their own copies of
+B7.2 calls first; B7.4 and B7.5 run their own copies of
 the same checks.
-B7.6 is called by B7.2, B7.3, B7.4, B7.5 to actually drop the
+B7.6 is called by B7.2, B7.4, and B7.5 to actually drop the
 mark. B7.7 rebuilds the flags after marks are removed — Undo and
 the Setup Me-column clear both use it.
 
@@ -1359,119 +1339,10 @@ and a deck load (**B2.5**) clear all Σ marks.
 
 ## Page 11 — Player Out
 
-When a player makes a wrong accusation or outright quits, they are
-marked Out. The two affect the auto-mark rules differently.
-
-The 7 blocks below cover how a player is marked Out, how the app
-remembers and shows it, and how the engine reacts:
-
-- **B11.1** Right-click on a player header during Play
-- **B11.2** Out-kind picker popup
-- **B11.3** Card-picker popup (Quit only)
-- **B11.4** Out state
-- **B11.5** Out badges on column headers
-- **B11.6** Inactive-column styling
-- **B11.7** Engine effects of Out
-
-**B11.1 · Right-click on a player header during Play.** Right-
-clicking a player column header during Play opens the Player Out
-flow, unless that player is already Out. The single menu option
-leads to both kinds of Out, and the header ends up marked with
-👋 (Quit) or 😢 (Wrong Accusation).
-
-**B11.2 · Out-kind picker popup.** Opens the kind-picker popup.
-Two buttons:
-
-- **👋 Quit** — the player left the game completely; any held
-  cards they show on the way out get ✓ in their column; the
-  rest of their column gets ✗; their column is skipped
-  everywhere.
-- **😢 Wrong Accusation** — they made a wrong accusation; turn
-  skipped, but they stay in the game showing cards but can no
-  longer guess.
-
-Clicking either button hides this popup and opens the next step
-with that choice. Cancel closes the popup.
-
-**B11.3 · Card-picker popup (Quit only).** The card picker is a
-secondary popup whose title carries the action — "Mark {name}
-Out — Quit 👋".
-
-- **Quit** — a card-picker grid appears. Every active card across
-  every active category is shown as a toggle button. Cards already
-  confirmed in some other player's column are disabled with a
-  "held by X" label. The user can click any cards the leaving
-  player revealed on the way out.
-- No card picker is shown for **Wrong Accusation**. That player
-  stays in the game and will continue to show cards on future
-  turns, so there's nothing to reveal at this moment.
-
-Both flows have a Cancel and a red two-tap Mark Out button.
-
-**B11.4 · Out state.** A small record that keeps, for
-each player column that's currently Out, which kind of Out they
-are:
-
-- `quit` — the player left the game
-- `wrongacc` — the player made a wrong accusation
-
-Active players have no entry. Four short accessors wrap this for
-read access, so other blocks don't poke at the record
-directly. Saved in snapshots.
-
-**B11.5 · Out badges on column headers.** Checks every player
-column header against the Out state:
-
-- **Quit** — adds the Out class (greys the header + 👋 badge;
-  hover: "Player has quit").
-- **Wrong Accusation** — the Out class plus a WrongAcc modifier
-  (slightly lighter grey + 😢 badge; hover: "Wrong accusation —
-  turn skipped, still shows cards").
-- **Active player** — removes both classes; the badge is hidden.
-  (Only matters when loading a saved game or after New Game —
-  there's no path from Out back to active during Play.)
-
-Runs after every change to the Out state.
-
-**B11.6 · Inactive-column styling.** Dims a player column
-(header and cells) when its name box is empty. Visible during
-Setup Steps 1–4 only — from Step 5 on, empty columns are hidden
-entirely. Runs whenever a player name changes, and at every big
-state change — Start Game, New Game, loading a stored game, a
-deck load, marking a player Out, and picking Me.
-
-**B11.7 · Engine effects of Out.** Out players ripple through
-many parts of the auto-mark rules:
-
-- Quit players are skipped in auto-X propagation (B7.3, B7.4, B7.5)
-- Quit players are skipped in the Passers-loop ✗ (B5.5, B6.4)
-- Quit players are skipped when the "who must show first" checks
-  walk the ring (B5.6, B5.7)
-- Quit columns are protected three ways: the turn advance skips
-  them (never the asker), the header-click guard refuses them as
-  shower with a status message, and after Mark Out every active
-  cell in their column already holds ✓ or ✗, which the
-  first-one-wins rules won't overwrite.
-- **Wrong-Accusation** players still appear in the turn order
-  and still show cards (an exception — they're "still in" for
-  show purposes), but their turn slot is skipped when the Next
-  button advances
-- **Quit** players are skipped in everything
-
-**Within-page connectors.** B11.1 → B11.2 → B11.3. B11.3's
-commit writes B11.4. B11.5 reads B11.4; B11.6 runs alongside it
-but reads only the name boxes. B11.7 is a
-description of how every other page's auto-mark logic respects B11.4.
-
-**Off-page connectors.** B11.4 is read by Page 5 (the turn
-advance, the shower guard, the Start Game sweep), Page 6 (the
-Me picker popups), and Page 7 (auto-X propagation). It is saved
-and restored by Page 2's snapshot and cleared by New Game.
-B11.3's commit places its ✓/✗ through Page 7's mark pusher and
-writes a permanent Out entry to the game log (Page 14); Page
-12's Undo removes neither the marks nor the entry. If the out
-player held the turn, the commit advances it (Page 5). B11.5
-and B11.6 are called from many state-transition sites.
+Player Out is not in this app. A player is not marked out for
+quitting, and a player is not marked out for a wrong accusation.
+A right-click on a column heading during a game does not open
+that. The Guide does not describe it. Taken out in CTS-10.
 
 ---
 
@@ -1554,19 +1425,15 @@ Then:
 - the mark eraser (**B12.6**) removes every cell mark placed
   on that turn
 - in "previous turn" mode only: the turn counter is
-  decremented, the last normal turn entry popped from the log
-  (permanent Quit / Wrong Accusation entries survive), and the
-  turn pointer stepped back one player (skipping players who
-  are Out)
+  decremented, the last normal turn entry popped from the log,
+  and the turn pointer stepped back one player
 - all pending state is cleared
 - all cells, the log, and the info bar are re-rendered; locks
   and styling reapplied; a status message pushed and an
   auto-save triggered
 
 Net: every trace of the undone turn is wiped — cell marks, house
-marks, and log entries — except permanent Quit /
-Wrong Accusation traces, whose log entries and quit-flagged marks
-both survive. The characters typed in a cell stay (Page 8).
+marks, and log entries. The characters typed in a cell stay (Page 8).
 
 **B12.6 · Turn-mark check and turn-mark eraser.** Two separate
 functions, side by side in the code — near-identical twins:
@@ -1575,13 +1442,12 @@ the same loop over the same cells. Neither calls the other.
 - **The check** (called by the play-undo entry, **B12.4**, and by
   the button-state refresher, **B2.9**) changes nothing — it just
   answers: does any cell have a mark placed on the given turn?
-  Permanent Mark Out marks don't count. B12.4 uses the answer to
+  B12.4 uses the answer to
   tell a mid-turn from an untouched turn.
 - **The eraser** (called by the play-undo action, **B12.5**)
   goes through every cell, filters its marks list to drop
   entries placed on the given turn, then rebuilds the boolean
-  flags from what's left. Marks placed by Mark Out are flagged
-  permanent and survive the filter.
+  flags from what's left.
 
 **B12.7 · Turn-level undo stack.** A stack of snapshots collected
 during each turn — currently captured but not actively used.
@@ -1842,7 +1708,7 @@ Each entry is a small record with at minimum a turn number; the
 other fields depend on what kind of entry it is (see B14.2 for
 the entry kinds). Saved in snapshots.
 
-**B14.2 · Entry kinds.** Four kinds:
+**B14.2 · Entry kinds.** Three kinds:
 
 - **Turn entry:** the asker's name and column position, all
   asked cards, the shower's name (if any), what was shown to Me,
@@ -1855,10 +1721,6 @@ the entry kinds). Saved in snapshots.
   back-compatibility, even though the on-screen column is the
   House column). Player column is set to -1 with player name
   "Board".
-- **Out entry:** the player's name and column, how they went
-  out (Quit or Wrong Accusation), and an `out: true` marker.
-  For Quit only: the cards the player revealed on the way out.
-  Permanent — Undo never removes it (**B12.5**).
 
 **B14.3 · Turn entry push.** Every Next press pushes a turn
 entry, capturing:
@@ -1909,9 +1771,6 @@ entry:
   - **manual:** renders `{card} → ✓/✗/blank`
   - **house:** swaps the name for a "🏠 House-room" who-tag
     and renders `{card} → ✓`
-  - **out:** renders "👋 Quit" or "😢 Wrong Accusation", plus
-    "(showed: {cards})" when the player revealed cards on the
-    way out
   - **turn:** renders all asked cards (joined with `·`), then
     the show result:
     - "{shower} showed" — another player showed the asker
@@ -1934,8 +1793,7 @@ saved in snapshots, so restoring a save mid-turn drops the
 write B14.1. B14.6 reads B14.1 and B14.7.
 
 **Off-page connectors.** B14.1 saved/restored via Page 2's
-snapshot. Out entries are pushed by Page 11's Mark Out commit
-(**B11.3**) and survive Undo (**B12.5**). B14.7 is built by
+snapshot. B14.7 is built by
 Page 5's ask commit (**B5.2**) and updated by Page 6's reveal
 popups as shows are recorded. B14.6 runs whenever an entry is
 pushed or the live entry changes, and again after Page 12's
@@ -1995,9 +1853,8 @@ down to the last card in its category.
 - "Is this card active?" — returns true if its name is NOT in
   the muted-card set.
 
-Used by the table build (to grey muted rows), the right-click
-menu labels, and Page 11's Mark Out popup — its card picker and
-Quit ✗-fill skip muted entries. A third helper built on the
+Used by the table build (to grey muted rows) and the right-click
+menu labels. A third helper built on the
 category check counts the active categories; that count sets
 the asks-per-turn limit (**B15.6**).
 
@@ -2021,8 +1878,7 @@ their own hide class).
 
 - muted categories don't count toward the asks-per-turn limit
 - muted rows never get swept: a row sweep runs only on the row
-  of the card that set it off — a show (Page 6), a Mark Out
-  Quit reveal (Page 11), or Start
+  of the card that set it off — a show (Page 6) or Start
   Game's initial ✗ pass (Page 5) — and none of those can start
   from a muted card
 - cells in muted rows are unclickable — in hide mode the rows
@@ -2045,11 +1901,11 @@ deck export/import by Page 13; Page 3's card renames carry mute
 entries to the renamed card. B15.3 called from Page 5
 (the ask-click muted-row refusal, the asks-per-turn limit and
 turn prompts, and Start Game's initial ✗ sweep, which skips
-muted rows) and Page 11 (Mark Out card picker and Quit ✗-fill).
+muted rows).
 B15.4 runs after load and New Game (Page 2), after Setup step
 changes and name edits (Page 3), at the Me pick (Page 4), at
 Start Game (Page 5), and as part of the every-cell re-render
-after a show commit (Page 6), a Mark Out (Page 11), an Undo
+after a show commit (Page 6), an Undo
 (Page 12), or a deck load (Page 13).
 
 ---
@@ -2158,7 +2014,8 @@ recording, and the helpers only surface what follows from it.
 The helpers live behind the "?" header button, which opens the
 Deductions panel. Every rule starts off; the user ticks the ones
 they want. During a game they read the engine’s marks, the house
-checks, and the shows the engine has written. An undone show is
+checks, how many cards the House holds, and the shows the
+engine has written. An undone show is
 left out. These helpers are on this page only. The phone does not
 have them. He has seen them working (CTS-8, 2026-10-22).
 
@@ -2180,41 +2037,53 @@ described below in the order it appears in the panel.
 **The seven rules.** In panel order:
 
 1. **Green — must be part of the answer.** A card whose whole row
-   is ✗ — every player ruled out — must be one of the secret
+   is ✗ — every player ruled out — is not yet one of the secret
+   cards. Until every House card has been checked, it can still be
+   an unseen House card. Once every House card has been checked,
+   and this card is not one of them, it must be one of the secret
    cards. Its name cell turns green. Worked out live each time the
    board repaints, never from a saved list, so it can't show a
    stale answer.
 2. **Red — ruled out.** A card someone is confirmed to hold (a ✓
    or ✓\* anywhere on its row), or that is checked onto the board in
-   the house column, can't be a secret card. Its name cell turns
-   red.
+   the house column, can't be a secret card. A card nobody holds
+   also can't be a secret card when that category's answer is
+   already known and the House still has unseen cards: it has to
+   be one of those House cards. Its name cell turns red.
 3. **Red — gave it away on a show.** When one player showed another
    a card and has ✗ on every other card asked that turn, the card
-   they showed is the only one left, so they must hold it. Its name
-   cell turns red. This reads every show between two other players
-   (shows involving Me are already exact), across the committed Log
-   and the turn in progress, so the red lands the moment a show
-   gives a card away; a ✗ learned on a later turn counts just as
-   much. If the marks ever contradict a show — ✗ on every asked
-   card — the rule colors nothing.
+   they showed is the only one left, so they must hold it. A House
+   card counts as a card the shower does not hold, the same as a
+   ✗. Its name cell turns red. This reads every show between two
+   other players (shows involving Me are already exact), across
+   the committed Log and the turn in progress, so the red lands
+   the moment a show gives a card away; a ✗ learned on a later
+   turn counts just as much. If the marks ever contradict a show
+   — ✗ on every asked card — the rule colors nothing.
 4. **Red — hand fully known.** When a player's card count is N and
    N cards in their column are marked "they hold it" (✓ or ✓\*),
    their whole hand is accounted for: every other cell in their
-   column is a silent ✗, tinted red.
+   column is a silent ✗, tinted red. A House card is not a card
+   in that hand.
 5. **Green — must hold.** The reverse: when a player's column is ✗
    on every card except exactly N of them (N = their card count),
    those survivors must be their whole hand — each is a silent ✓,
-   tinted green.
+   tinted green. A House card counts as a card they do not hold,
+   the same as a ✗.
 6. **Green — last card standing.** When every card in a category
    but one is ruled out, the survivor must be that category's
-   secret card. Its name cell turns green.
+   secret card. Its name cell turns green. A checked House card
+   counts as ruled out. This can turn green before every House
+   card has been checked, because the envelope still needs one
+   card in that category.
 7. **Red — fencing.** Every show between two other players proves
    the shower holds at least one of that turn's asked cards — a
-   fence. Once enough fences that share no cards are known to pin
-   down all of a player's unseen cards, the rest of their column
-   must be cards they don't hold: each is a silent ✗, tinted red.
-   The closing logic and the notes it posts are described under
-   "The fence notes" below.
+   fence. A House card counts as a card the shower does not hold,
+   the same as a ✗. Once enough fences that share no cards are
+   known to pin down all of a player's unseen cards, the rest of
+   their column must be cards they don't hold: each is a silent
+   ✗, tinted red. The closing logic and the notes it posts are
+   described under "The fence notes" below.
 
 **Shared guards (rules 4, 5, and 7).** These three read a player's
 card count. Without a count typed they stay silent. Me's own column
@@ -2239,9 +2108,10 @@ makes.
 
 **The "Why?" note.** Right-click a tinted card name during Play and
 a small note explains why it is colored: for green, that every
-player is ruled out on that row, or that it is the last card left in
-its category; for red, the name of the player who holds it, that it
-is on the board, or which show gave it away and when. The note works
+player is ruled out and every House card has been checked, or that
+it is the last card left in its category; for red, the name of the
+player who holds it, that it is on the board, that it has to be an
+unseen House card, or which show gave it away and when. The note works
 out its answer live at click time, clears itself after five seconds,
 and any click clears it sooner.
 
@@ -2318,7 +2188,7 @@ untouched.
 - **Page 8**: Characters in a cell
 - **Page 9**: B9.1–B9.6 (House Column)
 - **Page 10**: B10.1–B10.4 (Summary Column)
-- **Page 11**: B11.1–B11.7 (Player Out)
+- **Page 11**: Player Out is not in this app
 - **Page 12**: B12.1–B12.7 (Undo & State Recovery)
 - **Page 13**: B13.1–B13.10 (Game Decks)
 - **Page 14**: B14.1–B14.7 (Game Log)

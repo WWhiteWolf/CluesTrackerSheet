@@ -781,15 +781,6 @@
                     line-height:1; vertical-align:middle; }
         td.sum-col { text-align:center; vertical-align:middle; }
 
-        /* Player-out badge (👋) in the column header */
-        .player-out-badge {
-            display:none; margin-left:4px; font-size:1rem;
-        }
-        thead th.player-out .player-out-badge { display:inline; }
-        thead th.player-out { opacity:0.65; }
-        /* M10/05: Wrong-accusation kind — slightly lighter dim so the column reads
-           as "still in the game but penalized" vs. quit-and-gone. */
-        thead th.player-wrongacc { opacity:0.75; }
         /* M10/05: Hide empty (no-name) player columns once we're past name-entry —
            i.e., in Setup Step 5 onward, and in Play. Setup Steps 1-4 still show all
            six columns greyed so you can see what's available. */
@@ -947,12 +938,12 @@
                         <th>Card</th>
                         <th class="sum-col" title="Summary — click a card's ∑ cell to cycle a marker: ✕ (held by a known player) → ✓ (the envelope holds it) → blank. Play mode only.">∑</th>
                         <th class="room-col" title="Room — for the 2-player variant where cards lie face-down on the board. Click to mark a card you've seen in a room (it can't be the secret, and no player holds it).">🏠</th>
-                        <th id="th0"><div class="header-inner"><input class="ph" id="p1h" type="text" placeholder="Player 1" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p1c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(0)"><span class="cc-display" id="p1cd"></span><span>)</span><span class="player-out-badge" title="Player is out"></span></div></th>
-                        <th id="th1"><div class="header-inner"><input class="ph" id="p2h" type="text" placeholder="Player 2" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p2c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(1)"><span class="cc-display" id="p2cd"></span><span>)</span><span class="player-out-badge" title="Player is out"></span></div></th>
-                        <th id="th2"><div class="header-inner"><input class="ph" id="p3h" type="text" placeholder="Player 3" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p3c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(2)"><span class="cc-display" id="p3cd"></span><span>)</span><span class="player-out-badge" title="Player is out"></span></div></th>
-                        <th id="th3"><div class="header-inner"><input class="ph" id="p4h" type="text" placeholder="Player 4" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p4c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(3)"><span class="cc-display" id="p4cd"></span><span>)</span><span class="player-out-badge" title="Player is out"></span></div></th>
-                        <th id="th4"><div class="header-inner"><input class="ph" id="p5h" type="text" placeholder="Player 5" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p5c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(4)"><span class="cc-display" id="p5cd"></span><span>)</span><span class="player-out-badge" title="Player is out"></span></div></th>
-                        <th id="th5"><div class="header-inner"><input class="ph" id="p6h" type="text" placeholder="Player 6" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p6c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(5)"><span class="cc-display" id="p6cd"></span><span>)</span><span class="player-out-badge" title="Player is out"></span></div></th>
+                        <th id="th0"><div class="header-inner"><input class="ph" id="p1h" type="text" placeholder="Player 1" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p1c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(0)"><span class="cc-display" id="p1cd"></span><span>)</span></div></th>
+                        <th id="th1"><div class="header-inner"><input class="ph" id="p2h" type="text" placeholder="Player 2" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p2c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(1)"><span class="cc-display" id="p2cd"></span><span>)</span></div></th>
+                        <th id="th2"><div class="header-inner"><input class="ph" id="p3h" type="text" placeholder="Player 3" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p3c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(2)"><span class="cc-display" id="p3cd"></span><span>)</span></div></th>
+                        <th id="th3"><div class="header-inner"><input class="ph" id="p4h" type="text" placeholder="Player 4" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p4c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(3)"><span class="cc-display" id="p4cd"></span><span>)</span></div></th>
+                        <th id="th4"><div class="header-inner"><input class="ph" id="p5h" type="text" placeholder="Player 5" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p5c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(4)"><span class="cc-display" id="p5cd"></span><span>)</span></div></th>
+                        <th id="th5"><div class="header-inner"><input class="ph" id="p6h" type="text" placeholder="Player 6" spellcheck="false" oninput="onNameChange()"><span>(</span><input class="cc" id="p6c" type="text" maxlength="2" placeholder="?" spellcheck="false" inputmode="numeric" oninput="onCardCountChange(5)"><span class="cc-display" id="p6cd"></span><span>)</span></div></th>
                     </tr>
                 </thead>
                 <tbody id="cardBody"></tbody>
@@ -1036,7 +1027,7 @@
 //
 //   ~484  RENDER CELL      — renderCell(card, col) — draws symbols in cell
 //   ~528  renderAllCells() — Re-renders every cell + locks
-//   ~535  autoXRestOfRow() — Auto-✗ rest of row when ✓ placed
+//   ~535  applyAutoXOnCheck() — Auto-✗ rest of row when ✓ placed
 //
 //   ~551  COLUMN STYLING   — applyMeColStyling(), applyPlayLocks()
 //   ~566  applyPlayLocks() — Master locking function (all stages/turns)
@@ -1299,7 +1290,7 @@ function cycleManualMark(card, col) {
     // Guard rails — match the gameplay-cell rules.
     if (gamePhase !== 'play') return;
     if (col === meCol) return;                   // Me column is off-limits
-    if (!turnOrder.includes(col)) return;        // inactive (Out) column
+    if (!turnOrder.includes(col)) return;        // empty column
     if (!isRowActive(card)) return;              // #10: muted row (card or category)
 
     // First right-click of a new cycle (no active stage): reset the row by
@@ -1427,7 +1418,6 @@ function propagateRowCross(card, sourceCol) {
     turnOrder.forEach(c => {
         if (c === sourceCol)         return;
         if (c === meCol)             return;
-        if (isQuit(c))               return;
         const s = cellState[card] && cellState[card][c];
         if (!s) return;
         if (s.shownToMe || s.check || s.cross) return;
@@ -2033,18 +2023,6 @@ function renderSummaryCell(card) {
 }
 
 // ── When any cell gets ✓, ✗ all other active player columns in that row ──
-function autoXRestOfRow(card, checkedCol, undoList, extra = {}) {
-    turnOrder.forEach(c => {
-        if (c === checkedCol) return;
-        if (isQuit(c)) return;   // M5: skip players who are Out
-        if (!canAutoX(card, c)) return;
-        if (undoList) undoList.push({ card, col: c, old: { ...cellState[card][c], marks:[...(cellState[card][c].marks||[])] } });
-        markCell(card, c, 'cross', extra);
-        renderCell(card, c);
-    });
-    updateSolutionFlags([card]);
-}
-
 // ─────────────────────────────────────────────────────────────────────
 // Play-phase rule: whenever ✓ lands on a player column, every OTHER
 // active column on that row gets ✗ — EXCEPT Me's column (already finalized
@@ -2055,7 +2033,6 @@ function applyAutoXOnCheck(card, col) {
     turnOrder.forEach(c => {
         if (c === col)              return; // the column that just got ✓
         if (c === meCol)            return; // Me's column was filled in at Start Game
-        if (isQuit(c))    return; // skip Out players
         const s = cellState[card] && cellState[card][c];
         if (!s) return;
         if (s.shownToMe || s.check || s.cross) return; // unless already marked
@@ -2455,7 +2432,6 @@ function startGame() {
         if (th && turnOrder.includes(c)) th.classList.add('in-play');
     }
     refreshCardCountDisplays();
-    applyPlayerOutBadges();
 
     applyMeColStyling(); applyInactiveColStyling(); applyBlankColLock();
     applyActiveTurnStyling(); applyPlayLocks();
@@ -2472,7 +2448,6 @@ function startGame() {
         } else {
             turnOrder.forEach(c => {
                 if (c === meCol) return;
-                if (isQuit(c)) return;
                 if (!canAutoX(card, c)) return;
                 markCell(card, c, 'cross', { turn: 0 });
             });
@@ -2529,9 +2504,8 @@ function _doEditSetup() {
     }
     for (let c = 0; c < MAX_PLAYERS; c++) {
         const th = document.getElementById('th' + c);
-        if (th) { th.classList.remove('in-play'); th.classList.remove('player-out'); th.classList.remove('player-wrongacc'); }
+        if (th) th.classList.remove('in-play');
     }
-    playerOutKind = {};
     document.getElementById('setupBanner').classList.remove('game-on');
     updateDeckBarVisibility();
     updateButtonStates();
@@ -2820,13 +2794,6 @@ document.getElementById('headerRow').addEventListener('click', e => {
     // Tapping any header other than the armed one cancels a pending shower-undo confirm.
     if (showerUndoArmed !== -1 && showerUndoArmed !== col) clearShowerUndoArm();
 
-    // M5: Block QUIT players — they can't be the shower. M10/05: WrongAcc players
-    //   still hold cards and must still show, so they ARE allowed as the shower.
-    if (isQuit(col)) {
-        showStatus(`${getColName(col)} is Out (Quit) — they can't show a card.`, 'var(--red-lt)');
-        return;
-    }
-
     // GUARD (mobile parity): asker cannot also be the shower.
     if (col === getCurrentCol()) {
         showStatus(`${getColName(col)} is asking — cannot also show.`, 'var(--red-lt)');
@@ -2858,7 +2825,6 @@ document.getElementById('headerRow').addEventListener('click', e => {
             for (let i = 1; i < n; i++) {
                 const c = turnOrder[(askerIdx + i) % n];
                 if (c === askerCol)        continue;
-                if (isQuit(c))   continue;
                 const mustShow = committedAsked.some(p =>
                     cellState[p.card] && cellState[p.card][c] && cellState[p.card][c].check
                 );
@@ -2956,15 +2922,12 @@ document.getElementById('headerRow').addEventListener('click', e => {
         pendingShowed.push({ card: p.card, col: showerCol, committed: true });
 
         // Auto-✗ players who passed (between asker and shower in turn order)
-        // M5: skip Out players in the ring
         const n        = turnOrder.length;
         const askerIdx = turnOrder.indexOf(getCurrentCol());
         let i     = (askerIdx + 1) % n;
         let steps = 0;
         while (turnOrder[i] !== showerCol && steps < n) {
-            if (!isQuit(turnOrder[i])) {
-                applyAutoX(p.card, turnOrder[i], committedShowedUndo);
-            }
+            applyAutoX(p.card, turnOrder[i], committedShowedUndo);
             i = (i + 1) % n;
             steps++;
         }
@@ -3080,17 +3043,9 @@ function applyAutoX(card, col, undoList) {
 // SOLUTION FLAGS
 // ═══════════════════════════════════════════════════════════════════
 function isSolutionCandidate(card) {
-    // A room-checked card is on the board — definitely not the secret.
-    if (cardOnBoard(card)) return false;
-    // A card is a solution candidate when every active player has ✗
-    // (nobody confirmed to have it). During a game those marks are the
-    // engine's.
-    for (let i = 0; i < turnOrder.length; i++) {
-        const c = turnOrder[i];
-        if (playerHasCheck(card, c)) return false;
-        if (!playerHasCross(card, c)) return false;
-    }
-    return true;
+    // Nobody holds it, and every House card has been checked.
+    // Until the House is full, the card can still be an unseen House card.
+    return nobodyHolds(card) && houseFull();
 }
 
 function updateSolutionFlags(cards) {
@@ -3137,9 +3092,7 @@ function hasMarksForTurn(turn) {
         for (let c = 0; c < MAX_PLAYERS; c++) {
             const cs = cellState[card] && cellState[card][c];
             if (!cs) continue;
-            // M13/01: quit-flagged marks are permanent — they don't make a
-            //   turn "in progress" for Undo purposes.
-            if ((cs.marks || []).some(m => m.turn === turn && !m.quit)) return true;
+            if ((cs.marks || []).some(m => m.turn === turn)) return true;
         }
     }
     return false;
@@ -3151,8 +3104,7 @@ function removeMarksForTurn(turn) {
         for (let c = 0; c < MAX_PLAYERS; c++) {
             const cs = cellState[card] && cellState[card][c];
             if (!cs) continue;
-            // M13/01: quit-flagged marks survive Undo (no unringing the bell).
-            cs.marks = (cs.marks || []).filter(m => m.turn !== turn || m.quit);
+            cs.marks = (cs.marks || []).filter(m => m.turn !== turn);
             recomputeCellBooleans(card, c);
         }
     });
@@ -3423,9 +3375,9 @@ function renderFullLog() {
         return;
     }
 
-    const displayEntries = liveLogEntry
+    const displayEntries = (liveLogEntry
         ? [liveLogEntry, ...[...gameLog].reverse()]
-        : [...gameLog].reverse();
+        : [...gameLog].reverse()).filter(e => !e.out);
 
     if (displayEntries.length === 0) {
         list.innerHTML = '<div style="color:var(--text-muted);font-style:italic;font-size:0.95rem;padding:6px;">No turns yet...</div>';
@@ -3456,19 +3408,6 @@ function renderFullLog() {
         if (e.room) {
             const sym = '<span class="sym-check">✓</span>';
             html = `<span class="log-turn">${tLabel}</span> <span class="log-who">🏠 House-room</span> <span class="log-arrow">—</span> <span class="log-asked">${e.roomCard}</span> <span class="log-arrow">→</span> ${sym}`;
-            div.innerHTML = html;
-            list.appendChild(div);
-            return;
-        }
-
-        // M13/01: Player-out entry — permanent. "👋 Quit (showed: …)" or
-        //   "😢 Wrong Accusation". Undo never removes these.
-        if (e.out) {
-            const sym  = (e.outKind === 'wrongacc') ? '😢' : '👋';
-            const word = (e.outKind === 'wrongacc') ? 'Wrong Accusation' : 'Quit';
-            const cards = (e.outCards && e.outCards.length)
-                ? ` <span class="log-asked">(showed: ${e.outCards.join(' · ')})</span>` : '';
-            html += ` <span class="log-arrow">—</span> <span class="log-nobody">${sym} ${word}</span>${cards}`;
             div.innerHTML = html;
             list.appendChild(div);
             return;
@@ -3533,11 +3472,10 @@ function getSnapshot() {
              categories: CATEGORIES.map(c => ({ name:c.name, cards:[...c.cards] })),
              mutedCategoryIdxs: [...mutedCategoryIdxs],
              mutedCards: [...mutedCards],
-             // F4: card counts (numbers; null = not entered) + player-out state + summary marks.
+             // F4: card counts (numbers; null = not entered) + summary marks.
              // M11/01: cellNotes removed (mini-notes feature retired).
              // M11/03: roomChecked — 2-player variant face-down-card tracker.
              playerCardCounts: [...playerCardCounts],
-             playerOutKind: { ...playerOutKind },
              summaryMarks: { ...summaryMarks },
              roomChecked: [...roomChecked],
              setupStep,
@@ -3561,7 +3499,7 @@ function applySnapshot(d) {
     // This version has no muted cards and no unused categories.
     mutedCategoryIdxs = new Set();
     mutedCards        = new Set();
-    // F4: card counts + player-out state + summary marks
+    // F4: card counts + summary marks
     // (M11/01: cell notes removed)
     if (Array.isArray(d.playerCardCounts) && d.playerCardCounts.length === MAX_PLAYERS) {
         playerCardCounts = d.playerCardCounts.map(v =>
@@ -3570,20 +3508,6 @@ function applySnapshot(d) {
         // Older saves carried text nicknames in this slot — discard them
         // (nicknames are retired; the count shows '?' until typed).
         playerCardCounts = Array(MAX_PLAYERS).fill(null);
-    }
-    // M10/05: restore Out kinds. Old saves had mutedPlayers as an array of column
-    //         indices (all treated as 'quit' for backwards compat).
-    if (d.playerOutKind && typeof d.playerOutKind === 'object' && !Array.isArray(d.playerOutKind)) {
-        playerOutKind = {};
-        for (const k of Object.keys(d.playerOutKind)) {
-            const v = d.playerOutKind[k];
-            if (v === 'quit' || v === 'wrongacc') playerOutKind[k] = v;
-        }
-    } else if (Array.isArray(d.mutedPlayers)) {
-        playerOutKind = {};
-        d.mutedPlayers.forEach(c => { playerOutKind[c] = 'quit'; });
-    } else {
-        playerOutKind = {};
     }
     // M11/01: cellNotes removed — older saves are silently ignored.
     summaryMarks = (d.summaryMarks && typeof d.summaryMarks === 'object') ? { ...d.summaryMarks } : {};
@@ -3635,7 +3559,6 @@ function applySnapshot(d) {
         document.getElementById('setupBanner').classList.remove('game-on');
     }
     updateButtonStates();
-    applyPlayerOutBadges();
     updateDeckBarVisibility();
     applyMeColStyling(); applyInactiveColStyling(); applyBlankColLock();
     applyActiveTurnStyling(); applyPlayLocks();
@@ -3722,13 +3645,12 @@ function _doNewGame(opts) {
         const elC=document.getElementById('p'+i+'c');
         if(elC){ elC.value = (playerCardCounts[i-1] === null) ? '' : String(playerCardCounts[i-1]); elC.disabled=false; }
     }
-    playerOutKind = {};
     // M11/01: cellNotes removed (mini-notes feature retired).
     summaryMarks = {};
     roomChecked = new Set();   // M11/03: clear room marks on full reset
     roomCycleSnapshot = {}; roomUndoLists = {};  // M11/04: clear room cycle state
     refreshCardCountDisplays();
-    for(let c=0;c<MAX_PLAYERS;c++){ const th=document.getElementById('th'+c); if(th){ th.classList.remove('me-col'); th.classList.remove('in-play'); th.classList.remove('player-out'); th.classList.remove('player-wrongacc'); } }
+    for(let c=0;c<MAX_PLAYERS;c++){ const th=document.getElementById('th'+c); if(th){ th.classList.remove('me-col'); th.classList.remove('in-play'); } }
     clearPending();
     /* M11/06: Notes panel removed; no textarea to clear. */
     buildTable(); updateCardLabels(); updateCategoryBanners();
@@ -3739,7 +3661,6 @@ function _doNewGame(opts) {
     applyMeColStyling();
     applyInactiveColStyling();
     applyBlankColLock();
-    applyPlayerOutBadges();
     renderAllCells(); renderFullLog(); renderSolutionFlags(); renderInfoBar(); updateUndoButton();
     showStatus(keepPlayers ? 'New game — same players.' : 'New game — fresh players.', 'var(--red-lt)');
 }
@@ -3823,10 +3744,6 @@ function showPlayHint(where, col) {
         return;
     }
 
-    if (s.playerOutKind && s.playerOutKind[col] === 'quit') {
-        showStatus(`${getColName(col)} is Out (Quit) — they can't show a card.`, 'var(--red-lt)');
-        return;
-    }
     if (s.gamePhase === 'waiting') {
         showStatus('Tap Next to continue.', 'var(--red-lt)');
         return;
@@ -4188,15 +4105,15 @@ function setGuideContent() {
         <p>The 🏠 column is for a card you have seen on the board. Click that card's house cell and a ✓ appears. Click again to clear it. When the pointer leaves the cell, the other players are crossed off that card, and the log records it. You see a board card on your own turn, in a room that has a card, after you have asked your three cards and nobody can show.</p>
 
         <h3>The ? button</h3>
-        <p>The ? button opens seven helpers. They start off. A tick turns one on. They only color a name or a cell, or post a note. They never write a mark. During a game they read the marks, the house checks, and the shows that have been written. A show you have undone is left out. You can ignore the color.</p>
+        <p>The ? button opens seven helpers. They start off. A tick turns one on. They only color a name or a cell, or post a note. They never write a mark. During a game they read the marks, the house checks, how many cards the House holds, and the shows that have been written. A show you have undone is left out. You can ignore the color.</p>
         <ul>
-            <li><strong>Must be part of the answer</strong> — green on a card name, when nobody can hold it.</li>
-            <li><strong>Ruled out</strong> — red on a card name, when someone holds it, or it is on the board.</li>
-            <li><strong>Gave it away on a show</strong> — red on a card name, when a show leaves only one card that player can hold.</li>
-            <li><strong>Hand fully known</strong> — red down the rest of a column, once every card in that hand is found.</li>
-            <li><strong>Must hold</strong> — green on the cards a player is forced to hold.</li>
-            <li><strong>Last card standing</strong> — green on the last card left in a category.</li>
-            <li><strong>Fencing</strong> — works from the pattern of shows, tints the rest of a column red, and posts a note when it pins a hand down.</li>
+            <li><strong>Must be part of the answer</strong> — green on a card name, when nobody can hold it and every House card has been checked.</li>
+            <li><strong>Ruled out</strong> — red on a card name, when someone holds it, it is on the board, or it has to be an unseen House card.</li>
+            <li><strong>Gave it away on a show</strong> — red on a card name, when a show leaves only one card that player can hold. A House card is one they do not hold.</li>
+            <li><strong>Hand fully known</strong> — red down the rest of a column, once every card in that hand is found. A House card is not one of their cards.</li>
+            <li><strong>Must hold</strong> — green on the cards a player is forced to hold. A House card is one they do not hold.</li>
+            <li><strong>Last card standing</strong> — green on the last card left in a category. A checked House card is ruled out, and this can show before every House card is checked.</li>
+            <li><strong>Fencing</strong> — works from the pattern of shows, tints the rest of a column red, and posts a note when it pins a hand down. A House card is one they do not hold.</li>
         </ul>
         <p>The fuller wording is at the end of this guide. You do not need it to play.</p>
 
@@ -4213,13 +4130,13 @@ function setGuideContent() {
         <h3>Appendix — what each helper means</h3>
         <p>You do not need this to play. The helpers live behind the ? button and stay off until you tick them. Their colors show during play. The panel opens on its own when you are in setup. Nothing here writes a mark. A real ✓ or ✗, and the highlight on the current player, paint over any hint.</p>
         <ul>
-            <li><strong>Must be part of the answer (green).</strong> When every player is ruled out on a card, no one holds it, so it is one of the secret cards. Its name turns green.</li>
-            <li><strong>Ruled out (red).</strong> A card someone holds, or a card checked in the 🏠 column, cannot be a secret card. Its name turns red.</li>
-            <li><strong>Gave it away on a show (red).</strong> When a player showed a card and already has a ✗ on every other card asked that turn, the card that is left is the one they hold. Its name turns red. It watches shows between two other players. A ✗ you learn later counts. If the marks contradict the show, it colors nothing.</li>
-            <li><strong>Hand fully known (red).</strong> When a player is marked as holding as many cards as they were dealt, every other cell in their column is tinted red.</li>
-            <li><strong>Must hold (green).</strong> When a column is crossed off everywhere except exactly as many cards as that player was dealt, those remaining cards are tinted green.</li>
-            <li><strong>Last card standing (green).</strong> When every card in a category but one is ruled out, that card's name turns green.</li>
-            <li><strong>Fencing (red).</strong> Every show between two other players proves the shower holds at least one of the cards asked. Once enough of those proofs pin down a player's unseen cards, the rest of their column is tinted red.</li>
+            <li><strong>Must be part of the answer (green).</strong> When every player is ruled out on a card, no one holds it. It is one of the secret cards only once every House card has been checked, and this card is not one of them. Until then it can still be an unseen House card. Its name turns green once the House is full.</li>
+            <li><strong>Ruled out (red).</strong> A card someone holds, or a card checked in the 🏠 column, cannot be a secret card. A card nobody holds also cannot, when that category's answer is already known and the House still has unseen cards: it has to be one of those House cards. Its name turns red.</li>
+            <li><strong>Gave it away on a show (red).</strong> When a player showed a card and already has a ✗ on every other card asked that turn, the card that is left is the one they hold. A House card counts as one they do not hold. Its name turns red. It watches shows between two other players. A ✗ you learn later counts. If the marks contradict the show, it colors nothing.</li>
+            <li><strong>Hand fully known (red).</strong> When a player is marked as holding as many cards as they were dealt, every other cell in their column is tinted red. A House card is not one of their cards.</li>
+            <li><strong>Must hold (green).</strong> When a column is crossed off everywhere except exactly as many cards as that player was dealt, those remaining cards are tinted green. A House card counts as one they do not hold.</li>
+            <li><strong>Last card standing (green).</strong> When every card in a category but one is ruled out, that card's name turns green. A checked House card counts as ruled out. This can turn green before every House card has been checked, because the envelope still needs one card in that category.</li>
+            <li><strong>Fencing (red).</strong> Every show between two other players proves the shower holds at least one of the cards asked. A House card counts as one they do not hold. Once enough of those proofs pin down a player's unseen cards, the rest of their column is tinted red.</li>
         </ul>
         <p><strong>A few shared rules.</strong> Hand fully known, Must hold, and Fencing need the card count. Without it they stay quiet for that player. Your own column is skipped. If the marks contradict a rule, it colors nothing.</p>
         <p><strong>Where the color lands.</strong> Some helpers tint a card's name — green when it belongs in the answer, red when it is ruled out. Others tint cells in one player's column — red for a card they cannot hold, green for one they must.</p>
@@ -4419,24 +4336,6 @@ function refreshCardCountDisplays() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// M4: PLAYER OUT (mid-game player dropout)
-// ═══════════════════════════════════════════════════════════════════
-// M10/05 — Two kinds of "Out":
-//   'quit'     — player has quit; skipped everywhere (turn, show-around, etc.).
-//   'wrongacc' — wrong accusation; turn is skipped but they still hold cards and
-//                must still SHOW when others ask. So they're skipped from turn
-//                rotation but NOT from the show-around shower path.
-// Stored as { col -> 'quit' | 'wrongacc' }. Helpers below shield callers from
-// the data shape; almost all callers use isPlayerOut() (= either kind).
-let playerOutKind = {};
-function isPlayerOut(col) { return !!playerOutKind[col]; }
-function isQuit(col)      { return playerOutKind[col] === 'quit'; }
-function isWrongAcc(col)  { return playerOutKind[col] === 'wrongacc'; }
-function getOutKind(col)  { return playerOutKind[col] || ''; }
-
-// M10/01: setupStep was moved earlier (before buildTable startup call) — see comment there.
-
-// ═══════════════════════════════════════════════════════════════════
 // M11/14 — PER-STEP SNAPSHOTS
 //   Each setup step gets its own saved snapshot (categories, mutes,
 //   player names + card counts, plus the typing-undo stack). The snapshot
@@ -4573,9 +4472,6 @@ function wireTypingInput(input, entryBuilder) {
     });
 }
 
-// M11/01: M4 per-cell mini-notes removed — right-click on a player×card cell
-// now drives the manual mark cycle instead. See cycleManualMark().
-
 // M4: Summary column manual marks, keyed by card name. Value: '' | 'x' | 'check'
 let summaryMarks = {};
 function getSummaryMark(card) { return summaryMarks[card] || ''; }
@@ -4603,12 +4499,6 @@ let roomUndoLists     = {};
 // Click handler — display-only. No row propagation, no log entry; the
 // commit on mouseleave handles both.
 function toggleRoomDisplay(card) {
-    // M11/34: First click of a new cycle — revert the prior-commit row ✗s if
-    //   any, and snapshot the current roomChecked state as the cycle baseline.
-    //   Do NOT delete from roomChecked here — the toggle below is the single
-    //   source of truth for flipping the cell's checked state. (Previously the
-    //   undo branch also did roomChecked.delete(card), and then the toggle
-    //   re-added it, so single-click uncheck visibly did nothing.)
     if (!(card in roomCycleSnapshot)) {
         if (roomUndoLists[card] && roomUndoLists[card].length) {
             roomUndoLists[card].forEach(undoEntry);
@@ -4622,13 +4512,8 @@ function toggleRoomDisplay(card) {
     autoSave();
 }
 
-// Commit on mouseleave. Reconcile row propagation with the final checked
-//   state (M11/34): if checked and not already propagated, ✗ the rest of the
-//   row; if unchecked, roll back any ✗s propagated earlier in this cycle.
-//   Robust against any toggle sequence within one cycle. logRoomMark drops
-//   the house log entry when the card ends up unchecked.
 function commitRoomCycle(card) {
-    if (!(card in roomCycleSnapshot)) return; // no active cycle
+    if (!(card in roomCycleSnapshot)) return;
     delete roomCycleSnapshot[card];
     const cur = roomChecked.has(card);
 
@@ -4653,7 +4538,6 @@ function commitRoomCycle(card) {
     autoSave();
 }
 
-// Render the Room (🏠) cell for a single card.
 function renderRoomCell(card) {
     const td = document.querySelector(`td.room-col[data-card="${CSS.escape(card)}"]`);
     if (!td) return;
@@ -4668,12 +4552,7 @@ function renderRoomCell(card) {
     }
 }
 
-// Push a one-line gameLog entry for a Room mark toggle. Same rule as
-// manual marks: only the active state stays in the Log. Unchecking a
-// room mark removes its entry — the card is no longer "on the board."
 function logRoomMark(card, action) {
-    // M12: true log — only the current turn's house entry for this card is
-    // replaced; house entries from earlier turns are history and stay put.
     gameLog = gameLog.filter(e => !(e.room && e.roomCard === card && e.turn === turnCount));
     if (action === 'blank') return;
     gameLog.push({
@@ -4693,14 +4572,6 @@ function openMeAskerPicker(showerCol, askedCards) {
     wrapper.appendChild(intro);
     const row = document.createElement('div');
     row.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; justify-content:center;';
-    // M12/06: single rule — any card the shower's column has ✗ on can't
-    //   be what they revealed. This catches all impossibilities in one check:
-    //     - cards Me holds (auto-X propagated ✗ to every other player at Start Game)
-    //     - cards already confirmed in another player's hand (auto-X)
-    //     - house-checked cards (auto-X propagated ✗ to every player)
-    //     - direct ✗ on the shower from earlier turns
-    //   B5.5's guard rejects clicks on a shower with ✗ on every asked card,
-    //   so the popup never opens empty — no fallback needed.
     const cardsForPicker = askedCards.filter(card => {
         const cs = cellState[card];
         return !(cs && cs[showerCol] && cs[showerCol].cross);
@@ -4714,28 +4585,18 @@ function openMeAskerPicker(showerCol, askedCards) {
             hideModal();
             markCell(card, showerCol, 'check');
             markCell(card, showerCol, 'shownToMe');
-            // ✓ in any column → ✗ in the rest of the row (skip Me; skip already-marked).
             applyAutoXOnCheck(card, showerCol);
-            // M11/23: no in-cell mark on Me's column here — the ✓* on the
-            //   shower's column and the Log entry already carry "who showed Me
-            //   what", so an extra in-cell ←Player mark was redundant noise.
-            // M5+: ring-loop only — ✗ the players who PASSED (between asker and shower) on ALL 3 asked cards.
             const n        = turnOrder.length;
             const askerIdx = turnOrder.indexOf(meCol);
             const allAsked = askedCards;
             let i = (askerIdx + 1) % n;
             let steps = 0;
             while (turnOrder[i] !== showerCol && steps < n) {
-                if (!isQuit(turnOrder[i])) {
-                    allAsked.forEach(ac => applyAutoX(ac, turnOrder[i], []));
-                }
+                allAsked.forEach(ac => applyAutoX(ac, turnOrder[i], []));
                 i = (i + 1) % n;
                 steps++;
             }
-            // Register the show so nextPlayer doesn't run its "nobody showed" branch and re-apply auto-✗
             pendingShownMe.push({ card, col:showerCol, player:showerName, committed:true, autoXDone:true });
-            // Mirror to liveLogEntry so the Log flips from "waiting..." to
-            // "[shower] showed Me [card]" immediately (before Next is pressed).
             if (liveLogEntry) liveLogEntry.shownMe.push({ card, player: showerName });
             renderAllCells(); renderFullLog();
             updateModeBar(); updateStage(); updateUndoButton(); renderInfoBar();
@@ -4767,31 +4628,21 @@ function openMeShowerPicker(askerCol, askedCards) {
         btn.onclick = () => {
             hideModal();
             markCell(card, askerCol, 'iShowedMe');
-            // Me's column already has check; ensure it does.
             if (!(cellState[card] && cellState[card][meCol] && cellState[card][meCol].check)) {
                 markCell(card, meCol, 'check');
-                // ✓ in any column → ✗ in the rest of the row (skip Me; skip already-marked).
                 applyAutoXOnCheck(card, meCol);
             }
-            // Ring-loop ✗ — every player who PASSED between asker and Me (the shower) didn't have
-            // ANY of the 3 asked cards, so they get ✗ across all 3. Mirrors openMeAskerPicker.
             const n        = turnOrder.length;
             const askerIdx = turnOrder.indexOf(askerCol);
             const allAsked = askedCards;
             let i = (askerIdx + 1) % n;
             let steps = 0;
             while (turnOrder[i] !== meCol && steps < n) {
-                if (!isQuit(turnOrder[i])) {
-                    allAsked.forEach(ac => applyAutoX(ac, turnOrder[i], []));
-                }
+                allAsked.forEach(ac => applyAutoX(ac, turnOrder[i], []));
                 i = (i + 1) % n;
                 steps++;
             }
-            // Record the show in pendingIShowed so the Phase Bar directive and log
-            // know a show has happened (otherwise it stays stuck on "is waiting for show").
             pendingIShowed.push({ card, col: askerCol, toPlayer: askerName, committed: true });
-            // Mirror to liveLogEntry so the Log flips from "waiting..." to
-            // "Me showed [card]" immediately (before Next is pressed).
             if (liveLogEntry) liveLogEntry.iShowed.push({ card, toPlayer: askerName });
             renderAllCells(); renderFullLog();
             updateModeBar(); updateStage(); updateUndoButton(); renderInfoBar();
@@ -4801,189 +4652,6 @@ function openMeShowerPicker(askerCol, askedCards) {
     });
     wrapper.appendChild(row);
     showModal({ title:'You Showed', body:wrapper, buttons:[{ label:'Cancel', action:hideModal }] });
-}
-
-// M11/01: openCellNoteModal removed — mini-notes feature retired in favor of
-// the right-click manual mark cycle. See cycleManualMark().
-
-function applyPlayerOutBadges() {
-    // M10/05: Two kinds of Out — 'quit' shows 👋, 'wrongacc' shows 😢. Both styles
-    //   share .player-out (greyed); .player-wrongacc swaps in the 😢 emoji + a
-    //   subtle title. Active columns clear both classes and hide the badge.
-    for (let col = 0; col < MAX_PLAYERS; col++) {
-        const th = document.getElementById('th' + col);
-        if (!th) continue;
-        const kind = getOutKind(col);
-        th.classList.toggle('player-out',      !!kind);
-        th.classList.toggle('player-wrongacc', kind === 'wrongacc');
-        const badge = th.querySelector('.player-out-badge');
-        if (badge) {
-            if (kind === 'wrongacc') {
-                badge.textContent = '😢';
-                badge.title = 'Wrong accusation — turn skipped, still shows cards';
-            } else if (kind === 'quit') {
-                badge.textContent = '👋';
-                badge.title = 'Player has quit';
-            } else {
-                badge.textContent = '👋'; // default content; CSS hides when not .player-out
-                badge.title = 'Player is out';
-            }
-        }
-    }
-}
-
-function openPlayerOutModal(col) {
-    const name = getColName(col);
-    const isOut = isPlayerOut(col);
-    // Once a player is Out they stay Out — no reactivation path. Defense in
-    // depth: the right-click menu also returns early for Out players.
-    if (isOut) return;
-    // M10/05: Step 1 — ask which kind of Out.
-    showModal({
-        title: `Mark ${name} Out`,
-        bodyHTML:
-            `<div style="margin-bottom:10px;">How is <strong>${name}</strong> out of the game?</div>` +
-            `<div style="display:flex;flex-direction:column;gap:8px;">` +
-              `<button class="btn btn-red"   id="markOutQuitBtn"     style="text-align:left;">👋 <strong>Quit</strong> — they're gone. Skipped everywhere; the rest of their column gets ✗.</button>` +
-              `<button class="btn btn-ghost" id="markOutWrongAccBtn" style="text-align:left;">😢 <strong>Wrong Accusation</strong> — turn skipped, but they still hold cards and must show.</button>` +
-            `</div>`,
-        buttons: [
-            { label: 'Cancel', action: () => hideModal() }
-        ]
-    });
-    // Wire up the two kind-buttons after the modal mounts.
-    setTimeout(() => {
-        const qBtn = document.getElementById('markOutQuitBtn');
-        const wBtn = document.getElementById('markOutWrongAccBtn');
-        if (qBtn) qBtn.onclick = () => { hideModal(); _openPlayerOutCardPicker(col, 'quit'); };
-        if (wBtn) wBtn.onclick = () => { hideModal(); _openPlayerOutCardPicker(col, 'wrongacc'); };
-    }, 0);
-}
-
-// M10/05 — Step 2 of Mark Out: pick any cards the player revealed on the way out.
-// M11/28: title carries the action — no intro text needed. Card picker only
-//   appears for Quit (Wrong Accusation players still show cards on future turns,
-//   so there's nothing to reveal at the moment of marking them out).
-function _openPlayerOutCardPicker(col, kind) {
-    const name = getColName(col);
-    const kindLabel = (kind === 'wrongacc') ? 'Wrong Accusation 😢' : 'Quit 👋';
-    const wrapper = document.createElement('div');
-
-    // Card picker — list of active cards as toggle buttons. Only built for Quit.
-    const cardArea = document.createElement('div');
-    cardArea.style.cssText = 'max-height:240px; overflow-y:auto; border:1px solid var(--border-lt); border-radius:4px; padding:8px; background:var(--bg);';
-    const picked = new Set();
-    const renderCardPicker = () => {
-        cardArea.innerHTML = '';
-        CATEGORIES.forEach((cat, ci) => {
-            if (!isCategoryActive(ci)) return;
-            const sectionLbl = document.createElement('div');
-            sectionLbl.style.cssText = 'font-family:Playfair Display,serif; text-transform:uppercase; letter-spacing:0.1em; font-size:0.78rem; color:var(--text-muted); margin:6px 0 3px;';
-            sectionLbl.textContent = cat.name;
-            cardArea.appendChild(sectionLbl);
-            const row = document.createElement('div');
-            row.style.cssText = 'display:flex; flex-wrap:wrap; gap:4px;';
-            cat.cards.forEach(c => {
-                if (!isCardActive(c)) return;
-                // M10/05: A card already confirmed ✓ in some OTHER column can't be
-                //   held by this player too. Disable it with a clear "[held by X]"
-                //   tag so an accidental click doesn't double-mark.
-                let holderCol = -1;
-                if (cellState[c]) {
-                    for (let cc = 0; cc < MAX_PLAYERS; cc++) {
-                        if (cc === col) continue;
-                        if (cellState[c][cc] && cellState[c][cc].check) { holderCol = cc; break; }
-                    }
-                }
-                const b = document.createElement('button');
-                const heldElsewhere = holderCol >= 0;
-                b.className = 'modal-player-btn' + (picked.has(c) ? ' selected' : '');
-                b.style.cssText += '; padding:4px 8px; font-size:0.85rem;';
-                if (heldElsewhere) {
-                    const holderName = (holderCol === meCol) ? 'Me' : getColName(holderCol);
-                    b.textContent = `${c} — held by ${holderName}`;
-                    b.disabled = true;
-                    b.title = `${c} is already confirmed in ${holderName}'s column — can't be in two players' hands at once.`;
-                    b.style.opacity = '0.45';
-                    b.style.cursor = 'not-allowed';
-                } else {
-                    b.textContent = c;
-                    b.onclick = () => {
-                        if (picked.has(c)) picked.delete(c); else picked.add(c);
-                        renderCardPicker();
-                    };
-                }
-                row.appendChild(b);
-            });
-            cardArea.appendChild(row);
-        });
-    };
-    // M11/28: only build the card picker for Quit. Wrong Accusation has nothing
-    //   to reveal at this moment (the player still shows cards on future turns).
-    if (kind === 'quit') {
-        renderCardPicker();
-        wrapper.appendChild(cardArea);
-    }
-
-    showModal({
-        title: `Mark ${name} Out — ${kindLabel}`,
-        body: wrapper,
-        buttons: [
-            { label: 'Cancel', action: () => hideModal() },
-            { label: 'Mark Out', danger: true, confirmTwoTap: true, action: () => {
-                hideModal();
-                playerOutKind[col] = kind; // 'quit' | 'wrongacc'
-                // Apply ✓ to any cards the player revealed (and auto-✗ rest of row).
-                // Existing ✗ marks (if any) are preserved as historical record per the no-erase rule.
-                // M13/01: everything a Mark Out places is permanent — marks carry
-                //   quit:true so Undo can never remove them (cards seen / envelope
-                //   seen; no unringing the bell).
-                picked.forEach(card => {
-                    if (cellState[card] && cellState[card][col]) {
-                        markCell(card, col, 'check', { quit: true });
-                        if (typeof autoXRestOfRow === 'function') autoXRestOfRow(card, col, null, { quit: true });
-                    }
-                });
-                // M13/01: Quit only — the player's hidden cards leave the game.
-                //   ✗ the rest of their column so sweeps and the secret-answer
-                //   check can resolve. Wrong Accusation keeps a live column
-                //   (they still show cards on future turns).
-                if (kind === 'quit') {
-                    const filled = [];
-                    CATEGORIES.forEach((cat, ci) => {
-                        if (!isCategoryActive(ci)) return;
-                        cat.cards.forEach(card => {
-                            if (!isCardActive(card)) return;
-                            const s = cellState[card] && cellState[card][col];
-                            if (!s || s.check || s.cross) return;
-                            markCell(card, col, 'cross', { quit: true });
-                            filled.push(card);
-                        });
-                    });
-                    updateSolutionFlags(filled);
-                }
-                // M13/01: permanent log entry (e.out) — survives Undo.
-                gameLog.push({
-                    turn: turnCount, playerIdx: col, player: getColName(col), isMe: false,
-                    out: true, outKind: kind, outCards: [...picked],
-                });
-                renderFullLog();
-                applyPlayerOutBadges();
-                applyInactiveColStyling();
-                renderAllCells();
-                renderInfoBar();
-                const kindWord = (kind === 'wrongacc') ? 'Wrong Accusation' : 'Quit';
-                showStatus(`${name} is Out — ${kindWord}${picked.size ? ` (${picked.size} card${picked.size>1?'s':''} marked)` : ''}.`, 'var(--red-lt)');
-                // M13/02: if the player just marked Out holds the turn, advance
-                //   for them — same path as pressing Next (empty turn → "did not
-                //   reach a room"), so Undo's one-entry-per-turn pairing stays intact.
-                if (gamePhase === 'play' && getCurrentCol() === col) {
-                    nextPlayer();
-                }
-                autoSave();
-            } }
-        ]
-    });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -5546,7 +5214,7 @@ document.addEventListener('contextmenu', e => {
     if (!e.target.closest('tr.cat-row, tr[data-card] > th, thead th[id^="th"], .deck-slot')) hideCtxMenu();
 });
 
-// M4: Right-click a player column header → open menu with Player-Out option
+// Right-click a player column header during setup offers "I am this player"
 window.addEventListener('load', () => {
     // M5+ → 5.0.1: wire typing-undo capture on the static player-name + card-count inputs.
     for (let i = 1; i <= MAX_PLAYERS; i++) {
@@ -5603,22 +5271,6 @@ window.addEventListener('load', () => {
                 positionPopupAtCursor(menu, _ctxX, _ctxY, 4);
                 return;
             }
-            if (gamePhase !== 'play') return;
-            e.preventDefault();
-            const isOut = isPlayerOut(col);
-            // Once a player is Out they stay Out — no menu, no path back.
-            if (isOut) return;
-            // Single-item menu for now; modal does the rest
-            _ctxTarget = { kind:'player', col }; _ctxX = e.clientX; _ctxY = e.clientY;
-            const menu = document.getElementById('ctxMenu');
-            menu.innerHTML = '';
-            const item = document.createElement('div');
-            item.className = 'ctx-item danger';
-            item.textContent = '👋 Mark player Out…';
-            item.onclick = () => { hideCtxMenu(); openPlayerOutModal(col); };
-            menu.appendChild(item);
-            menu.classList.add('open');
-            positionPopupAtCursor(menu, _ctxX, _ctxY, 4);
         });
     }
 });
@@ -5726,6 +5378,93 @@ function cardOnBoard(card) {
     return !!(sheet && sheet.houseChecked[card] !== undefined);
 }
 
+// The House holds what is left of the 18 dealt cards after the
+// players' counts. Null when those counts are not there to read.
+function houseSize() {
+    const names = getHeaderNames();
+    let sum = 0;
+    let seated = 0;
+    for (let i = 0; i < MAX_PLAYERS; i++) {
+        if (!(names[i] || '').trim()) continue;
+        const n = playerCardCounts[i];
+        if (typeof n !== 'number') return null;
+        sum += n;
+        seated++;
+    }
+    if (seated < 2) return null;
+    const left = 18 - sum;
+    if (left < 0) return null;
+    return left;
+}
+
+function seenHouseCount() {
+    let n = 0;
+    for (const card of ALL_CARDS) {
+        if (!isRowActive(card)) continue;
+        if (cardOnBoard(card)) n++;
+    }
+    return n;
+}
+
+function houseFull() {
+    const h = houseSize();
+    if (h === null) return false;
+    return seenHouseCount() >= h;
+}
+
+// Held by a player, or already checked in the House column.
+function directlyRuledOut(card) {
+    if (cardOnBoard(card)) return true;
+    for (let c = 0; c < MAX_PLAYERS; c++) {
+        if (playerHasCheck(card, c)) return true;
+    }
+    return false;
+}
+
+// Every player has ✗, and the card is not already located.
+function nobodyHolds(card) {
+    if (!isRowActive(card) || directlyRuledOut(card)) return false;
+    if (turnOrder.length === 0) return false;
+    for (let i = 0; i < turnOrder.length; i++) {
+        const c = turnOrder[i];
+        if (playerHasCheck(card, c)) return false;
+        if (!playerHasCross(card, c)) return false;
+    }
+    return true;
+}
+
+// This category already has its answer: the last card left there,
+// or a card nobody holds once every House card has been checked.
+function categoryAnswerKnown(card) {
+    const ci = getCatIdxOf(card);
+    if (ci < 0 || !isCategoryActive(ci)) return false;
+    for (const other of CATEGORIES[ci].cards) {
+        if (other === card || !isCardActive(other)) continue;
+        if (isLastCardStanding(other)) return true;
+        if (nobodyHolds(other) && houseFull()) return true;
+    }
+    return false;
+}
+
+// Nobody holds it, the House still has unseen cards, and this
+// category's answer is a different card, so this one is in the House.
+function mustBeUnseenHouse(card) {
+    if (houseFull() || !nobodyHolds(card)) return false;
+    return categoryAnswerKnown(card);
+}
+
+function playerDoesNotHold(card, col) {
+    if (playerHasCross(card, col)) return true;
+    if (cardOnBoard(card)) return true;
+    if (mustBeUnseenHouse(card)) return true;
+    return false;
+}
+
+function playerHolds(card, col) {
+    if (cardOnBoard(card) || mustBeUnseenHouse(card)) return false;
+    return playerHasCheck(card, col);
+}
+
 function playerHasCheck(card, col) {
     const sheet = engineSheet();
     if (sheet) {
@@ -5790,19 +5529,19 @@ function buildOptRulesChecklist() {
     intro.textContent = 'Optional helpers:';
     body.appendChild(intro);
     addOptRuleCheckbox(body, 'yesTint',
-        'Green tint on cards that must be part of the answer.');
+        'Green tint on a card that must be part of the answer — every player has ✗, and every House card has been checked.');
     addOptRuleCheckbox(body, 'noTint',
-        'Red tint on cards that are ruled out — someone holds them, or they are on the board.');
+        'Red tint on a card that is ruled out — someone holds it, it is on the board, or it has to be an unseen House card.');
     addOptRuleCheckbox(body, 'showElim',
-        'Red tint on a card a shower gave away — they had ✗ on the other asked cards.');
+        'Red tint on a card a shower gave away — they had ✗ on the other asked cards. A House card counts as one they do not hold.');
     addOptRuleCheckbox(body, 'handKnown',
-        'Red tint down a player\'s column once all their cards are found — with every card in their hand ✓\'d, the rest of their column is a silent ✗.');
+        'Red tint down a player\'s column once all their cards are found — a House card is not one of their cards. With every card in their hand ✓\'d, the rest of their column is a silent ✗.');
     addOptRuleCheckbox(body, 'mustHold',
-        'Green tint on the cards a player must be holding — their column is ✗\'d everywhere except exactly their card count\'s worth of cards.');
+        'Green tint on the cards a player must be holding — a House card counts as one they do not hold. Their column is ✗\'d everywhere except exactly their card count\'s worth of cards.');
     addOptRuleCheckbox(body, 'lastCard',
-        'Green tint on the last card left in a category — every other card there is ruled out.');
+        'Green tint on the last card left in a category — every other card there is ruled out. A checked House card counts. This can show before every House card is checked.');
     addOptRuleCheckbox(body, 'fencing',
-        'Fence in each player\'s hand from their shows. Pin down all of a player\'s unseen cards, the rest of their column tints red: silent ✗s.');
+        'Fence in each player\'s hand from their shows. A House card counts as one they do not hold. Pin down all of a player\'s unseen cards, the rest of their column tints red: silent ✗s.');
     // F5: the fence notes live under the checkboxes, visible only
     // while the fencing rule is on. Filled by renderFenceNotes().
     const notes = document.createElement('div');
@@ -5862,7 +5601,7 @@ function optRuleTintFor(card) {
 function showElimHolderFor(card) {
     for (const e of thirdPartyShows()) {
         if (!Array.isArray(e.asked) || e.asked.length < 2) continue;
-        const survivors = e.asked.filter(a => !playerHasCross(a, e.col));
+        const survivors = e.asked.filter(a => !playerDoesNotHold(a, e.col));
         if (survivors.length === 1 && survivors[0] === card)
             return { name: e.name, turn: e.turn };
     }
@@ -5874,24 +5613,23 @@ function showElimHolderFor(card) {
 //    live (never the stored solutionCards set). Muted cards don't
 //    count as survivors and don't need to be ruled out.
 function isLastCardStanding(card) {
-    if (isCardRuledOut(card)) return false;       // can't be the survivor
+    if (directlyRuledOut(card)) return false;     // can't be the survivor
     const ci = getCatIdxOf(card);
     if (ci < 0 || !isCategoryActive(ci)) return false;
     for (const other of CATEGORIES[ci].cards) {
         if (other === card) continue;
         if (!isCardActive(other)) continue;       // muted card — ignore
-        if (!isCardRuledOut(other)) return false; // another survivor
+        if (!directlyRuledOut(other)) return false; // another survivor
     }
     return true;
 }
 
-// Red's test: the card is known out of the answer — some player is
-// confirmed holding it (✓ or ✓*), or it's room-checked onto the board.
+// Red's test: someone holds it, it is checked in the House, or it
+// has to be an unseen House card because that category's answer
+// is already known.
 function isCardRuledOut(card) {
-    if (cardOnBoard(card)) return true;
-    for (let c = 0; c < MAX_PLAYERS; c++) {
-        if (playerHasCheck(card, c)) return true;
-    }
+    if (directlyRuledOut(card)) return true;
+    if (mustBeUnseenHouse(card)) return true;
     return false;
 }
 
@@ -5915,7 +5653,7 @@ function handFullyKnown(col) {
     let held = 0;
     for (const card of ALL_CARDS) {
         if (!isRowActive(card)) continue;
-        if (playerHasCheck(card, col)) held++;
+        if (playerHolds(card, col)) held++;
     }
     return held === n;
 }
@@ -5933,7 +5671,7 @@ function mustHoldSurvivors(col) {
     let survivors = 0;
     for (const card of ALL_CARDS) {
         if (!isRowActive(card)) continue;
-        if (!playerHasCross(card, col)) survivors++;
+        if (!playerDoesNotHold(card, col)) survivors++;
     }
     return survivors === n;
 }
@@ -5963,8 +5701,8 @@ function computeFences() {
         const survivors = [];
         for (const card of e.asked) {
             if (!isRowActive(card)) continue;        // muted card — not in the game
-            if (playerHasCheck(card, col)) { explained = true; break; }
-            if (!playerHasCross(card, col)) survivors.push(card);
+            if (playerHolds(card, col)) { explained = true; break; }
+            if (!playerDoesNotHold(card, col)) survivors.push(card);
         }
         if (explained) continue;                     // a known ✓ satisfies the show
         if (survivors.length === 0) {                // contradiction — draw nothing, report it
@@ -6001,7 +5739,7 @@ function fenceStatusFor(col, colFences) {
     let held = 0;
     for (const card of ALL_CARDS) {
         if (!isRowActive(card)) continue;
-        if (playerHasCheck(card, col)) held++;
+        if (playerHolds(card, col)) held++;
     }
     const unseen = n - held;
     if (unseen < 1) return { contradiction: true }; // fences exist but the hand is full
@@ -6054,9 +5792,12 @@ function refreshCountRuleCellTints() {
         const closed    = (st && st.closed) ? st : null;
         document.querySelectorAll(`td[data-col="${col}"]`).forEach(td => {
             const card = td.dataset.card;
-            const plain = !!(card && isRowActive(card) && !playerHasCheck(card, col) && !playerHasCross(card, col));
-            const fenceRed = !!(closed && plain && !closed.escape.has(card));
-            td.classList.toggle('optrule-silent-x',     (fireRed && plain) || fenceRed);
+            const unmarked = !!(card && isRowActive(card) && !playerHasCheck(card, col) && !playerHasCross(card, col));
+            const isHouse = !!(card && (cardOnBoard(card) || mustBeUnseenHouse(card)));
+            const plain = unmarked && !isHouse;
+            const houseBlank = unmarked && isHouse;
+            const fenceRed = !!(closed && (plain || houseBlank) && !closed.escape.has(card));
+            td.classList.toggle('optrule-silent-x',     (fireRed && (plain || houseBlank)) || fenceRed);
             td.classList.toggle('optrule-silent-check', fireGreen && plain);
         });
     }
@@ -6278,7 +6019,7 @@ function whyTextFor(card) {
     beginEngineRead();
     try {
         if (optRules.yesTint && isSolutionCandidate(card))
-            return 'Must be part of the answer — every player has ✗ on this row.';
+            return 'Must be part of the answer — every player has ✗, and every House card has been checked.';
         if (optRules.lastCard && isLastCardStanding(card))
             return 'Must be part of the answer — every other card in this category is ruled out.';
         if (optRules.noTint && isCardRuledOut(card)) {
@@ -6289,6 +6030,7 @@ function whyTextFor(card) {
                     return 'Ruled out — ' + name + ' holds this card.';
                 }
             }
+            if (mustBeUnseenHouse(card)) return 'Ruled out — it has to be a House card.';
         }
         if (optRules.showElim) {
             const hit = showElimHolderFor(card);
