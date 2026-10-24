@@ -15,6 +15,20 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-10 — 2026-10-23 — Quit is out, and the House cards count
+
+Patrick said the previous session’s work was committed.
+
+Quit and a wrong accusation came out of the page. A right-click on a column heading during a game does not offer them. The Guide does not describe them. The spec and the design decisions say they are not in this app. The phone page was not changed, and the engine file was not changed. He said the phone is not part of this project.
+
+Taking them out also cut the pieces the page needs to finish setup. Deductions did not open, and the Me menu did not appear. Those pieces were put back. He checked. Deductions opens, and a right-click on a named column in setup offers Me.
+
+The first deduction helper turns a card green only when every player has a ✗ and every House card has been checked. Until then that card can still be an unseen House card. The other helpers treat a House card as a card that player does not hold. Last card standing can still turn green before the House is full. He checked this in the browser and said it looks good. The spec and the Guide’s helper lines say the same.
+
+The page is on elyfont.com. The public repository WWhiteWolf/mystery-tracker holds CluesTrackerSheet.html and clues-tracker-engine.js, and the home page links to the sheet. He saw it there. It opened at 189 percent because the browser remembered that viewing percentage for the site. He set the view back to 100 percent. Someone else opens it from elyfont.com in a browser, on a Mac or a Windows laptop. Nothing is installed.
+
+He said the app is complete for now. Nothing is named for the next sitting.
+
 ## CTS-9 — 2026-10-23 — the User Guide
 
 Patrick said the previous session’s work was committed.

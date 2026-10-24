@@ -52,4 +52,4 @@ copied code works are in `docs-ref`, brought over as they stood.
 
 - **`Projects/MysteryCluesTracker`** — the original app, still on the App Store. Its build history, Guide file, pending list, roadmap, and store pages stay there.
 - The iPhone wrapper and the Android wrapper were not copied. They carry the original app's store identity.
-- GitHub, the elyfont.com page, and any store listing for this project do not exist yet.
+- The page is on elyfont.com. The public repository `WWhiteWolf/mystery-tracker` holds the sheet and the engine file, and the home page links to it. This project’s own repository is `WWhiteWolf/CluesTrackerSheet`. There is no store listing.

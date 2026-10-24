@@ -1,5 +1,5 @@
 PENDING WORK — plain-language list (Clues Tracker Sheet)
-Last updated: 2026-10-23
+Last updated: 2026-10-23, CTS-10
 
 This is the "what's still left" list in everyday words. Nothing here
 is urgent. The original app, Mystery Clues Track Sheet, has its own
@@ -58,10 +58,22 @@ with it. The name in the Guide is Clues Tracker Sheet. There
 is no Right-click section. The four characters are under the
 heading Cell Marks.
 
+DONE IN CTS-10, 2026-10-23
+--------------------------
+Quit and a wrong accusation are not in this app. A right-click
+on a column heading during a game does not offer them.
+
+The first deduction helper waits until every House card has
+been checked. He checked it in the browser and said it looks
+good.
+
+The page is on elyfont.com. The home page there links to the
+sheet. Someone else opens it in a browser, on a Mac or a
+Windows laptop.
+
 WHAT'S NEXT
 -----------
-1. QUIT. He does not want the Quit feature. The button is
-   still on the page. It was not taken out.
+Nothing is named. He said the app is complete for now.
 
 NICE TO HAVE
 ------------

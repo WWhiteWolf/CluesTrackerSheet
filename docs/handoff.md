@@ -40,18 +40,28 @@ folder there. The files stayed in this folder.
 
 ## What is open
 
-**CTS-9 (2026-10-23) stopped here.** The User Guide in
-`CluesTrackerSheet.html` describes the page as it plays. He is
-satisfied with it. The name in the Guide is Clues Tracker Sheet.
-There is no Right-click section. Choosing Me stays under setup.
-The four characters are under the heading Cell Marks.
+**CTS-10 (2026-10-23) stopped here.** Quit and a wrong
+accusation are not in this app. A right-click on a column
+heading during a game does not offer them. The Guide does not
+describe them.
 
-He does not want the Quit feature. The Guide does not describe
-it. The button is still on the page, from a right-click on a
-column heading during a game.
+The first deduction helper turns a card green only when every
+player has a ✗ and every House card has been checked. Until
+then that card can still be an unseen House card. The other
+helpers treat a House card as a card that player does not
+hold. Last card standing can still turn green before the House
+is full. He checked this in the browser and said it looks
+good.
 
-**The next sitting removes Quit from this app.** Take the
-button off the page. Do not bring it back in the Guide.
+The page is on elyfont.com. The public repository
+`WWhiteWolf/mystery-tracker` holds `CluesTrackerSheet.html`
+and `clues-tracker-engine.js`, and the home page links to the
+sheet. He saw it there. Someone else opens it from that site
+in a browser, on a Mac or a Windows laptop. Nothing is
+installed.
+
+He said the app is complete for now. Nothing is named for the
+next sitting.
 
 The turn runs on the engine from the phone, in
 `CluesTrackerSheet.html`. Once a game is going, a click on a
@@ -75,9 +85,10 @@ box. He tried it and said that works.
 The seven deduction helpers stay on this page, behind the ?
 button. They are not on the phone. They start off. A tick turns
 one on. They only color, or post a note. They never write a mark.
-During a game they read the engine’s marks, the house checks, and
-the shows the engine has written. An undone show is left out. He
-looked at them and said they are working now.
+During a game they read the engine’s marks, the house checks,
+how many cards the House holds, and the shows the engine has
+written. An undone show is left out. He checked the House rule
+in CTS-10 and said it looks good.
 
 The working file is `CluesTrackerSheet.html`. He renamed it from
 `MysteryTracker.html`. A missing s in that name was a typo, not

@@ -82,7 +82,9 @@ The seven helpers behind the ? button stay on this page. They are not on the pho
 
 They start off. A tick turns one on. They only color cells, or post a note in the panel. They never write a mark. The engine keeps writing the marks.
 
-During a game they read the engine’s marks, the house checks, and the shows the engine has written. An undone show is left out. He looked at them and said they are working now.
+During a game they read the engine’s marks, the house checks, how many cards the House holds, and the shows the engine has written. An undone show is left out.
+
+A row of ✗s is not yet the answer. Until every House card has been checked, that card can still be an unseen House card. Once every House card has been checked, and this card is not one of them, the first helper turns it green. The other helpers treat a House card as a card that player does not hold. Last card standing can still turn green before the House is full. He checked this in the browser in CTS-10 and said it looks good.
 
 ## The User Guide
 
