@@ -1,5 +1,5 @@
 PENDING WORK — plain-language list (Clues Tracker Sheet)
-Last updated: 2026-10-24, CTS-11
+Last updated: 2026-10-26, CTS-12
 
 This is the "what's still left" list in everyday words. Nothing here
 is urgent. The original app, Mystery Clues Track Sheet, has its own
@@ -80,10 +80,35 @@ A column settles when its center enters the middle third of a
 neighbor. Each heading has a palm on the left of the name for
 starting a drag. He tried these and said they work well.
 
+DONE IN CTS-12 (part), 2026-10-24 to 2026-10-26
+----------------------------------------------
+The Test Spec home exists. Sections 1 and 2 are written and he
+has run them with check marks. Rebuilds keep his marks and keep
+the √/X column centered.
+
+Unused Network Solutions hosting and Secure Xpress were
+cancelled. The domain stays. elyfont.com DNS now points at
+Cloudflare; the site still comes from GitHub Pages. Zero Trust
+Free is set up with payment on file. Access login for the apps
+is not finished yet.
+
 WHAT'S NEXT
 -----------
-The Guide still says names typed from left to right are the
-turn order. That line is stale. Nothing else is named.
+1. CLOUDFLARE ACCESS — wait until elyfont.com shows Active in
+   Cloudflare. Then finish Access for each web app path (login
+   gate), leave App Store privacy and support pages open. Settle
+   how people sign in (Cloudflare login or One-time PIN — the
+   Add IdP list did not show One-time PIN in this sitting; no
+   shared custom passcode exists). Domain/path field would not
+   take typing while the zone was Pending; use the Domain
+   dropdown once Active, or Switch to custom input if needed.
+
+2. TEST SPEC SECTION 3 — continue the master test one section
+   at a time. He edits the Word file and runs the steps. Do not
+   erase check marks. Do not narrate removed features.
+
+3. GUIDE — still says names typed left to right are the turn
+   order. That line is stale.
 
 NICE TO HAVE
 ------------

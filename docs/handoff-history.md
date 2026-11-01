@@ -15,6 +15,22 @@ Nothing from it is copied here.
 
 This file is never read whole.
 
+## CTS-12 — 2026-10-24 to 2026-10-26 — Test Spec started; Cloudflare Access mid-setup
+
+Patrick said the previous session’s work was committed.
+
+**Test Spec.** A CTS master test home was made from the Mystery Tracker web test shape and the old Clues Track Sheet phone test, for the browser page as it stands. The build script is `docs-ref/build-clues-tracker-test.js`; it writes `docs-ref/clues-tracker-master-test.docx`. Section 1 (Initial Screen Check) and Section 2 (Card Names in Setup) were written, then edited by Patrick as he ran them. Rebuilds keep his ✓ marks by step number and keep the √/X column centered. He asked that steps not explain what used to be and is gone. Section 3 was not started. The phone page and the engine file were not changed for the spec.
+
+**elyfont.com billing.** The site already came from GitHub Pages (`WWhiteWolf/mystery-tracker`). Dig showed GitHub addresses while Network Solutions still billed Starter Hosting and Secure Xpress. He cancelled those at Network Solutions, kept the domain (and privacy), and set a Daily Reminders reminder to check the next invoice.
+
+**Cloudflare.** He signed up, added `elyfont.com` on the Free website plan, imported DNS (four GitHub A records and `www` → `wwhitewolf.github.io`, all Proxied), set SSL/TLS to Full, and replaced Network Solutions nameservers with `aurora.ns.cloudflare.com` and `santino.ns.cloudflare.com`. Traffic was already on Cloudflare while Overview still said pending. He added payment for Zero Trust Free (not charged on Free). He skipped the VPN / private-app Get started cards.
+
+**Access — IdP thread (open).** On Add an IdP, the list did not show One-time PIN; there is no custom passcode IdP. Docs still name One-time PIN; new orgs default to Cloudflare login.
+
+**Access — application hostname thread (open).** On Add an application → Self-hosted → Application details, Domain and path for `elyfont.com` would not accept typing. Docs require an active zone for the Domain dropdown; **Switch to custom input** is the documented alternate for custom hostnames. Zone was still Pending when the sitting closed. Next: wait for Active, then finish the first Access application for each app path, leaving App Store privacy/support open.
+
+The sitting closed on the handoff write.
+
 ## CTS-11 — 2026-10-24 — columns move in Setup
 
 Patrick said the previous session’s work was committed.
@@ -29,7 +45,7 @@ Each player heading has a palm on the left of the name for starting a drag, with
 
 The design decisions and the spec were brought current. The Guide’s Players line and drag line were brought in line with the column move. He read them and said they are excellent. The phone page was not changed, and the engine file was not changed.
 
-The sitting closed here. He will commit, and he will make sure this version is what comes up when the page is loaded from his website.
+The sitting closed here. He committed, and he put this version into the public mystery-tracker repository so it comes up from his website.
 
 ## CTS-10 — 2026-10-23 — Quit is out, and the House cards count
 

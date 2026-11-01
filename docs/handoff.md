@@ -15,75 +15,91 @@ tracing.
 off Mystery Clues Track Sheet. The original app stays alive and on
 the App Store, and it can still be changed on its own.
 
-The rebuilt engine, the phone page, the tests, the fonts, and the
-theme tuner were copied as they stood. The page shows Clues Tracker
-Sheet.
-
 The chain is CTS. Patrick named it on 2026-10-13. Nothing here
 is a Y-session. Those stay with the original.
 
-The original app's caution about hard-coded Classic card names does
-not govern this project. This project may carry built-in decks with
-those names.
+**CTS-12 (2026-10-24 through 2026-10-26) stopped here.** Two threads
+ran in this sitting: the CTS Test Spec, and locking elyfont.com apps
+behind Cloudflare Access.
 
-**CTS-1 (2026-10-13) — the repository is started.** The GitHub
-repository is `WWhiteWolf/CluesTrackerSheet`, and it is public.
-It is not a fork of Mystery Clues Track Sheet. The first commit
-is `Init CTS`. `.DS_Store` is left out. The original app's
-history was not copied. The maps and the test steps still say
-the old name inside the text, and that was left on purpose.
+### Test Spec (in progress)
 
-The folder had been committed into Build-root, the Projects
-repository, during Y-53. `CluesTrackerSheet/` is on that
-repository's ignore list. Commit `2nd try` stopped tracking the
-folder there. The files stayed in this folder.
+The home is `docs-ref/build-clues-tracker-test.js`, which generates
+`docs-ref/clues-tracker-master-test.docx`. Do not hand-edit the docx
+as the lasting source; the script carries wording forward. Rebuilds
+carry Patrick’s ✓ marks by step number and keep the √/X column
+centered.
 
-## What is open
+Section 1 (Initial Screen Check) and Section 2 (Card Names in Setup)
+are settled in his Word file and synced into the script. He edits the
+Word file himself, runs the steps as they are written, and proves the
+spec and the page together. Do not explain what used to be and is
+gone. Do not erase his check marks. Do not change right-click until
+he says which account stands.
 
-**CTS-11 (2026-10-24) stopped here.** Player columns move in
-Setup the same way they move during a game. The turn order is
-taken once, when Setup ends, from the order the named columns
-are sitting in. After that, a drag changes only where a column
-sits. A column settles when its center enters the middle third
-of a neighbor. Each heading has a palm on the left of the name
-for starting a drag. He tried these and said they work well.
-The design decisions and the spec say the same.
+Section 3 is not started.
 
-The Guide still says to type names from left to right, and that
-this order is the turn order. That line is stale. It was not
-rewritten in this sitting.
+### elyfont.com and Cloudflare (in progress / blocked on Active)
 
-Quit and a wrong accusation are not in this app. The first
-deduction helper waits until every House card has been checked.
-The page is on elyfont.com. He has seen it there.
+The live site is GitHub Pages from public repo `WWhiteWolf/mystery-tracker`
+(`www` → `wwhitewolf.github.io`). DNS is now on Cloudflare nameservers
+`aurora.ns.cloudflare.com` and `santino.ns.cloudflare.com`. Traffic was
+already serving through Cloudflare (`server: cloudflare`) while the
+zone Overview still said pending nameserver propagation.
+
+He cancelled Network Solutions **Starter Hosting** and both **Secure
+Xpress** lines; he kept the domain (and privacy). He set a Daily
+Reminders reminder to check the next invoice. Domain Privacy and
+registration may still bill; hosting should not.
+
+Goal for Access: App Store privacy/support pages stay open; each web
+app gets its own login. Selling apps needs real protection, not a
+password in the HTML.
+
+**Thread A — Identity provider (blocked / unclear in UI).** On
+Cloudflare One → Access → Add an IdP, the provider list did **not**
+show **One-time PIN**. There is **no** custom shared passcode IdP.
+Docs still describe One-time PIN under Zero Trust → Integrations →
+Identity providers → Add new identity provider → One-time PIN. New
+orgs default to the **Cloudflare** identity provider. Simplest free
+paths: use the built-in Cloudflare login, or find One-time PIN if the
+UI shows it.
+
+**Thread B — Add application hostname (blocked on zone Active).** On
+Cloudflare One → Access controls → Applications → Add an application →
+Self-hosted → Application details, the **Domain and path** field for
+`elyfont.com` would not accept typing. Docs: that control is a
+**dropdown** of domains that belong to an **active** zone; pending
+zones are not enough. Documented alternate label: **Switch to custom
+input** (mainly for Cloudflare for SaaS custom hostnames). He asked
+to switch to custom input; that step was not finished in this sitting.
+
+**Next session should do first:** open Cloudflare dashboard for
+`elyfont.com` → Overview. If status is still Pending, use Check
+nameservers until **Active**. Then resume Access: pick `elyfont.com`
+from the Domain dropdown, set Path per app (e.g.
+`CluesTrackerSheet.html`, `MysteryTracker.html`), leave privacy/support
+paths unprotected, and settle login (Cloudflare IdP or One-time PIN).
+After that, or if he prefers, continue Test Spec section 3.
+
+## Standing product facts (unchanged)
 
 The turn runs on the engine from the phone, in
-`CluesTrackerSheet.html`. Once a game is going, a click on a
-card, a click on a name, and the marks in the cells go through
-the engine. Do not take those off the engine. Rules is gone.
-Decisions are in `docs/Design-decisions.md`. Read that before
+`CluesTrackerSheet.html`. Do not take clicks off the engine. Rules is
+gone. Decisions are in `docs/Design-decisions.md`. Read that before
 asking him to decide again.
 
-The page keeps the old layout, with things in the same place.
-The grid, the movable columns, and the empty columns stay. Next
-and Undo ask the engine. The highlighted column follows the
-engine. A right-click on a player’s cell during a game opens a
-box for up to four characters. They show in the corner. The
-sheet does not use them. Undo does not remove them, and they
-are not written in the log. An empty column does not open the
-box.
+The page keeps the old layout. The grid, the movable columns, and the
+empty columns stay. Next and Undo ask the engine. Right-click on a
+player’s cell: four characters; sheet does not use them.
 
-The seven deduction helpers stay on this page, behind the ?
-button. They are not on the phone. They start off. A tick turns
-one on. They only color, or post a note. They never write a mark.
+The seven deduction helpers stay behind ?. Quit and a wrong accusation
+are not in this app.
 
-The working file is `CluesTrackerSheet.html`.
-
-Setup from CTS-4 still stands. There are no setup steps. Start
-Game is the gate. The pages of the spec after Page 3 still
-describe the copied page, except the decisions at the top and
-Page 8. Page 8 is the right-click on a player’s cell. The mark
-cycle does not stand. Page 3 now covers moving columns in Setup.
+The working file for the page is `CluesTrackerSheet.html`.
+The working files for the Test Spec are
+`docs-ref/build-clues-tracker-test.js` and
+`docs-ref/clues-tracker-master-test.docx`.
 
 **Patrick's plain-language list is `docs/pending.md`.** The Word
 copy is made from it when he asks.
